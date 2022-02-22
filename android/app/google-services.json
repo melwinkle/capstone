@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "546879107116",
+    "firebase_url": "https://lamber-capstone-default-rtdb.firebaseio.com",
+    "project_id": "lamber-capstone",
+    "storage_bucket": "lamber-capstone.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:546879107116:android:699409d481a48127116189",
+        "android_client_info": {
+          "package_name": "com.example.lamber"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "546879107116-lrc8s69odo7p63c3vuh8vqcb8ak4pm7b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuh8q2m0mhZuJuHBRaQrKJ0snE8Svj0Uw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "546879107116-lrc8s69odo7p63c3vuh8vqcb8ak4pm7b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
