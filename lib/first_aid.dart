@@ -77,28 +77,7 @@ class Aidpage extends State<MyAidPage> {
                   ),
                 ),
               ),
-              // Align(
-              //   alignment: const Alignment(-0.88, 0.0),
-              //   child: TextFormField(
-              //     // The validator receives the text that the user has entered.
-              //     validator: (value) {
-              //       if (value == null || value.isEmpty) {
-              //         return 'Please enter first aid guide';
-              //       }
-              //       return null;
-              //     },
-              //     decoration: InputDecoration(
-              //         prefixIcon: Icon(Icons.search),
-              //         hintText: 'Search for first aid guide ',
-              //         hintStyle: TextStyle(color: Colors.black26),
-              //         filled: true,
-              //         fillColor: Color(0xFFFFFFFF),
-              //         border: OutlineInputBorder(
-              //           borderRadius: BorderRadius.circular(15),
-              //           borderSide: BorderSide.none,
-              //         )),
-              //   ),
-              // ),
+
 
 
 

@@ -9,7 +9,9 @@ import 'package:lamber/request.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-
+import 'package:record/record.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:audioplayers/audioplayers.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -44,31 +46,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
   List<dynamic> hos=[];
   List<dynamic> lst = [];
   final usersQuery = FirebaseDatabase.instance.ref("hospital");
-  // showData ()  {
-  //   final userid=FirebaseAuth.instance.currentUser?.uid;
-  //
-  //     DatabaseReference ref = FirebaseDatabase.instance.ref("hospital");
-  //     Query query = ref.orderByKey();
-  //     // DataSnapshot event = await query.get();
-  //     // hospital=event.value.toString();
-  //
-  //
-  //     // Map<dynamic, dynamic> values = event.value as Map<dynamic, dynamic>;
-  //
-  //     // values.forEach((key, value) {
-  //     //   print("Key:"+key);
-  //     //   print("Value"+value["Hospital_name"].toString());
-  //     //
-  //     // });
-  //
-  //
-  //
-  //
-  //
-  //
-  //   // );
-  //
-  // }
+
   _onTap() {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (BuildContext context) =>
@@ -94,7 +72,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
           height: 812.0,
           child: Column(
             children: <Widget>[
-              const Spacer(flex: 5),
+              Padding(padding: const EdgeInsets.all(30.0)),
 // Group: Group 32
 
               const Align(
@@ -112,6 +90,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
 
 
               Container(
+                height: 590,
                 child:FutureBuilder(
                   future: fb.get(),
 
@@ -127,6 +106,8 @@ class Ambulancepage extends State<MyAmbulancePage> {
                           itemCount: lst.length,
                           itemBuilder: (BuildContext context, int index) {
                             return Container(
+
+                              child:Flexible(
                                 // to apply margin in the cross axis of the wrap
                                 child:Column(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -140,6 +121,8 @@ class Ambulancepage extends State<MyAmbulancePage> {
                                                             builder: (context) =>  BookPage(todo: lst[index]),
                                                           ),
                                                         );
+
+
                                                       },
                                                   child: Row(
                                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -200,6 +183,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
 
   ]
                                 )
+                            )
                             );
 
                           });
@@ -276,6 +260,7 @@ class BookPage extends StatelessWidget {
   BookPage({Key? key, required this.todo}) : super(key: key);
 
   // Declare a field that holds the Todo.
+
   final todo;
   final userid=FirebaseAuth.instance.currentUser?.uid;
   final fb = FirebaseDatabase.instance.ref('users/clients').orderByKey();
@@ -320,20 +305,6 @@ class BookPage extends StatelessWidget {
           child: Column(
             children: <Widget>[
 
-// Group: Group 32
-
-              // Align(
-              //   alignment: Alignment(-0.88, 0.0),
-              //   child: Text(
-              //     'Book Ambulance',
-              //     style: TextStyle(
-              //       fontFamily: 'Helvetica',
-              //       fontSize: 25.0,
-              //       color: const Color(0xFFA34747),
-              //       fontWeight: FontWeight.w700,
-              //     ),
-              //   ),
-              // ),
               Padding(padding: const EdgeInsets.all(5.0)),
 
 
@@ -341,7 +312,7 @@ class BookPage extends StatelessWidget {
               Container(
                   alignment: Alignment(-0.78, -0.04),
                   width: 300.0,
-                  height: 350.0,
+                  height: 300.0,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
                     color: Colors.white,
@@ -349,10 +320,11 @@ class BookPage extends StatelessWidget {
                   child: SizedBox(
                     child: Padding(
                       padding: const EdgeInsets.all(5.0),
-                      child: Column(children: [
+                      child: Column(children:  [
 
-                        Padding(padding: const EdgeInsets.all(8.0)),
-                        const MyCustomForm(),
+                        Padding(padding: EdgeInsets.all(8.0)),
+                         MyCustomForm(todo: todo),
+                    
                       ]),
                     ),
                   )),
@@ -367,7 +339,13 @@ class BookPage extends StatelessWidget {
 
 }
 class MyCustomForm extends StatefulWidget {
-  const MyCustomForm({Key? key}) : super(key: key);
+  final todo;
+
+
+
+  const MyCustomForm({Key? key,required this.todo}) : super(key: key);
+
+
 
   @override
   MyCustomFormState createState() {
@@ -381,13 +359,19 @@ class MyCustomFormState extends State<MyCustomForm> {
   //
   // Note: This is a GlobalKey<FormState>,
   // not a GlobalKey<MyCustomFormState>.
+
   final _formKey = GlobalKey<FormState>();
   TextEditingController timeinput = TextEditingController();
   TextEditingController location = TextEditingController();
   TextEditingController snotes = TextEditingController();
 
-  @override
+
+
+
+
   Widget build(BuildContext context) {
+    final hosp=widget.todo["Hospital_name"].toString();
+    final hospid=widget.todo["uid"].toString();
     // Build a Form widget using the _formKey created above.
     return Form(
       key: _formKey,
@@ -502,9 +486,10 @@ class MyCustomFormState extends State<MyCustomForm> {
                       // If the form is valid, display a snackbar. In the real world,
                       // you'd often call a server or save the information in a database.
                       // Navigator.of(context).push(_createRouter());
-                      ScaffoldMessenger.of(context).showSnackBar(
-                         SnackBar(content: Text(timeinput.text+location.text+snotes.text)),
-                      );
+                      sendrequest(timeinput.text,location.text,snotes.text,hosp,hospid);
+                      // ScaffoldMessenger.of(context).showSnackBar(
+                      //    SnackBar(content: Text(timeinput.text+location.text+snotes.text)),
+                      // );
                     }
                   },
                   child: const Text('BOOK'),
@@ -520,4 +505,79 @@ class MyCustomFormState extends State<MyCustomForm> {
       ),
     );
   }
+
+  Future<void> sendrequest(pick,location,notes,hosp,hospid) async {
+
+    final userid=FirebaseAuth.instance.currentUser?.uid;
+
+    DatabaseReference ref = FirebaseDatabase.instance.ref("users/clients");
+    Query query = ref.orderByKey().equalTo(userid);
+    DataSnapshot event = await query.get();
+    var username;
+    var phone;
+
+
+    Map<dynamic, dynamic> values = event.value as Map<dynamic, dynamic>;
+
+    values.forEach((key, value) {
+      username=value['FullName'].toString();
+      phone=value['Phone'].toString();
+    });
+    final time=DateFormat("EEEEE MMM dd yyyy HH:mm:ss a").format(DateTime.now());
+    final times=DateFormat("MMddyyyyHHmm").format(DateTime.now());
+    final requestid=username.toString().substring(0,3).trim()+hosp.toString().substring(0,3).trim()+times.toString();
+
+    DatabaseReference request = FirebaseDatabase.instance.ref("requests/$requestid");
+
+
+    try {
+      await request.set({
+        "Customer_Name": username,
+        "Customer_Number": phone,
+        "Customer_uid": userid,
+        "Destination":location,
+        "Pick_Up_Time":pick,
+        "Reason":notes,
+        "Request_DateTime":time,
+        "Request_Type":"Specific",
+        "Status":"Pending",
+        "Hospital_name":hosp,
+        "Hospital_uid":hospid,
+        "Request_id":requestid,
+
+
+      });
+      Navigator.of(context).push(_requestsent());
+    } on Exception catch (e, s) {
+      print(s);
+    }
+
+    print (requestid+","+userid!+","+username+","+phone+","+time+","+location+","+notes+","+hosp+","+hospid);
+
+
+  }
+
 }
+
+Route _requestsent() {
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => const Request(),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return child;
+    },
+  );
+}
+
+class Request extends StatelessWidget {
+  const Request({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      home: MyRequestPage(),
+    );
+  }
+}
+
+
+

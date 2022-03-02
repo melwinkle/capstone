@@ -54,6 +54,7 @@ class Requestpage extends State<MyRequestPage> {
 
     DataSnapshot event = await query.get();
 
+    print(event.value.toString());
     return event.value;
   }
 
@@ -82,9 +83,9 @@ class Requestpage extends State<MyRequestPage> {
           height: 812.0,
           child: Column(
             children: <Widget>[
-              const Spacer(flex: 5),
-// Group: Group 32
 
+// Group: Group 32
+              Padding(padding: const EdgeInsets.all(30.0)),
               const Align(
                 alignment: Alignment(-0.88, 0.0),
                 child: Text(
@@ -98,6 +99,7 @@ class Requestpage extends State<MyRequestPage> {
                 ),
               ),
               Container(
+                height: 600,
                   child:FutureBuilder(
                       future:showData(),
 
@@ -105,22 +107,15 @@ class Requestpage extends State<MyRequestPage> {
 
                         if (snapshot.hasData) {
                           lst.clear();
-                          List<dynamic> values = snapshot.data;
+                          Map<dynamic, dynamic> values = snapshot.data;
 
-                          values.forEach((element) {
-                            lst.add(element);
-                            print(element);
+                          values.forEach((key, values) {
+                            // lst.add(values);
+                            lst.add(values);
+
 
                           });
 
-
-
-
-                          // values.forEach((key, values) {
-                          //   lst.add(values);
-                          //   print(values);
-                          //
-                          // });
 
                           return ListView.builder(
                               shrinkWrap: true,
@@ -134,7 +129,7 @@ class Requestpage extends State<MyRequestPage> {
                                     alignment: const Alignment(1.0, -0.4),
                                     child:
                                     Icon(Icons.shield,
-                                        size: 15, color: Colors.deepOrange),
+                                        size: 15, color: Colors.orange),
                                   );
                                   ems=ConfirmPage(todo: lst[index]);
 
@@ -148,16 +143,28 @@ class Requestpage extends State<MyRequestPage> {
                                         size: 15, color: Colors.green[500]),
                                   );
                                   ems=ConfirmFPage(todo: lst[index]);
+                                }else if(lst[index]['Status']=="Cancel"){
+                                  stat=Container(
+                                    alignment: const Alignment(1.0, -0.4),
+                                    child:
+                                    Icon(Icons.shield,
+                                        size: 15, color: Colors.red),
+                                  );
+                                  ems=CancelPage(todo: lst[index]);
                                 }else{
                                   stat=Container(
                                     alignment: const Alignment(1.0, -0.4),
                                     child:
                                     Icon(Icons.shield,
-                                        size: 15, color: Colors.green[100]),
+                                        size: 15, color: Colors.lightGreen),
                                   );
                                   ems=ConfirmAPage(todo: lst[index]);
                                 };
                                 return Container(
+
+                                    child: Flexible(
+
+
 
                                     child: Column(
                                         children: [
@@ -232,6 +239,7 @@ class Requestpage extends State<MyRequestPage> {
                                           )),
                                     )),
                                         ])
+                                )
                                 );
 
                               });
@@ -239,232 +247,7 @@ class Requestpage extends State<MyRequestPage> {
                         return CircularProgressIndicator();
                       })
               ),
-              // Container(
-              //     alignment: Alignment(-0.78, -0.04),
-              //     width: 300.0,
-              //     height: 90.0,
-              //     decoration: BoxDecoration(
-              //       borderRadius: BorderRadius.circular(10.0),
-              //     ),
-              //     child: SizedBox(
-              //       child: OutlinedButton(
-              //           onPressed: () {
-              //             Navigator.of(context).push(_createRoute());
-              //           },
-              //           child: Row(
-              //             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //             children: [
-              //               Container(
-              //                 width: 80.0,
-              //                 height: 50.0,
-              //                 decoration: BoxDecoration(
-              //                   image: DecorationImage(
-              //                     image: NetworkImage(
-              //                         'assets/images/ambulance.jpg'),
-              //                     fit: BoxFit.fill,
-              //                   ),
-              //                   borderRadius:
-              //                       BorderRadius.all(Radius.circular(10.0)),
-              //                 ),
-              //               ),
-              //               Column(
-              //                 crossAxisAlignment: CrossAxisAlignment.start,
-              //                 mainAxisAlignment: MainAxisAlignment.center,
-              //                 children: [
-              //                   const Text(
-              //                     'Berekuso Clinic',
-              //                     style: TextStyle(
-              //                       color: Color(0xFFA34747),
-              //                       fontWeight: FontWeight.w700,
-              //                     ),
-              //                   ),
-              //                   Row(
-              //                     mainAxisSize: MainAxisSize.min,
-              //                     children: const [
-              //                       Icon(Icons.star,
-              //                           size: 12, color: Colors.yellow),
-              //                       Icon(Icons.star,
-              //                           size: 12, color: Colors.yellow),
-              //                       Icon(Icons.star,
-              //                           size: 12, color: Colors.yellow),
-              //                       Icon(Icons.star,
-              //                           size: 12, color: Colors.yellow),
-              //                       Icon(Icons.star,
-              //                           size: 12, color: Colors.yellow)
-              //                     ],
-              //                   ),
-              //                   const Text(
-              //                     '19th October 2021',
-              //                     style: TextStyle(
-              //                       color: Color(0xFFA34747),
-              //                       fontSize: 10.0,
-              //                     ),
-              //                   ),
-              //                 ],
-              //               ),
-              //               Container(
-              //                 alignment: const Alignment(1.0, -0.4),
-              //                 child: Icon(Icons.shield,
-              //                     size: 15, color: Colors.deepOrange),
-              //               )
-              //             ],
-              //           ),
-              //           style: OutlinedButton.styleFrom(
-              //             backgroundColor: Colors.white,
-              //             fixedSize: const Size(350, 80),
-              //           )),
-              //     )),
 
-              // Container(
-              //     alignment: Alignment(-0.78, -0.04),
-              //     width: 300.0,
-              //     height: 90.0,
-              //     decoration: BoxDecoration(
-              //       borderRadius: BorderRadius.circular(10.0),
-              //     ),
-              //     child: SizedBox(
-              //       child: OutlinedButton(
-              //           onPressed: () {
-              //             Navigator.of(context).push(_createRoutes());
-              //           },
-              //           child: Row(
-              //             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //             children: [
-              //               Container(
-              //                 width: 80.0,
-              //                 height: 50.0,
-              //                 decoration: BoxDecoration(
-              //                   image: DecorationImage(
-              //                     image: NetworkImage(
-              //                         'assets/images/ambulance.jpg'),
-              //                     fit: BoxFit.fill,
-              //                   ),
-              //                   borderRadius:
-              //                       BorderRadius.all(Radius.circular(10.0)),
-              //                 ),
-              //               ),
-              //               Column(
-              //                 crossAxisAlignment: CrossAxisAlignment.start,
-              //                 mainAxisAlignment: MainAxisAlignment.center,
-              //                 children: [
-              //                   const Text(
-              //                     'Berekuso Clinic',
-              //                     style: TextStyle(
-              //                       color: Color(0xFFA34747),
-              //                       fontWeight: FontWeight.w700,
-              //                     ),
-              //                   ),
-              //                   Row(
-              //                     mainAxisSize: MainAxisSize.min,
-              //                     children: const [
-              //                       Icon(Icons.star,
-              //                           size: 12, color: Colors.yellow),
-              //                       Icon(Icons.star,
-              //                           size: 12, color: Colors.yellow),
-              //                       Icon(Icons.star,
-              //                           size: 12, color: Colors.yellow),
-              //                       Icon(Icons.star,
-              //                           size: 12, color: Colors.yellow),
-              //                       Icon(Icons.star,
-              //                           size: 12, color: Colors.yellow)
-              //                     ],
-              //                   ),
-              //                   const Text(
-              //                     '19th October 2021',
-              //                     style: TextStyle(
-              //                       color: Color(0xFFA34747),
-              //                       fontSize: 10.0,
-              //                     ),
-              //                   ),
-              //                 ],
-              //               ),
-              //               Container(
-              //                 alignment: const Alignment(1.0, -0.4),
-              //                 child: Icon(Icons.shield,
-              //                     size: 15, color: Colors.green[100]),
-              //               )
-              //             ],
-              //           ),
-              //           style: OutlinedButton.styleFrom(
-              //             backgroundColor: Colors.white,
-              //             fixedSize: const Size(350, 80),
-              //           )),
-              //     )),
-              // Container(
-              //     alignment: Alignment(-0.78, -0.04),
-              //     width: 300.0,
-              //     height: 90.0,
-              //     decoration: BoxDecoration(
-              //       borderRadius: BorderRadius.circular(10.0),
-              //     ),
-              //     child: SizedBox(
-              //       child: OutlinedButton(
-              //           onPressed: () {
-              //             Navigator.of(context).push(_createRouter());
-              //           },
-              //           child: Row(
-              //             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //             children: [
-              //               Container(
-              //                 width: 80.0,
-              //                 height: 50.0,
-              //                 decoration: BoxDecoration(
-              //                   image: DecorationImage(
-              //                     image: NetworkImage(
-              //                         'assets/images/ambulance.jpg'),
-              //                     fit: BoxFit.fill,
-              //                   ),
-              //                   borderRadius:
-              //                       BorderRadius.all(Radius.circular(10.0)),
-              //                 ),
-              //               ),
-              //               Column(
-              //                 crossAxisAlignment: CrossAxisAlignment.start,
-              //                 mainAxisAlignment: MainAxisAlignment.center,
-              //                 children: [
-              //                   const Text(
-              //                     'Berekuso Clinic',
-              //                     style: TextStyle(
-              //                       color: Color(0xFFA34747),
-              //                       fontWeight: FontWeight.w700,
-              //                     ),
-              //                   ),
-              //                   Row(
-              //                     mainAxisSize: MainAxisSize.min,
-              //                     children: const [
-              //                       Icon(Icons.star,
-              //                           size: 12, color: Colors.yellow),
-              //                       Icon(Icons.star,
-              //                           size: 12, color: Colors.yellow),
-              //                       Icon(Icons.star,
-              //                           size: 12, color: Colors.yellow),
-              //                       Icon(Icons.star,
-              //                           size: 12, color: Colors.yellow),
-              //                       Icon(Icons.star,
-              //                           size: 12, color: Colors.yellow)
-              //                     ],
-              //                   ),
-              //                   const Text(
-              //                     '19th October 2021',
-              //                     style: TextStyle(
-              //                       color: Color(0xFFA34747),
-              //                       fontSize: 10.0,
-              //                     ),
-              //                   ),
-              //                 ],
-              //               ),
-              //               Container(
-              //                 alignment: const Alignment(1.0, -0.4),
-              //                 child: Icon(Icons.shield,
-              //                     size: 15, color: Colors.green),
-              //               )
-              //             ],
-              //           ),
-              //           style: OutlinedButton.styleFrom(
-              //             backgroundColor: Colors.white,
-              //             fixedSize: const Size(350, 80),
-              //           )),
-              //     )),
               Spacer(flex: 20),
               BottomNavigationBar(
                 type: BottomNavigationBarType.fixed,
@@ -550,6 +333,7 @@ class ConfirmPage extends StatelessWidget {
   // Declare a field that holds the Todo.
   final todo;
 
+
   final List<Widget> _children = [
     const MyHomePage(),
     const MyRequestPage(),
@@ -601,7 +385,7 @@ class ConfirmPage extends StatelessWidget {
               Spacer(flex: 2),
               Container(
                   alignment: Alignment(-0.78, -0.04),
-                  width: 300.0,
+                  width: 350.0,
                   height: 300.0,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
@@ -619,14 +403,7 @@ class ConfirmPage extends StatelessWidget {
                             color: const Color(0xFFA34747),
                           ),
                         ),
-                        Text(
-                          todo["Vehicle_Registration"].toString(),
-                          style: TextStyle(
-                            fontFamily: 'Helvetica',
-                            fontSize: 15.0,
-                            color: const Color(0xFFA34747),
-                          ),
-                        ),
+
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: const [
@@ -637,9 +414,10 @@ class ConfirmPage extends StatelessWidget {
                             Icon(Icons.star, size: 12, color: Colors.yellow)
                           ],
                         ),
-                        Padding(padding: const EdgeInsets.all(3.0)),
+                        Padding(padding: const EdgeInsets.all(20.0)),
+
                         Text(
-                          todo["Hopsital_location"].toString(),
+                          "Pick Up Time:"+todo["Pick_Up_Time"].toString(),
                           style: TextStyle(
                             fontFamily: 'Helvetica',
                             fontSize: 15.0,
@@ -647,15 +425,7 @@ class ConfirmPage extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          todo["Pick_Up_Time"].toString(),
-                          style: TextStyle(
-                            fontFamily: 'Helvetica',
-                            fontSize: 15.0,
-                            color: const Color(0xFFA34747),
-                          ),
-                        ),
-                        Text(
-                          todo["Request_DateTime"].toString(),
+                          "Request:"+todo["Request_DateTime"].toString(),
                           style: TextStyle(
                             fontFamily: 'Helvetica',
                             fontSize: 15.0,
@@ -688,7 +458,8 @@ class ConfirmPage extends StatelessWidget {
                           child: Center(
                               child: ElevatedButton(
                                 onPressed: () {
-                                  Navigator.of(context).push(_cancel());
+                                  _cancel(todo["Request_id"].toString());
+
                                 },
                                 child: const Text(
                                   'Cancel',
@@ -714,13 +485,11 @@ class ConfirmPage extends StatelessWidget {
       ),
     );
   }
-  Route _cancel() {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => const Page5(),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return child;
-      },
-    );
+  void _cancel(id) async {
+    DatabaseReference ref = FirebaseDatabase.instance.ref("requests/$id");
+    await ref.update({
+      "Status": "Cancel",
+    });
   }
 
 }
@@ -845,7 +614,7 @@ class ConfirmAPage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              "No notes",
+                              todo["Reason"].toString(),
                               style: TextStyle(
                                 fontFamily: 'Helvetica',
                                 fontSize: 15.0,
@@ -1217,4 +986,142 @@ class Phone extends StatelessWidget {
       home: SignIn(),
     );
   }
+}
+class CancelPage extends StatelessWidget {
+  // In the constructor, require a Todo.
+  CancelPage({Key? key, required this.todo}) : super(key: key);
+
+  // Declare a field that holds the Todo.
+  final todo;
+
+
+  final List<Widget> _children = [
+    const MyHomePage(),
+    const MyRequestPage(),
+    const MyAidPage(),
+    const MyProfilePage(),
+  ];
+
+  int _currentIndex = 1;
+
+
+  @override
+  Widget build(BuildContext context) {
+    // Use the Todo to create the UI.
+
+    _onTap() {
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (BuildContext context) =>
+          _children[_currentIndex])); // this has changed
+    }
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(todo["Hospital_name"].toString()),
+        backgroundColor: const Color(0xFFA34747),
+      ),
+      backgroundColor: const Color(0xFFEFDCDC),
+      body: Align(
+        alignment: Alignment(0.01, 0.09),
+        child: SizedBox(
+          width: 304.0,
+          height: 812.0,
+          child: Column(
+            children: <Widget>[
+              const Spacer(flex: 5),
+// Group: Group 32
+
+              Align(
+                alignment: Alignment(-0.88, 0.0),
+                child: Text(
+                  'Request Cancelled',
+                  style: TextStyle(
+                    fontFamily: 'Helvetica',
+                    fontSize: 25.0,
+                    color: const Color(0xFFA34747),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+
+              Spacer(flex: 2),
+              Container(
+                  alignment: Alignment(-0.78, -0.04),
+                  width: 350.0,
+                  height: 300.0,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                    color: Colors.white,
+                  ),
+                  child: SizedBox(
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Column(children: [
+                        Text(
+                          todo["Hospital_name"].toString(),
+                          style: TextStyle(
+                            fontFamily: 'Helvetica',
+                            fontSize: 20.0,
+                            color: const Color(0xFFA34747),
+                          ),
+                        ),
+
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(Icons.star, size: 12, color: Colors.yellow),
+                            Icon(Icons.star, size: 12, color: Colors.yellow),
+                            Icon(Icons.star, size: 12, color: Colors.yellow),
+                            Icon(Icons.star, size: 12, color: Colors.yellow),
+                            Icon(Icons.star, size: 12, color: Colors.yellow)
+                          ],
+                        ),
+                        Padding(padding: const EdgeInsets.all(20.0)),
+
+                        Text(
+                          "Pick Up Time:"+todo["Pick_Up_Time"].toString(),
+                          style: TextStyle(
+                            fontFamily: 'Helvetica',
+                            fontSize: 15.0,
+                            color: const Color(0xFFA34747),
+                          ),
+                        ),
+                        Text(
+                          "Request:"+todo["Request_DateTime"].toString(),
+                          style: TextStyle(
+                            fontFamily: 'Helvetica',
+                            fontSize: 15.0,
+                            color: const Color(0xFFA34747),
+                          ),
+                        ),
+                        Text(
+                          "No notes",
+                          style: TextStyle(
+                            fontFamily: 'Helvetica',
+                            fontSize: 15.0,
+                            color: const Color(0xFFA34747),
+                          ),
+                        ),
+                        const Spacer(flex: 3),
+
+
+
+                      ]),
+                    ),
+                  )),
+
+              Spacer(flex: 20),
+
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  void _cancel(id) async {
+    DatabaseReference ref = FirebaseDatabase.instance.ref("requests/$id");
+    await ref.update({
+      "Status": "Cancel",
+    });
+  }
+
 }

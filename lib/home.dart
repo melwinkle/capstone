@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:lamber/ambulances.dart';
 import 'package:flutter/material.dart';
 import 'package:lamber/sign_route.dart';
@@ -6,7 +7,8 @@ import 'package:lamber/first_aid.dart';
 import 'package:lamber/profile.dart';
 import 'package:lamber/loader.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:intl/intl.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -93,7 +95,8 @@ class Homepage extends State<MyHomePage> {
                   child: Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.of(context).push(_createRouter());
+                        sosrequest();
+
                       },
                       child: const Text(
                         'SOS',
@@ -118,7 +121,12 @@ class Homepage extends State<MyHomePage> {
                   child: Expanded(
                     child: OutlinedButton(
                         onPressed: () {
-                          Navigator.of(context).push(_createRoute());
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MapTest(),
+                            ),
+                          );
                         },
                         child: Row(
                           children: [
@@ -233,6 +241,62 @@ class Homepage extends State<MyHomePage> {
       }
     });
   }
+
+
+  Future<void> sosrequest() async {
+
+    final userid=FirebaseAuth.instance.currentUser?.uid;
+
+    DatabaseReference ref = FirebaseDatabase.instance.ref("users/clients");
+    Query query = ref.orderByKey().equalTo(userid);
+    DataSnapshot event = await query.get();
+    var username;
+    var phone;
+
+
+    Map<dynamic, dynamic> values = event.value as Map<dynamic, dynamic>;
+
+    values.forEach((key, value) {
+      username=value['FullName'].toString();
+      phone=value['Phone'].toString();
+    });
+    final time=DateFormat("EEEEE MMM dd yyyy HH:mm:ss a").format(DateTime.now());
+    final times=DateFormat("MMddyyyyHHmm").format(DateTime.now());
+    final pick=DateFormat("HH:mm:ss a").format(DateTime.now());
+    final requestid=username.toString().substring(0,3).trim()+"Gen"+times.toString();
+
+    DatabaseReference request = FirebaseDatabase.instance.ref("requests/$requestid");
+
+
+    try {
+      await request.set({
+        "Customer_Name": username,
+        "Customer_Number": phone,
+        "Customer_uid": userid,
+        "Destination":"Legon Botanical Gardens",
+        "Pick_Up_Time":pick,
+        "Request_DateTime":time,
+        "Request_Type":"General",
+        "Status":"Pending",
+        "Request_id":requestid,
+
+
+      });
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>  LoaderPage(todo: requestid),
+        ),
+      );
+    } on Exception catch (e, s) {
+      print(s);
+    }
+
+    print (requestid+","+userid!+","+username+","+phone+","+time);
+
+
+  }
 }
 
 Route _createRoute() {
@@ -262,7 +326,9 @@ Route _createRouter() {
   );
 }
 
-class Page2 extends StatelessWidget {
+
+
+class Page2 extends StatelessWidget{
   const Page2({Key? key}) : super(key: key);
 
   @override
@@ -284,13 +350,221 @@ class Page3 extends StatelessWidget {
   }
 }
 
+
 class Page4 extends StatelessWidget {
   const Page4({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: MyLoaderPage(),
+      home: MyRequestPage(),
+    );
+  }
+}
+
+
+class LoaderPage extends StatefulWidget {
+  final todo;
+  const LoaderPage({Key? key,required this.todo}) : super(key: key);
+
+  @override
+  Loader createState() {
+    return Loader();
+  }
+}
+
+class Loader extends State<LoaderPage> with TickerProviderStateMixin {
+
+
+  // Declare a field that holds the Todo.
+
+
+  late AnimationController controller;
+
+
+
+  @override
+  void initState() {
+    controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..addListener(() {
+      setState(() {});
+    });
+    controller.repeat(reverse: true);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+  @override
+  Widget build(BuildContext context) {
+
+    // TODO: implement build
+    return Scaffold(
+      backgroundColor: const Color(0xFFA34747),
+      body: Align(
+        alignment: Alignment(0.01, 0.09),
+        child: SizedBox(
+          width: 304.0,
+          height: 812.0,
+          child: Column(
+            children: <Widget>[
+              const Spacer(flex: 30),
+// Group: Group 32
+
+              const Align(
+                alignment: Alignment(-0.88, 0.0),
+                child: Text(
+                  'Please wait as we connect you to a hospital',
+                  style: TextStyle(
+                    fontFamily: 'Helvetica',
+                    fontSize: 25.0,
+                    color: Color(0xFFFFFFFF),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              Spacer(flex: 15),
+              Container(
+                  width: 600.0,
+                  height: 250.0,
+                  margin: EdgeInsets.all(25),
+                  child: Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        approv(widget.todo.toString());
+                      },
+                      child: const Text(
+                        'SOS',
+                        style: TextStyle(
+                          fontFamily: 'Helvetica',
+                          fontSize: 30.0,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF810C0C),
+                        ),
+                      ),
+                      style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(
+                              const Color(0xFFFFFFFF)),
+                          shape: MaterialStateProperty.all(const CircleBorder(
+                              side: BorderSide(
+                                  width: 12, color: Color(0xFFEFDFDF))))),
+                    ),
+                  )),
+              Container(
+                child: Center(
+                  child: LinearProgressIndicator(
+                    value: controller.value,
+                    semanticsLabel: 'SOS request confirmation',
+                    minHeight: 10.0,
+                    color: Color(0xFF064457),
+                  ),
+                ),
+              ),
+              Container(
+                  width: 250.0,
+                  height: 50.0,
+                  margin: EdgeInsets.all(25),
+                  child: Expanded(
+                    child: OutlinedButton(
+                        onPressed: () {
+                          cancel(widget.todo.toString());
+                        },
+                        child: const Text(
+                          'CANCEL REQUEST',
+                          style: TextStyle(
+                            color: Color(0xFFA34747),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          side: const BorderSide(
+                            width: 2.0,
+                            color: Color(0xFFA34747),
+                            style: BorderStyle.solid,
+                          ),
+                        )),
+                  )),
+
+              Spacer(flex: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  Future<void> approv(id) async {
+    DatabaseReference ref = FirebaseDatabase.instance.ref("requests");
+    Query query = ref.orderByKey().equalTo(id);
+    DataSnapshot event = await query.get();
+
+
+
+    Map<dynamic, dynamic> values = event.value as Map<dynamic, dynamic>;
+
+    values.forEach((key, value) {
+      if(value['Status']=="Accepted"){
+
+        Navigator.of(context).push(_createRouter());
+
+      }
+    });
+
+  }
+
+
+  Future<void> cancel(id) async {
+    DatabaseReference ref = FirebaseDatabase.instance.ref("requests/$id");
+    try {
+      await ref.update({
+        "Status": "Cancel",
+        "Hospital_name":"Cancelled",
+        "Hospital_location":"Cancelled"
+      });
+      Navigator.of(context).push(_createRouter());
+    } on Exception catch (e, s) {
+      print(s);
+    }
+
+
+  }
+}
+
+
+class MapTest extends StatelessWidget{
+  late GoogleMapController mapController;
+
+  final LatLng _center = const LatLng(45.521563, -122.677433);
+
+  MapTest({Key? key}) : super(key: key);
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Maps Sample App'),
+          backgroundColor: Colors.green[700],
+        ),
+        body: GoogleMap(
+          onMapCreated: _onMapCreated,
+          initialCameraPosition: CameraPosition(
+            target: _center,
+            zoom: 11.0,
+          ),
+        ),
+      ),
     );
   }
 }
