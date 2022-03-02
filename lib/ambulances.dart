@@ -9,9 +9,9 @@ import 'package:lamber/request.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import 'package:record/record.dart';
+
 import 'package:path_provider/path_provider.dart';
-import 'package:audioplayers/audioplayers.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();

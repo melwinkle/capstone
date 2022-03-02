@@ -1,4 +1,5 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 import 'package:lamber/ambulances.dart';
 import 'package:flutter/material.dart';
 import 'package:lamber/sign_route.dart';
@@ -9,8 +10,15 @@ import 'package:lamber/loader.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-void main() => runApp(MyApp());
 
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+void main() {
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    AndroidGoogleMapsFlutter.useAndroidViewSurface = true;
+  }
+  runApp(MyApp());
+}
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -36,7 +44,7 @@ class Homepage extends State<MyHomePage> {
   _onTap() {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (BuildContext context) =>
-            _children[_currentIndex])); // this has changed
+        _children[_currentIndex])); // this has changed
   }
 
   final List<Widget> _children = [
@@ -46,10 +54,74 @@ class Homepage extends State<MyHomePage> {
     const MyProfilePage(),
   ];
 
+  String location = 'Null, Press Button';
+  String Address = '';
+  String FullAddress='';
+  String Street='';
+  String locat='';
 
+  Future<Position> _getGeoLocationPosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      await Geolocator.openLocationSettings();
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+  }
+
+
+  Future<void> GetAddressFromLatLong(Position position) async {
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude, position.longitude);
+    print(placemarks);
+    Placemark place = placemarks[0];
+    Address = '${place.street},${place.name},${place.subLocality}\n${place.thoroughfare},${place.country}';
+    FullAddress = '${place.street}, ${place.subLocality}, ${place.subLocality}, ${place
+        .thoroughfare}, ${place.country}';
+    Street='${place.street}';
+
+
+    print("Add"+Address);
+  }
+
+  Future<void> backloc() async {
+    Position position = await _getGeoLocationPosition();
+    location =
+    'Lat: ${position.latitude} , Long: ${position
+        .longitude}';
+    locat='${position.latitude},${position
+        .longitude}';
+    GetAddressFromLatLong(position);
+  }
 
   @override
   Widget build(BuildContext context) {
+    backloc();
     return Scaffold(
       backgroundColor: const Color(0xFFEFDCDC),
       body: Align(
@@ -95,8 +167,7 @@ class Homepage extends State<MyHomePage> {
                   child: Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        sosrequest();
-
+                        sosrequest(FullAddress);
                       },
                       child: const Text(
                         'SOS',
@@ -115,44 +186,56 @@ class Homepage extends State<MyHomePage> {
                     ),
                   )),
               Container(
-                  width: 250.0,
+                  width: 300.0,
                   height: 50.0,
-                  margin: EdgeInsets.all(25),
+                  // margin: EdgeInsets.all(25),
                   child: Expanded(
                     child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MapTest(),
-                            ),
-                          );
-                        },
+                        onPressed: ()  {
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //     builder: (context) => MapTest(),
+                          //   ),
+                          // );
+                          // Position position = await _getGeoLocationPosition();
+                          // location =
+                          // 'Lat: ${position.latitude} , Long: ${position
+                          //     .longitude}';
+                          // GetAddressFromLatLong(position);
+                        }
+
+
+                        ,
                         child: Row(
+
                           children: [
                             Column(
                               children: const [
                                 Icon(Icons.location_on,
-                                    size: 30, color: Color(0xFFA34747))
+                                    size: 24, color: Color(0xFFA34747))
                               ],
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
+                              children: [
+                                const Text(
                                   'Current Address',
                                   style: TextStyle(
                                     color: Color(0xFFA34747),
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
+
                                 Text(
-                                  '1 University Avenue, Berekuso',
-                                  style: TextStyle(
-                                    color: Color(0xFFA34747),
-                                    fontSize: 12.0
+                                  '$Address',
+                                  style: const TextStyle(
+                                      color: Color(0xFFA34747),
+                                      fontSize: 10.0,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                )
+                                ),
+
                               ],
                             ),
                           ],
@@ -186,7 +269,7 @@ class Homepage extends State<MyHomePage> {
                       ),
                       style: ButtonStyle(
                         backgroundColor:
-                            MaterialStateProperty.all(Color(0xFFA34747)),
+                        MaterialStateProperty.all(Color(0xFFA34747)),
                       ),
                     ),
                   )),
@@ -230,7 +313,7 @@ class Homepage extends State<MyHomePage> {
     );
   }
 
-  void ver(){
+  void ver() {
     FirebaseAuth.instance
         .authStateChanges()
         .listen((User? user) {
@@ -243,9 +326,8 @@ class Homepage extends State<MyHomePage> {
   }
 
 
-  Future<void> sosrequest() async {
-
-    final userid=FirebaseAuth.instance.currentUser?.uid;
+  Future<void> sosrequest(String street) async {
+    final userid = FirebaseAuth.instance.currentUser?.uid;
 
     DatabaseReference ref = FirebaseDatabase.instance.ref("users/clients");
     Query query = ref.orderByKey().equalTo(userid);
@@ -257,15 +339,18 @@ class Homepage extends State<MyHomePage> {
     Map<dynamic, dynamic> values = event.value as Map<dynamic, dynamic>;
 
     values.forEach((key, value) {
-      username=value['FullName'].toString();
-      phone=value['Phone'].toString();
+      username = value['FullName'].toString();
+      phone = value['Phone'].toString();
     });
-    final time=DateFormat("EEEEE MMM dd yyyy HH:mm:ss a").format(DateTime.now());
-    final times=DateFormat("MMddyyyyHHmm").format(DateTime.now());
-    final pick=DateFormat("HH:mm:ss a").format(DateTime.now());
-    final requestid=username.toString().substring(0,3).trim()+"Gen"+times.toString();
+    final time = DateFormat("EEEEE MMM dd yyyy HH:mm:ss a").format(
+        DateTime.now());
+    final times = DateFormat("MMddyyyyHHmm").format(DateTime.now());
+    final pick = DateFormat("HH:mm:ss a").format(DateTime.now());
+    final requestid = username.toString().substring(0, 3).trim() + "Gen" +
+        times.toString();
 
-    DatabaseReference request = FirebaseDatabase.instance.ref("requests/$requestid");
+    DatabaseReference request = FirebaseDatabase.instance.ref(
+        "requests/$requestid");
 
 
     try {
@@ -273,12 +358,12 @@ class Homepage extends State<MyHomePage> {
         "Customer_Name": username,
         "Customer_Number": phone,
         "Customer_uid": userid,
-        "Destination":"Legon Botanical Gardens",
-        "Pick_Up_Time":pick,
-        "Request_DateTime":time,
-        "Request_Type":"General",
-        "Status":"Pending",
-        "Request_id":requestid,
+        "Destination": street,
+        "Pick_Up_Time": pick,
+        "Request_DateTime": time,
+        "Request_Type": "General",
+        "Status": "Pending",
+        "Request_id": requestid,
 
 
       });
@@ -286,18 +371,21 @@ class Homepage extends State<MyHomePage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>  LoaderPage(todo: requestid),
+          builder: (context) => LoaderPage(todo: requestid),
         ),
       );
     } on Exception catch (e, s) {
       print(s);
     }
 
-    print (requestid+","+userid!+","+username+","+phone+","+time);
-
-
+    print(
+        requestid + "," + userid! + "," + username + "," + phone + "," + time);
   }
 }
+
+
+
+
 
 Route _createRoute() {
   return PageRouteBuilder(
@@ -541,7 +629,7 @@ class Loader extends State<LoaderPage> with TickerProviderStateMixin {
 class MapTest extends StatelessWidget{
   late GoogleMapController mapController;
 
-  final LatLng _center = const LatLng(45.521563, -122.677433);
+  final LatLng _center = const LatLng(5.760386449204086, -0.2198346862775333);
 
   MapTest({Key? key}) : super(key: key);
 
@@ -551,8 +639,7 @@ class MapTest extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
+    return  Scaffold(
         appBar: AppBar(
           title: const Text('Maps Sample App'),
           backgroundColor: Colors.green[700],
@@ -564,7 +651,7 @@ class MapTest extends StatelessWidget{
             zoom: 11.0,
           ),
         ),
-      ),
-    );
+      );
   }
+
 }

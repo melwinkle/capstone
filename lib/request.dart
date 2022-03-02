@@ -1,3 +1,8 @@
+import 'dart:ffi';
+
+import 'package:flutter/foundation.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:lamber/request_confirm.dart';
 import 'package:lamber/request_accepted.dart';
 import 'package:lamber/request_final.dart';
@@ -9,12 +14,14 @@ import 'package:lamber/profile.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:google_maps_widget/google_maps_widget.dart';
 import 'map.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    AndroidGoogleMapsFlutter.useAndroidViewSurface = true;
+  }
   runApp(MyApp());
 }
 
@@ -45,8 +52,71 @@ class Requestpage extends State<MyRequestPage> {
   String hospital='';
   List<dynamic> hos=[];
   List<dynamic> lst = [];
+  String Address = '';
+  String FullAddress='';
+  String Street='';
+  String location='';
+  List<dynamic> locat=[];
+  Future<Position> _getGeoLocationPosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      await Geolocator.openLocationSettings();
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+  }
 
 
+  Future<void> GetAddressFromLatLong(Position position) async {
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude, position.longitude);
+    print(placemarks);
+    Placemark place = placemarks[0];
+    Address = '${place.street},${place.name},${place.subLocality}\n${place.thoroughfare},${place.country}';
+    FullAddress = '${place.street}, ${place.subLocality}, ${place.subLocality}, ${place
+        .thoroughfare}, ${place.country}';
+    Street='${place.street}';
+
+
+    print("Add"+Address);
+  }
+
+  Future<void> backloc() async {
+    Position position = await _getGeoLocationPosition();
+    location =
+    'Lat: ${position.latitude} , Long: ${position
+        .longitude}';
+
+    locat.add('Lat: ${position.latitude}');
+    locat.add('Long: ${position.longitude}');
+    GetAddressFromLatLong(position);
+
+  }
   showData () async{
     DatabaseReference ref = FirebaseDatabase.instance.ref("requests");
 
@@ -158,7 +228,7 @@ class Requestpage extends State<MyRequestPage> {
                                     Icon(Icons.shield,
                                         size: 15, color: Colors.lightGreen),
                                   );
-                                  ems=ConfirmAPage(todo: lst[index]);
+                                  ems=ConfirmAPage(todo: lst[index],locat:locat);
                                 };
                                 return Container(
 
@@ -180,6 +250,7 @@ class Requestpage extends State<MyRequestPage> {
                                     child: SizedBox(
                                       child: OutlinedButton(
                                           onPressed: () {
+                                            backloc();
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
@@ -230,7 +301,8 @@ class Requestpage extends State<MyRequestPage> {
                                                   ),
                                                 ],
                                               ),
-                                              stat
+                                              stat,
+
                                             ],
                                           ),
                                           style: OutlinedButton.styleFrom(
@@ -494,11 +566,16 @@ class ConfirmPage extends StatelessWidget {
 
 }
 class ConfirmAPage extends StatelessWidget {
+
+
   // In the constructor, require a Todo.
-  ConfirmAPage({Key? key, required this.todo}) : super(key: key);
+  ConfirmAPage({Key? key, required this.todo, required this.locat }) : super(key: key);
 
   // Declare a field that holds the Todo.
   final todo;
+  final locat;
+
+
 
   final List<Widget> _children = [
     const MyHomePage(),
@@ -508,6 +585,8 @@ class ConfirmAPage extends StatelessWidget {
   ];
 
   int _currentIndex = 1;
+
+
 
 
   @override
@@ -521,7 +600,7 @@ class ConfirmAPage extends StatelessWidget {
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text(todo["Hospital_name"].toString()),
+        title: Text(todo["Hospital_name"].toString()+locat["Lat"].toString()),
         backgroundColor: const Color(0xFFA34747),
       ),
       backgroundColor: const Color(0xFFEFDCDC),
@@ -635,7 +714,12 @@ class ConfirmAPage extends StatelessWidget {
                               margin: EdgeInsets.all(20),
                               child: ElevatedButton(
                                 onPressed: () {
-                                  Navigator.of(context).push(_track());
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>  MapTrackPage(todo: locat),
+                                    ),
+                                  );
                                 },
                                 child: const Text(
                                   'TRACK AMBULANCE',
@@ -721,14 +805,14 @@ class ConfirmAPage extends StatelessWidget {
   }
 
 
-  Route _track() {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => const MapPage(),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return child;
-      },
-    );
-  }
+  // Route _track() {
+  //   return PageRouteBuilder(
+  //     pageBuilder: (context, animation, secondaryAnimation) => const MapTrackPage(),
+  //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
+  //       return child;
+  //     },
+  //   );
+  // }
 
   Route _call() {
     return PageRouteBuilder(
@@ -966,13 +1050,34 @@ class Page5 extends StatelessWidget {
     );
   }
 }
-class MapPage extends StatelessWidget {
-  const MapPage({Key? key}) : super(key: key);
+class MapTrackPage extends StatelessWidget {
+  MapTrackPage({Key? key, required this.todo}) : super(key: key);
+final todo;
+
+  late GoogleMapController mapController;
+
+  // final LatLng _center = LatLng(todo,lons);
+
+
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: MyMapPage(),
+    return  Scaffold(
+      appBar: AppBar(
+        title: const Text('Your Location'),
+        backgroundColor: Colors.green[700],
+      ),
+      body: GoogleMap(
+        onMapCreated: _onMapCreated,
+        initialCameraPosition: CameraPosition(
+          target: LatLng(todo["Lat"],todo["Long"]),
+          zoom: 11.0,
+        ),
+      ),
     );
   }
 }
