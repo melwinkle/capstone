@@ -51,6 +51,10 @@ class Upgradepage extends State<MyUpgradePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Account Upgrade"),
+        backgroundColor: const Color(0xFFA34747),
+      ),
       backgroundColor: const Color(0xFFEFDCDC),
       body: Align(
         alignment: Alignment(0.01, 0.09),
@@ -74,17 +78,7 @@ class Upgradepage extends State<MyUpgradePage> {
                 child: Padding(
                   padding: const EdgeInsets.all(5.0),
                   child: Column(children: [
-                    Container(
-                      alignment: Alignment.topLeft,
-                      child: const Text(
-                        'Account Upgrade',
-                        style: TextStyle(
-                          color: Color(0xFFA43247),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 20.0,
-                        ),
-                      ),
-                    ),
+
                     const Text('Upgrade your account for more access on Lamber',
                         style: TextStyle(
                           color: Color(0xFFA43247),

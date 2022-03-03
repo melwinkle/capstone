@@ -55,12 +55,12 @@ class Profilepage extends State<MyProfilePage> {
       body: Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
-          width: 304.0,
+
           height: 812.0,
           child: Column(
             children: <Widget>[
-              const Spacer(flex: 10),
-// Group: Group 32
+
+              Padding(padding: const EdgeInsets.all(30.0)),
 
               const Align(
                 alignment: Alignment(-0.88, 0.0),
@@ -347,8 +347,9 @@ class Page2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: MyAccountPage(),
+    return const Scaffold(
+
+      body: MyAccountPage(),
     );
   }
 }
@@ -358,8 +359,8 @@ class Page3 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: MyUpgradePage(),
+    return const Scaffold(
+      body: MyUpgradePage(),
     );
   }
 }
@@ -369,8 +370,8 @@ class Page4 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: MyPaymentPage(),
+    return const Scaffold(
+      body: MyPaymentPage(),
     );
   }
 }

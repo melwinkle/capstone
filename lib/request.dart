@@ -151,7 +151,7 @@ class Requestpage extends State<MyRequestPage> {
       body: Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
-          width: 304.0,
+
           height: 812.0,
           child: Column(
             children: <Widget>[
@@ -436,7 +436,7 @@ class ConfirmPage extends StatelessWidget {
       body: Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
-          width: 304.0,
+
           height: 812.0,
           child: Column(
             children: <Widget>[
@@ -601,10 +601,10 @@ final locat;
 
   @override
   Widget build(BuildContext context) {
-    final long=locat[0].toString().split(":");
-    final longf=double.parse(long[0]);
-    final lang=locat[1].toString().split(":");
-    final langf=double.parse(lang[0]);
+    final long=locat[0];
+    final longf=long;
+    final lang=locat[1];
+    final langf=lang;
 
 
     final hospl=todo["Hospital_location"].toString().split(",");
@@ -628,7 +628,7 @@ final locat;
       body: Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
-          width: 304.0,
+
           height: 812.0,
           child: Column(
             children: <Widget>[
@@ -878,7 +878,7 @@ class ConfirmFPage extends StatelessWidget {
       body: Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
-          width: 304.0,
+
           height: 812.0,
           child: Column(
             children: <Widget>[
@@ -888,7 +888,7 @@ class ConfirmFPage extends StatelessWidget {
               Align(
                 alignment: Alignment(-0.88, 0.0),
                 child: Text(
-                  'Request #124',
+                  todo["Request_id"].toString(),
                   style: TextStyle(
                     fontFamily: 'Helvetica',
                     fontSize: 25.0,
@@ -968,7 +968,7 @@ class ConfirmFPage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              "No notes",
+                              todo["Reason"].toString(),
                               style: TextStyle(
                                 fontFamily: 'Helvetica',
                                 fontSize: 15.0,
@@ -976,7 +976,7 @@ class ConfirmFPage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              "Total Trip time of 20 minutes",
+                              "Total Trip time:20 minutes",
                               style: TextStyle(
                                 fontFamily: 'Helvetica',
                                 fontSize: 15.0,
@@ -1093,8 +1093,8 @@ final tod;
 
   @override
   Widget build(BuildContext context) {
-    final longf=double.parse(long);
-    final langf=double.parse(lang);
+    final longf=long;
+    final langf=lang;
     final LatLng _center = LatLng(longf,langf);
 
 
@@ -1695,7 +1695,7 @@ class CancelPage extends StatelessWidget {
       body: Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
-          width: 304.0,
+
           height: 812.0,
           child: Column(
             children: <Widget>[

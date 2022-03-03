@@ -127,11 +127,10 @@ return address;
       body: Align(
         alignment: const Alignment(0.01, 0.09),
         child: SizedBox(
-          width: 304.0,
           height: 812.0,
           child: Column(
             children: <Widget>[
-              const Spacer(flex: 30),
+              const Spacer(flex: 50),
 // Group: Group 32
 
               const Align(
@@ -159,7 +158,7 @@ return address;
                   ),
                 ),
               ),
-              const Spacer(flex: 15),
+              const Spacer(flex: 5),
               Container(
                   width: 600.0,
                   height: 250.0,
@@ -167,7 +166,7 @@ return address;
                   child: Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        sosrequest(FullAddress);
+                        sosrequest(Address,locat);
                       },
                       child: const Text(
                         'SOS',
@@ -199,9 +198,9 @@ return address;
 
 
                         return Container(
-                            width: 300.0,
+                            width: 200.0,
                             height: 50.0,
-                            // margin: EdgeInsets.all(25),
+                            margin: EdgeInsets.all(25),
                             child: Expanded(
                               child: OutlinedButton(
                                   onPressed: ()  {
@@ -276,7 +275,12 @@ return address;
                   child: Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.of(context).push(_createRoutes());
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>  MyAmbulancePage(),
+                          ),
+                        );
                       },
                       child: const Text(
                         'AVAILABLE AMBULANCES',
@@ -293,14 +297,23 @@ return address;
                     ),
                   )),
               Spacer(flex: 20),
-              BottomNavigationBar(
+
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius:BorderRadius.only(
+                  topRight: Radius.circular(30), topLeft: Radius.circular(30)),
+            ),
+              child:BottomNavigationBar(
                 type: BottomNavigationBarType.fixed,
                 currentIndex: _currentIndex,
-                backgroundColor: Color(0xFFFFFFFF),
+                // backgroundColor: Color(0xFFFFFFFF),
                 selectedItemColor: Color(0xFFA34747),
                 unselectedItemColor: const Color(0xFFA34747).withOpacity(.60),
                 selectedFontSize: 14,
                 unselectedFontSize: 14,
+
+
                 onTap: (value) {
                   // Respond to item press.
                   setState(() => _currentIndex = value);
@@ -325,6 +338,8 @@ return address;
                   ),
                 ],
               ),
+            ),
+
             ],
           ),
         ),
@@ -345,7 +360,7 @@ return address;
   }
 
 
-  Future<void> sosrequest(String street) async {
+  Future<void> sosrequest(String street, String locat) async {
     final userid = FirebaseAuth.instance.currentUser?.uid;
 
     DatabaseReference ref = FirebaseDatabase.instance.ref("users/clients");
@@ -377,6 +392,7 @@ return address;
         "Customer_Name": username,
         "Customer_Number": phone,
         "Customer_uid": userid,
+        "Customer_location":locat,
         "Destination": street,
         "Pick_Up_Time": pick,
         "Request_DateTime": time,

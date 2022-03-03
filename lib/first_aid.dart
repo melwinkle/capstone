@@ -59,7 +59,7 @@ class Aidpage extends State<MyAidPage> {
       body: Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
-          width: 310.0,
+
           height: 812.0,
           child: Column(
             children: <Widget>[

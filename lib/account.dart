@@ -77,6 +77,10 @@ class Accountpage extends State<MyAccountPage> {
     
     return Scaffold(
       backgroundColor: const Color(0xFFEFDCDC),
+      appBar: AppBar(
+        title: Text("My Details"),
+        backgroundColor: const Color(0xFFA34747),
+      ),
       body: Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
@@ -86,15 +90,7 @@ class Accountpage extends State<MyAccountPage> {
             children: <Widget>[
 // Group: Group 32
 
-              const Spacer(flex: 5),
-              Text(
-                "My Details",
-                style: TextStyle(
-                  color: Color(0xFFA43247),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 20.0,
-                ),
-              ),
+
               Container(
                   child:FutureBuilder(
                       future: fb.equalTo(userid!).get(),
@@ -260,38 +256,7 @@ class Accountpage extends State<MyAccountPage> {
 
 
               Spacer(flex: 20),
-              BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                currentIndex: _currentIndex,
-                backgroundColor: Color(0xFFFFFFFF),
-                selectedItemColor: Color(0xFFA34747),
-                unselectedItemColor: const Color(0xFFA34747).withOpacity(.60),
-                selectedFontSize: 14,
-                unselectedFontSize: 14,
-                onTap: (value) {
-                  // Respond to item press.
-                  setState(() => _currentIndex = value);
-                  _onTap();
-                },
-                items: const [
-                  BottomNavigationBarItem(
-                    label: 'Home',
-                    icon: Icon(Icons.home_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Requests',
-                    icon: Icon(Icons.receipt_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'First Aid',
-                    icon: Icon(Icons.health_and_safety_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Account',
-                    icon: Icon(Icons.person),
-                  ),
-                ],
-              ),
+
             ],
           ),
         ),

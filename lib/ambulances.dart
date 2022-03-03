@@ -43,7 +43,7 @@ class MyAmbulancePage extends StatefulWidget {
 }
 
 class Ambulancepage extends State<MyAmbulancePage> {
-  int _currentIndex = 0;
+
   FirebaseAuth auth = FirebaseAuth.instance;
   final fb = FirebaseDatabase.instance.ref("hospital").orderByKey();
   String hospital='';
@@ -51,18 +51,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
   List<dynamic> lst = [];
   final usersQuery = FirebaseDatabase.instance.ref("hospital");
 
-  _onTap() {
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (BuildContext context) =>
-            _children[_currentIndex])); // this has changed
-  }
 
-  final List<Widget> _children = [
-    const MyHomePage(),
-    const MyRequestPage(),
-    const MyAidPage(),
-    const MyProfilePage(),
-  ];
   double calculateDistance(lat1, lon1, lat2, lon2){
     var p = 0.017453292519943295;
     var a = 0.5 - cos((lat2 - lat1) * p)/2 +
@@ -121,7 +110,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
     print(placemarks);
     Placemark place = placemarks[0];
     Address = '${place.street},${place.name},${place.subLocality}\n${place.thoroughfare},${place.country}';
-    FullAddress = '${place.street}, ${place.subLocality}, ${place.subLocality}, ${place
+    FullAddress = '${place.street}, ${place.name}, ${place.subLocality}, ${place
         .thoroughfare}, ${place.country}';
     Street='${place.street}';
 
@@ -136,7 +125,8 @@ class Ambulancepage extends State<MyAmbulancePage> {
     'Lat: ${position.latitude} , Long: ${position
         .longitude}';
 
-
+locat='${position.latitude} , ${position
+        .longitude}';
     locati.add(position.latitude);
     locati.add(position.longitude);
     GetAddressFromLatLong(position);
@@ -146,6 +136,10 @@ class Ambulancepage extends State<MyAmbulancePage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Available Ambulances'),
+        backgroundColor: Color(0xFFA34747),
+      ),
       backgroundColor: const Color(0xFFEFDCDC),
       body: Align(
         alignment: Alignment(0.01, 0.09),
@@ -155,20 +149,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
           child: Column(
             children: <Widget>[
               Padding(padding: const EdgeInsets.all(30.0)),
-// Group: Group 32
 
-              // const Align(
-              //   alignment: Alignment(-0.88, 0.0),
-              //   child: Text(
-              //     'Available Ambulances',
-              //     style: TextStyle(
-              //       fontFamily: 'Helvetica',
-              //       fontSize: 25.0,
-              //       color: Color(0xFFA34747),
-              //       fontWeight: FontWeight.w700,
-              //     ),
-              //   ),
-              // ),
 
 
               Container(
@@ -177,105 +158,304 @@ class Ambulancepage extends State<MyAmbulancePage> {
                   future: fb.get(),
 
                   builder: (context, AsyncSnapshot snapshot) {
+                    backloc();
+
                     if (snapshot.hasData) {
                       lst.clear();
                       Map<dynamic, dynamic> values = snapshot.data.value;
                       values.forEach((key, values) {
-                        lst.add(values);
+
+                        final loct=locat.split(",");
+                        final langf=double.parse(loct[0]);
+
+                        final longf=double.parse(loct[1]);
+
+
+                        final hospl=values["Hospital_location"].toString().split(",");
+                        final hosplang=double.parse(hospl[0]);
+                        final hosplong=double.parse(hospl[1]);
+
+                        double dis=calculateDistance(langf, longf, hosplang, hosplong);
+                        if(dis<=2.0){
+                          lst.add(values);
+                        }
+
+
+
+
                       });
+
                       return ListView.builder(
                           shrinkWrap: true,
                           itemCount: lst.length,
                           itemBuilder: (BuildContext context, int index) {
 
-                            backloc();
 
-                            final langf=locati[0];
 
-                            final longf=locati[1];
+                            final loct=locat.split(",");
+                            final langf=double.parse(loct[0]);
 
-                            final hospl=lst[index]["Hospital_location"].toString().split(",");
+                            final longf=double.parse(loct[1]);
+
+
+                            final hospl=lst[index]["Hospital_location"].split(",");
                             final hosplang=double.parse(hospl[0]);
                             final hosplong=double.parse(hospl[1]);
+
                             double dis=calculateDistance(langf, longf, hosplang, hosplong);
+                            var amp;
+                          if(lst[index]["Vehicle"]==1){
+                            amp=AnimatedOpacity(
+                              // If the widget is visible, animate to 0.0 (invisible).
+                              // If the widget is hidden, animate to 1.0 (fully visible).
+                              opacity: 0.6,
+                              duration: const Duration(milliseconds: 500),
+                              // The green box must be a child of the AnimatedOpacity widget.
+                              child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    SizedBox(
+                                      child: OutlinedButton(
+                                          onPressed: () {
+                                            const snackBar = SnackBar(
+                                              content: Text('Unavailable'),
+                                            );
+                                            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                            // Navigator.push(
+                                            //   context,
+                                            //   MaterialPageRoute(
+                                            //     builder: (context) =>  BookPage(todo: lst[index],add:Address,loca:locati),
+                                            //   ),
+                                            // );
+
+
+                                          },
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                            children: [
+                                              SizedBox(
+                                                width: 50.0,
+                                                height: 50.0,
+                                                child: Image.asset('assets/images/ambulance.jpg'),
+                                              ),
+                                              Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    lst[index]["Hospital_name"],
+                                                    style: const TextStyle(
+                                                      color: Color(0xFFA34747),
+                                                      fontWeight: FontWeight.w700,
+                                                    ),
+                                                  ),
+                                                  Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: const [
+                                                      Icon(Icons.star,
+                                                          size: 12, color: Colors.yellow),
+                                                      Icon(Icons.star,
+                                                          size: 12, color: Colors.yellow),
+                                                      Icon(Icons.star,
+                                                          size: 12, color: Colors.yellow),
+                                                      Icon(Icons.star,
+                                                          size: 12, color: Colors.yellow),
+                                                      Icon(Icons.star,
+                                                          size: 12, color: Colors.yellow)
+                                                    ],
+                                                  ),
+                                                  Text(
+                                                    dis.toStringAsFixed(2)+"km away" ,
+                                                    style: const TextStyle(
+                                                      color: Color(0xFFA34747),
+                                                      fontSize: 10.0,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+
+
+                                              Container(
+                                                alignment: const Alignment(1.0, -0.4),
+                                                child: const Icon(Icons.verified_user,
+                                                    size: 15, color: Colors.green),
+                                              )
+                                            ],
+                                          ),
+                                          style: OutlinedButton.styleFrom(
+                                            backgroundColor: Colors.white,
+                                            fixedSize: const Size(350, 80),
+                                          )),
+                                    ),
+                                    const Padding(padding: EdgeInsets.only(top: 10.0)),
+
+                                  ]
+                              ),
+                            );
+
+
+
+                          }else{
+                            amp= Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  SizedBox(
+                                    child: OutlinedButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>  BookPage(todo: lst[index],add:Address,loca:locati),
+                                            ),
+                                          );
+
+
+                                        },
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            SizedBox(
+                                              width: 50.0,
+                                              height: 50.0,
+                                              child: Image.asset('assets/images/ambulance.jpg'),
+                                            ),
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  lst[index]["Hospital_name"],
+                                                  style: const TextStyle(
+                                                    color: Color(0xFFA34747),
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                                Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: const [
+                                                    Icon(Icons.star,
+                                                        size: 12, color: Colors.yellow),
+                                                    Icon(Icons.star,
+                                                        size: 12, color: Colors.yellow),
+                                                    Icon(Icons.star,
+                                                        size: 12, color: Colors.yellow),
+                                                    Icon(Icons.star,
+                                                        size: 12, color: Colors.yellow),
+                                                    Icon(Icons.star,
+                                                        size: 12, color: Colors.yellow)
+                                                  ],
+                                                ),
+                                                Text(
+                                                  dis.toStringAsFixed(2)+"km away" ,
+                                                  style: const TextStyle(
+                                                    color: Color(0xFFA34747),
+                                                    fontSize: 10.0,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+
+
+                                            Container(
+                                              alignment: const Alignment(1.0, -0.4),
+                                              child: const Icon(Icons.verified_user,
+                                                  size: 15, color: Colors.green),
+                                            )
+                                          ],
+                                        ),
+                                        style: OutlinedButton.styleFrom(
+                                          backgroundColor: Colors.white,
+                                          fixedSize: const Size(350, 80),
+                                        )),
+                                  ),
+                                  const Padding(padding: EdgeInsets.only(top: 10.0)),
+
+                                ]
+                            );
+                          }
+
                             return Container(
 
                               child:Flexible(
                                 // to apply margin in the cross axis of the wrap
-                                child:Column(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: <Widget>[
-                                        SizedBox(
-                                              child: OutlinedButton(
-                                                      onPressed: () {
-                                                        Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder: (context) =>  BookPage(todo: lst[index],add:Address,loca:locati),
-                                                          ),
-                                                        );
-
-
-                                                      },
-                                                  child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                              children: [
-                                                SizedBox(
-                                                  width: 50.0,
-                                                  height: 50.0,
-                                                  child: Image.asset('assets/images/ambulance.jpg'),
-                                                ),
-                                              Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                              Text(
-                                              lst[index]["Hospital_name"],
-                                              style: const TextStyle(
-                                              color: Color(0xFFA34747),
-                                              fontWeight: FontWeight.w700,
-                                              ),
-                                              ),
-                                              Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: const [
-                                              Icon(Icons.star,
-                                              size: 12, color: Colors.yellow),
-                                              Icon(Icons.star,
-                                              size: 12, color: Colors.yellow),
-                                              Icon(Icons.star,
-                                              size: 12, color: Colors.yellow),
-                                              Icon(Icons.star,
-                                              size: 12, color: Colors.yellow),
-                                              Icon(Icons.star,
-                                              size: 12, color: Colors.yellow)
-                                              ],
-                                              ),
-                                              Text(
-                                                dis.toStringAsFixed(2)+"km away",
-                                              style: const TextStyle(
-                                              color: Color(0xFFA34747),
-                                              fontSize: 10.0,
-                                              ),
-                                              ),
-                                              ],
-                                              ),
-                                              Container(
-                                              alignment: const Alignment(1.0, -0.4),
-                                              child: const Icon(Icons.verified_user,
-                                              size: 15, color: Colors.green),
-                                              )
-                                              ],
-                                              ),
-                                              style: OutlinedButton.styleFrom(
-                                              backgroundColor: Colors.white,
-                                              fixedSize: const Size(350, 80),
-                                              )),
-                            ),
-                                      const Padding(padding: EdgeInsets.only(top: 10.0)),
-
-  ]
-                                )
+                                child:
+                                    amp,
+  //                               Column(
+  //                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                                   children: <Widget>[
+  //                                       SizedBox(
+  //                                             child: OutlinedButton(
+  //                                                     onPressed: () {
+  //                                                       Navigator.push(
+  //                                                         context,
+  //                                                         MaterialPageRoute(
+  //                                                           builder: (context) =>  BookPage(todo: lst[index],add:Address,loca:locati),
+  //                                                         ),
+  //                                                       );
+  //
+  //
+  //                                                     },
+  //                                                 child: Row(
+  //                                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //                                             children: [
+  //                                               SizedBox(
+  //                                                 width: 50.0,
+  //                                                 height: 50.0,
+  //                                                 child: Image.asset('assets/images/ambulance.jpg'),
+  //                                               ),
+  //                                             Column(
+  //                                             crossAxisAlignment: CrossAxisAlignment.start,
+  //                                             mainAxisAlignment: MainAxisAlignment.center,
+  //                                             children: [
+  //                                             Text(
+  //                                             lst[index]["Hospital_name"],
+  //                                             style: const TextStyle(
+  //                                             color: Color(0xFFA34747),
+  //                                             fontWeight: FontWeight.w700,
+  //                                             ),
+  //                                             ),
+  //                                             Row(
+  //                                             mainAxisSize: MainAxisSize.min,
+  //                                             children: const [
+  //                                             Icon(Icons.star,
+  //                                             size: 12, color: Colors.yellow),
+  //                                             Icon(Icons.star,
+  //                                             size: 12, color: Colors.yellow),
+  //                                             Icon(Icons.star,
+  //                                             size: 12, color: Colors.yellow),
+  //                                             Icon(Icons.star,
+  //                                             size: 12, color: Colors.yellow),
+  //                                             Icon(Icons.star,
+  //                                             size: 12, color: Colors.yellow)
+  //                                             ],
+  //                                             ),
+  //                                             Text(
+  //                                               dis.toStringAsFixed(2)+"km away" ,
+  //                                             style: const TextStyle(
+  //                                             color: Color(0xFFA34747),
+  //                                             fontSize: 10.0,
+  //                                             ),
+  //                                             ),
+  //                                             ],
+  //                                             ),
+  //
+  //
+  //                                             Container(
+  //                                             alignment: const Alignment(1.0, -0.4),
+  //                                             child: const Icon(Icons.verified_user,
+  //                                             size: 15, color: Colors.green),
+  //                                             )
+  //                                             ],
+  //                                             ),
+  //                                             style: OutlinedButton.styleFrom(
+  //                                             backgroundColor: Colors.white,
+  //                                             fixedSize: const Size(350, 80),
+  //                                             )),
+  //                           ),
+  //                                     const Padding(padding: EdgeInsets.only(top: 10.0)),
+  //
+  // ]
+  //                               )
                             )
                             );
 

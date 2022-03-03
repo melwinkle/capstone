@@ -48,6 +48,10 @@ class Paymentpage extends State<MyPaymentPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Payment Options"),
+        backgroundColor: const Color(0xFFA34747),
+      ),
       backgroundColor: const Color(0xFFEFDCDC),
       body: Align(
         alignment: Alignment(0.01, 0.09),
@@ -71,17 +75,7 @@ class Paymentpage extends State<MyPaymentPage> {
                 child: Padding(
                   padding: const EdgeInsets.all(5.0),
                   child: Column(children: [
-                    Container(
-                      alignment: Alignment.topLeft,
-                      child: const Text(
-                        'Payment Options',
-                        style: TextStyle(
-                          color: Color(0xFFA43247),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 20.0,
-                        ),
-                      ),
-                    ),
+
                     const Text('Select a payment option',
                         style: TextStyle(
                           color: Color(0xFFA43247),
@@ -182,38 +176,7 @@ class Paymentpage extends State<MyPaymentPage> {
               ),
 
               Spacer(flex: 20),
-              BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                currentIndex: _currentIndex,
-                backgroundColor: Color(0xFFFFFFFF),
-                selectedItemColor: Color(0xFFA34747),
-                unselectedItemColor: const Color(0xFFA34747).withOpacity(.60),
-                selectedFontSize: 14,
-                unselectedFontSize: 14,
-                onTap: (value) {
-                  // Respond to item press.
-                  setState(() => _currentIndex = value);
-                  _onTap();
-                },
-                items: const [
-                  BottomNavigationBarItem(
-                    label: 'Home',
-                    icon: Icon(Icons.home_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Requests',
-                    icon: Icon(Icons.receipt_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'First Aid',
-                    icon: Icon(Icons.health_and_safety_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Account',
-                    icon: Icon(Icons.person),
-                  ),
-                ],
-              ),
+
             ],
           ),
         ),
@@ -236,8 +199,8 @@ class Page2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: MyPaymentOPage(),
+    return const Scaffold(
+      body: MyPaymentOPage(),
     );
   }
 }
