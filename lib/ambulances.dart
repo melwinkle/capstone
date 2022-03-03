@@ -1,6 +1,10 @@
 
+import 'dart:math';
+
 import 'package:firebase_core/firebase_core.dart';
-import 'package:lamber/book.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:lamber/users/book.dart';
 import 'package:flutter/material.dart';
 import 'package:lamber/home.dart';
 import 'package:lamber/first_aid.dart';
@@ -59,7 +63,85 @@ class Ambulancepage extends State<MyAmbulancePage> {
     const MyAidPage(),
     const MyProfilePage(),
   ];
+  double calculateDistance(lat1, lon1, lat2, lon2){
+    var p = 0.017453292519943295;
+    var a = 0.5 - cos((lat2 - lat1) * p)/2 +
+        cos(lat1 * p) * cos(lat2 * p) *
+            (1 - cos((lon2 - lon1) * p))/2;
+    return 12742 * asin(sqrt(a));
+  }
+  String location = 'Null, Press Button';
+  String Address = '';
+  String FullAddress='';
+  String Street='';
+  List<dynamic> locati=[];
+  String locat='';
 
+  Future<Position> _getGeoLocationPosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      await Geolocator.openLocationSettings();
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+  }
+
+
+  Future<void> GetAddressFromLatLong(Position position) async {
+
+
+
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude, position.longitude);
+    print(placemarks);
+    Placemark place = placemarks[0];
+    Address = '${place.street},${place.name},${place.subLocality}\n${place.thoroughfare},${place.country}';
+    FullAddress = '${place.street}, ${place.subLocality}, ${place.subLocality}, ${place
+        .thoroughfare}, ${place.country}';
+    Street='${place.street}';
+
+
+    print("Add"+Address);
+
+  }
+
+  Future<void> backloc() async {
+    Position position = await _getGeoLocationPosition();
+    location =
+    'Lat: ${position.latitude} , Long: ${position
+        .longitude}';
+
+
+    locati.add(position.latitude);
+    locati.add(position.longitude);
+    GetAddressFromLatLong(position);
+
+  }
   @override
   Widget build(BuildContext context) {
 
@@ -75,22 +157,22 @@ class Ambulancepage extends State<MyAmbulancePage> {
               Padding(padding: const EdgeInsets.all(30.0)),
 // Group: Group 32
 
-              const Align(
-                alignment: Alignment(-0.88, 0.0),
-                child: Text(
-                  'Available Ambulances',
-                  style: TextStyle(
-                    fontFamily: 'Helvetica',
-                    fontSize: 25.0,
-                    color: Color(0xFFA34747),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
+              // const Align(
+              //   alignment: Alignment(-0.88, 0.0),
+              //   child: Text(
+              //     'Available Ambulances',
+              //     style: TextStyle(
+              //       fontFamily: 'Helvetica',
+              //       fontSize: 25.0,
+              //       color: Color(0xFFA34747),
+              //       fontWeight: FontWeight.w700,
+              //     ),
+              //   ),
+              // ),
 
 
               Container(
-                height: 590,
+                height: 540,
                 child:FutureBuilder(
                   future: fb.get(),
 
@@ -105,6 +187,17 @@ class Ambulancepage extends State<MyAmbulancePage> {
                           shrinkWrap: true,
                           itemCount: lst.length,
                           itemBuilder: (BuildContext context, int index) {
+
+                            backloc();
+
+                            final langf=locati[0];
+
+                            final longf=locati[1];
+
+                            final hospl=lst[index]["Hospital_location"].toString().split(",");
+                            final hosplang=double.parse(hospl[0]);
+                            final hosplong=double.parse(hospl[1]);
+                            double dis=calculateDistance(langf, longf, hosplang, hosplong);
                             return Container(
 
                               child:Flexible(
@@ -118,7 +211,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
                                                         Navigator.push(
                                                           context,
                                                           MaterialPageRoute(
-                                                            builder: (context) =>  BookPage(todo: lst[index]),
+                                                            builder: (context) =>  BookPage(todo: lst[index],add:Address,loca:locati),
                                                           ),
                                                         );
 
@@ -159,7 +252,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
                                               ],
                                               ),
                                               Text(
-                                              lst[index]["Hospital_location"],
+                                                dis.toStringAsFixed(2)+"km away",
                                               style: const TextStyle(
                                               color: Color(0xFFA34747),
                                               fontSize: 10.0,
@@ -194,38 +287,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
               ),
 
               Spacer(flex: 20),
-              BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                currentIndex: _currentIndex,
-                backgroundColor: Color(0xFFFFFFFF),
-                selectedItemColor: Color(0xFFA34747),
-                unselectedItemColor: const Color(0xFFA34747).withOpacity(.60),
-                selectedFontSize: 14,
-                unselectedFontSize: 14,
-                onTap: (value) {
-                  // Respond to item press.
-                  setState(() => _currentIndex = value);
-                  _onTap();
-                },
-                items: const [
-                  BottomNavigationBarItem(
-                    label: 'Home',
-                    icon: Icon(Icons.home_filled),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Requests',
-                    icon: Icon(Icons.receipt_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'First Aid',
-                    icon: Icon(Icons.health_and_safety_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Account',
-                    icon: Icon(Icons.person_outlined),
-                  ),
-                ],
-              ),
+
             ],
           ),
         ),
@@ -257,11 +319,13 @@ class Page2 extends StatelessWidget {
 
 class BookPage extends StatelessWidget {
   // In the constructor, require a Todo.
-  BookPage({Key? key, required this.todo}) : super(key: key);
+  BookPage({Key? key, required this.todo, required this.add, required this.loca}) : super(key: key);
 
   // Declare a field that holds the Todo.
 
   final todo;
+  final add;
+  final loca;
   final userid=FirebaseAuth.instance.currentUser?.uid;
   final fb = FirebaseDatabase.instance.ref('users/clients').orderByKey();
   final List<Widget> _children = [
@@ -323,7 +387,7 @@ class BookPage extends StatelessWidget {
                       child: Column(children:  [
 
                         Padding(padding: EdgeInsets.all(8.0)),
-                         MyCustomForm(todo: todo),
+                         MyCustomForm(todo: todo,add:add,loca:loca),
                     
                       ]),
                     ),
@@ -339,14 +403,14 @@ class BookPage extends StatelessWidget {
 
 }
 class MyCustomForm extends StatefulWidget {
+
+
+  const MyCustomForm({Key? key,required this.todo, required this.add, required this.loca}) : super(key: key);
+
   final todo;
 
-
-
-  const MyCustomForm({Key? key,required this.todo}) : super(key: key);
-
-
-
+  final add;
+final loca;
   @override
   MyCustomFormState createState() {
     return MyCustomFormState();
@@ -372,6 +436,10 @@ class MyCustomFormState extends State<MyCustomForm> {
   Widget build(BuildContext context) {
     final hosp=widget.todo["Hospital_name"].toString();
     final hospid=widget.todo["uid"].toString();
+
+    final loc=widget.add;
+
+    final locs=widget.loca[0].toString()+","+widget.loca[1].toString();
     // Build a Form widget using the _formKey created above.
     return Form(
       key: _formKey,
@@ -428,30 +496,8 @@ class MyCustomFormState extends State<MyCustomForm> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10.0),
           ),
-          TextFormField(
-              controller:location,
-            // The validator receives the text that the user has entered.
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter location';
-                }
-                return null;
-              },
-              decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.lock),
-                  hintText: 'Location',
-                  hintStyle: TextStyle(color: Color(0xFFA34247)),
-                  filled: true,
-                  fillColor: Color(0xFFFFFFFF),
-                  prefixIconColor: Color(0xFFA34247),
-                  isDense: true, // Added this
-                  contentPadding: EdgeInsets.all(8),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ))),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10.0),
-          ),
+
+
           TextFormField(
               controller: snotes,
             // The validator receives the text that the user has entered.
@@ -486,13 +532,13 @@ class MyCustomFormState extends State<MyCustomForm> {
                       // If the form is valid, display a snackbar. In the real world,
                       // you'd often call a server or save the information in a database.
                       // Navigator.of(context).push(_createRouter());
-                      sendrequest(timeinput.text,location.text,snotes.text,hosp,hospid);
+                      sendrequest(timeinput.text,snotes.text,loc,hosp,hospid,locs);
                       // ScaffoldMessenger.of(context).showSnackBar(
                       //    SnackBar(content: Text(timeinput.text+location.text+snotes.text)),
                       // );
                     }
                   },
-                  child: const Text('BOOK'),
+                  child: Text('Book'),
                   style: ButtonStyle(
                     backgroundColor:
                     MaterialStateProperty.all(Color(0xFFA34747)),
@@ -506,7 +552,7 @@ class MyCustomFormState extends State<MyCustomForm> {
     );
   }
 
-  Future<void> sendrequest(pick,location,notes,hosp,hospid) async {
+  Future<void> sendrequest(pick,notes,location,hosp,hospid,locs) async {
 
     final userid=FirebaseAuth.instance.currentUser?.uid;
 
@@ -535,6 +581,7 @@ class MyCustomFormState extends State<MyCustomForm> {
         "Customer_Name": username,
         "Customer_Number": phone,
         "Customer_uid": userid,
+        "Customer_location": locs,
         "Destination":location,
         "Pick_Up_Time":pick,
         "Reason":notes,

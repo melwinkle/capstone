@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:geocoding/geocoding.dart';
@@ -112,8 +113,9 @@ class Requestpage extends State<MyRequestPage> {
     'Lat: ${position.latitude} , Long: ${position
         .longitude}';
 
-    locat.add('Lat: ${position.latitude}');
-    locat.add('Long: ${position.longitude}');
+
+    locat.add(position.latitude);
+    locat.add(position.longitude);
     GetAddressFromLatLong(position);
 
   }
@@ -193,7 +195,7 @@ class Requestpage extends State<MyRequestPage> {
                               itemBuilder: (BuildContext context, int index) {
                                 var stat;
                                 var ems;
-
+                                backloc();
                                 if(lst[index]['Status']=="Pending"){
                                   stat=Container(
                                     alignment: const Alignment(1.0, -0.4),
@@ -250,7 +252,7 @@ class Requestpage extends State<MyRequestPage> {
                                     child: SizedBox(
                                       child: OutlinedButton(
                                           onPressed: () {
-                                            backloc();
+
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
@@ -505,7 +507,7 @@ class ConfirmPage extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          "No notes",
+                          todo["Reason"].toString(),
                           style: TextStyle(
                             fontFamily: 'Helvetica',
                             fontSize: 15.0,
@@ -569,11 +571,12 @@ class ConfirmAPage extends StatelessWidget {
 
 
   // In the constructor, require a Todo.
-  ConfirmAPage({Key? key, required this.todo, required this.locat }) : super(key: key);
+  ConfirmAPage({Key? key, required this.todo, required this.locat}) : super(key: key);
 
   // Declare a field that holds the Todo.
   final todo;
-  final locat;
+
+final locat;
 
 
 
@@ -588,9 +591,27 @@ class ConfirmAPage extends StatelessWidget {
 
 
 
+  double calculateDistance(lat1, lon1, lat2, lon2){
+    var p = 0.017453292519943295;
+    var a = 0.5 - cos((lat2 - lat1) * p)/2 +
+        cos(lat1 * p) * cos(lat2 * p) *
+            (1 - cos((lon2 - lon1) * p))/2;
+    return 12742 * asin(sqrt(a));
+  }
 
   @override
   Widget build(BuildContext context) {
+    final long=locat[0].toString().split(":");
+    final longf=double.parse(long[0]);
+    final lang=locat[1].toString().split(":");
+    final langf=double.parse(lang[0]);
+
+
+    final hospl=todo["Hospital_location"].toString().split(",");
+    final hosplang=double.parse(hospl[0]);
+    final hosplong=double.parse(hospl[1]);
+    double dis=calculateDistance(longf, langf, hosplang, hosplong);
+
     // Use the Todo to create the UI.
 
     _onTap() {
@@ -600,7 +621,7 @@ class ConfirmAPage extends StatelessWidget {
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text(todo["Hospital_name"].toString()+locat["Lat"].toString()),
+        title: Text(todo["Hospital_name"].toString()),
         backgroundColor: const Color(0xFFA34747),
       ),
       backgroundColor: const Color(0xFFEFDCDC),
@@ -649,6 +670,7 @@ class ConfirmAPage extends StatelessWidget {
                                 color: const Color(0xFFA34747),
                               ),
                             ),
+
                             Text(
                               todo["Vehicle_Registration"].toString(),
                               style: TextStyle(
@@ -701,11 +723,12 @@ class ConfirmAPage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              "15 minutes",
+                              dis.toStringAsFixed(2) + " km away",
                               style: TextStyle(
                                 fontFamily: 'Helvetica',
                                 fontSize: 15.0,
                                 color: const Color(0xFFA34747),
+                                fontWeight: FontWeight.w500
                               ),
                             ),
                             Container(
@@ -717,7 +740,7 @@ class ConfirmAPage extends StatelessWidget {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>  MapTrackPage(todo: locat),
+                                      builder: (context) =>  MapTrackPage(long: longf, lang:langf, tod:todo),
                                     ),
                                   );
                                 },
@@ -1051,8 +1074,10 @@ class Page5 extends StatelessWidget {
   }
 }
 class MapTrackPage extends StatelessWidget {
-  MapTrackPage({Key? key, required this.todo}) : super(key: key);
-final todo;
+  MapTrackPage({Key? key, required this.lang, required this.long, this.tod}) : super(key: key);
+final lang;
+final long;
+final tod;
 
   late GoogleMapController mapController;
 
@@ -1064,20 +1089,562 @@ final todo;
     mapController = controller;
   }
 
+
+
   @override
   Widget build(BuildContext context) {
+    final longf=double.parse(long);
+    final langf=double.parse(lang);
+    final LatLng _center = LatLng(longf,langf);
+
+
+    final hospl=tod["Hospital_location"].toString().split(",");
+    final hosplang=double.parse(hospl[0]);
+    final hosplong=double.parse(hospl[1]);
+
     return  Scaffold(
+      backgroundColor: const Color(0xFFEFDCDC),
       appBar: AppBar(
-        title: const Text('Your Location'),
-        backgroundColor: Colors.green[700],
+        title: Text(tod["Hospital_name"].toString()),
+        backgroundColor: const Color(0xFFA34747),
       ),
-      body: GoogleMap(
-        onMapCreated: _onMapCreated,
-        initialCameraPosition: CameraPosition(
-          target: LatLng(todo["Lat"],todo["Long"]),
-          zoom: 11.0,
-        ),
-      ),
+      body:
+
+          Column(
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(5.0),),
+              Container(
+                  alignment: Alignment(-0.78, -0.04),
+                  width: 450.0,
+                  height: 350.0,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                    color: Colors.white,
+                  ),
+                  child: SizedBox(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Center(
+                          child: GoogleMapsWidget(
+                            apiKey: "AIzaSyCaG0u5EfOCiQTSWQyEia2HBbhl3wxcB-g",
+                            sourceLatLng: LatLng(hosplang, hosplong),
+                            destinationLatLng: LatLng(longf, langf),
+
+
+                            routeWidth: 2,
+                            sourceMarkerIconInfo: MarkerIconInfo(
+                            assetPath:"assets/images/hospital.png",
+                            ),
+                            destinationMarkerIconInfo: MarkerIconInfo(
+                            assetPath: "assets/images/home.png",
+                            ),
+                            driverMarkerIconInfo: MarkerIconInfo(
+                            assetPath: "assets/images/car.png",
+                            assetMarkerSize: Size.square(125),
+                            ),
+                            // mock stream
+                            driverCoordinatesStream: Stream.periodic(
+                            Duration(milliseconds: 500),
+                            (i) => LatLng(
+                              hosplang + i / 20000,
+                              hosplong - i / 20000,
+                            ),
+                            ),
+                            sourceName: tod["Hospital_name"].toString(),
+                            driverName: tod["Personnel"].toString(),
+                            onTapDriverMarker: (currentLocation) {
+                            print("Driver is currently at $currentLocation");
+                            },
+                            totalTimeCallback: (time) => print(time),
+                            totalDistanceCallback: (distance) => print(distance),
+
+
+                            ),
+
+                          // child: GoogleMap(
+                          //   onMapCreated: _onMapCreated,
+                          //   initialCameraPosition: CameraPosition(
+                          //     target: _center,
+                          //     zoom: 14.0,
+                          //   ),
+                          // ),
+                        ),
+                      ))),
+                      Padding(
+                      padding: const EdgeInsets.all(5.0),),
+    ListView.builder(
+    shrinkWrap: true,
+    itemCount: 1,
+    itemBuilder: (BuildContext context, int index) {
+      var ongoing;
+      if(tod["Status"]=="Ongoing"){
+        ongoing=
+          Column(
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS yet to leave hospital",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.blueGrey),
+
+
+                  Text("EMS has left the hospital",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w300
+                  ),),
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.blueGrey),
+
+
+                  Text("EMS is arrving soon",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w300
+                  ),),
+
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.blueGrey),
+
+
+                  Text("EMS has arrived at your location",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w300
+                  ),),
+
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.blueGrey),
+
+
+                  Text("EMS has started trip to hospital",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w300
+                  ),),
+
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.blueGrey),
+
+
+                  Text("EMS has ended trip",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w300
+                  ),),
+
+
+                ],),
+
+            ],
+          );
+      }
+      else if(tod["Status"]=="Started"){
+        ongoing=Column(
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS yet to leave hospital",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS has left the hospital",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.blueGrey),
+
+
+                  Text("EMS is arrving soon",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w300
+                  ),),
+
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.blueGrey),
+
+
+                  Text("EMS has arrived at your location",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w300
+                  ),),
+
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.blueGrey),
+
+
+                  Text("EMS has started trip to hospital",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w300
+                  ),),
+
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.blueGrey),
+
+
+                  Text("EMS has ended trip",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w300
+                  ),),
+
+
+                ],),
+
+            ],
+          );
+
+      }
+      else if(tod["Status"]=="Arrived"){
+        ongoing=Column(
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS yet to leave hospital",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS has left the hospital",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS is arrving soon",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w300
+                  ),),
+
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS has arrived at your location",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.blueGrey),
+
+
+                  Text("EMS has started trip to hospital",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w300
+                  ),),
+
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.blueGrey),
+
+
+                  Text("EMS has ended trip",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w300
+                  ),),
+
+
+                ],),
+
+            ],
+          );
+
+      }
+      else if(tod["Status"]=="Trip"){
+        ongoing=Column(
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS yet to leave hospital",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS has left the hospital",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS is arrving soon",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w300
+                  ),),
+
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS has arrived at your location",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS has started trip to hospital",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.blueGrey),
+
+
+                  Text("EMS has ended trip",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+
+                ],),
+
+            ],
+          );
+
+      }
+      else if(tod["Status"]=="Completed"){
+        ongoing=Column(
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS yet to leave hospital",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS has left the hospital",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.blueGrey),
+
+
+                  Text("EMS is arrving soon",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS has arrived at your location",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS has started trip to hospital",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.car_repair,
+                      size: 32, color: Colors.green),
+
+
+                  Text("EMS has ended trip",style: TextStyle(
+                      fontSize: 15.0,
+                      color: Color(0xFFA34747),
+                      fontWeight: FontWeight.w500
+                  ),),
+
+
+                ],),
+
+            ],
+          );
+
+      }
+
+
+      return Container(
+        child:ongoing
+      );
+    })
+
+            ],
+          ),
+
+
+
+
+
+
+
+
     );
   }
 }

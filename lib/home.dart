@@ -95,7 +95,13 @@ class Homepage extends State<MyHomePage> {
   }
 
 
-  Future<void> GetAddressFromLatLong(Position position) async {
+  Future<String> GetAddressFromLatLong() async {
+    Position position = await _getGeoLocationPosition();
+    location =
+    'Lat: ${position.latitude} , Long: ${position
+        .longitude}';
+    locat='${position.latitude},${position
+        .longitude}';
     List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude, position.longitude);
     print(placemarks);
@@ -105,23 +111,17 @@ class Homepage extends State<MyHomePage> {
         .thoroughfare}, ${place.country}';
     Street='${place.street}';
 
-
+String address='${place.street},${place.name},${place.subLocality}\n${place.thoroughfare},${place.country}';
     print("Add"+Address);
+return address;
   }
 
-  Future<void> backloc() async {
-    Position position = await _getGeoLocationPosition();
-    location =
-    'Lat: ${position.latitude} , Long: ${position
-        .longitude}';
-    locat='${position.latitude},${position
-        .longitude}';
-    GetAddressFromLatLong(position);
-  }
+
 
   @override
   Widget build(BuildContext context) {
-    backloc();
+
+    GetAddressFromLatLong();
     return Scaffold(
       backgroundColor: const Color(0xFFEFDCDC),
       body: Align(
@@ -185,70 +185,89 @@ class Homepage extends State<MyHomePage> {
                                   width: 12, color: Color(0xFFCE9595))))),
                     ),
                   )),
-              Container(
-                  width: 300.0,
-                  height: 50.0,
-                  // margin: EdgeInsets.all(25),
-                  child: Expanded(
-                    child: OutlinedButton(
-                        onPressed: ()  {
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //     builder: (context) => MapTest(),
-                          //   ),
-                          // );
-                          // Position position = await _getGeoLocationPosition();
-                          // location =
-                          // 'Lat: ${position.latitude} , Long: ${position
-                          //     .longitude}';
-                          // GetAddressFromLatLong(position);
-                        }
+
+              FutureBuilder(
+                future: GetAddressFromLatLong(),
+                builder: (context, AsyncSnapshot<String> snapshot) {
+                  if (snapshot.hasError) return Text('${snapshot.error}');
+                  if (snapshot.hasData) return  ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: 1,
+                      itemBuilder: (BuildContext context, int index)  {
 
 
-                        ,
-                        child: Row(
 
-                          children: [
-                            Column(
-                              children: const [
-                                Icon(Icons.location_on,
-                                    size: 24, color: Color(0xFFA34747))
-                              ],
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Current Address',
-                                  style: TextStyle(
-                                    color: Color(0xFFA34747),
-                                    fontWeight: FontWeight.w700,
+
+                        return Container(
+                            width: 300.0,
+                            height: 50.0,
+                            // margin: EdgeInsets.all(25),
+                            child: Expanded(
+                              child: OutlinedButton(
+                                  onPressed: ()  {
+                                    // Navigator.push(
+                                    //   context,
+                                    //   MaterialPageRoute(
+                                    //     builder: (context) => MapTest(),
+                                    //   ),
+                                    // );
+                                    // Position position = await _getGeoLocationPosition();
+                                    // location =
+                                    // 'Lat: ${position.latitude} , Long: ${position
+                                    //     .longitude}';
+                                    // GetAddressFromLatLong(position);
+                                  }
+
+
+                                  ,
+                                  child: Row(
+
+                                    children: [
+                                      Column(
+                                        children: const [
+                                          Icon(Icons.location_on,
+                                              size: 24, color: Color(0xFFA34747))
+                                        ],
+                                      ),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Current Address',
+                                            style: TextStyle(
+                                              color: Color(0xFFA34747),
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+
+                                          Text(
+                                            '${snapshot.data}',
+                                            style: const TextStyle(
+                                              color: Color(0xFFA34747),
+                                              fontSize: 10.0,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                ),
-
-                                Text(
-                                  '$Address',
-                                  style: const TextStyle(
+                                  style: OutlinedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    side: const BorderSide(
+                                      width: 1.0,
                                       color: Color(0xFFA34747),
-                                      fontSize: 10.0,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
+                                      style: BorderStyle.solid,
+                                    ),
+                                  )),
+                            ));
+                      });
+                  return const CircularProgressIndicator();
+                },
+              ),
 
-                              ],
-                            ),
-                          ],
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          side: const BorderSide(
-                            width: 1.0,
-                            color: Color(0xFFA34747),
-                            style: BorderStyle.solid,
-                          ),
-                        )),
-                  )),
+
               Spacer(flex: 20),
               Container(
                   width: 250.0,
@@ -432,8 +451,12 @@ class Page3 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: MyAmbulancePage(),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Available Ambulances'),
+        backgroundColor: Color(0xFFA34747),
+      ),
+      body: MyAmbulancePage(),
     );
   }
 }
