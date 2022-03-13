@@ -1,4 +1,6 @@
 
+import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -13,7 +15,12 @@ import 'package:lamber/request.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:intl/intl.dart' show DateFormat;
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
 void main() async {
@@ -556,7 +563,7 @@ class BookPage extends StatelessWidget {
               Container(
                   alignment: Alignment(-0.78, -0.04),
                   width: 300.0,
-                  height: 300.0,
+
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
                     color: Colors.white,
@@ -609,10 +616,70 @@ class MyCustomFormState extends State<MyCustomForm> {
   TextEditingController location = TextEditingController();
   TextEditingController snotes = TextEditingController();
 
+  bool _playAudio = false;
+
+  final FlutterSoundRecorder _recordingSession= FlutterSoundRecorder();
+  final recordingPlayer = AssetsAudioPlayer();
+  late String pathToAudio;
+  String _timerText = '00:00:00';
 
 
+  @override
+  void initState() {
+    super.initState();
+    initializer();
+  }
+  void initializer() async {
+    pathToAudio = '/sdcard/Download/temp.wav';
+    var flutterSound = new FlutterSound();
+    await _recordingSession.openRecorder();
+
+    await _recordingSession.setSubscriptionDuration(const Duration(milliseconds: 10));
+    await initializeDateFormatting();
+    await Permission.microphone.request();
+    await Permission.storage.request();
+    await Permission.manageExternalStorage.request();
+  }
 
 
+  Future<void> startRecording() async {
+    Directory directory = Directory(path.dirname(pathToAudio));
+    if (!directory.existsSync()) {
+      directory.createSync();
+    }
+    _recordingSession.openRecorder();
+    await _recordingSession.startRecorder(
+      toFile: pathToAudio,
+      codec: Codec.pcm16WAV,
+    );
+    StreamSubscription _recorderSubscription =
+    _recordingSession.onProgress?.listen((e) {
+      var date = DateTime.fromMillisecondsSinceEpoch(
+          e.duration.inMilliseconds,
+          isUtc: true);
+      var timeText = DateFormat('mm:ss:SS', 'en_GB').format(date);
+      setState(() {
+        _timerText = timeText.substring(0, 8);
+      });
+    }) as StreamSubscription;
+    _recorderSubscription.cancel();
+  }
+  Future<String?> stopRecording() async {
+    _recordingSession.closeRecorder();
+    return await _recordingSession.stopRecorder();
+  }
+
+  Future<void> playFunc() async {
+    recordingPlayer.open(
+      Audio.file(pathToAudio),
+      autoStart: true,
+      showNotification: true,
+    );
+  }
+
+  Future<void> stopPlayFunc() async {
+    recordingPlayer.stop();
+  }
   Widget build(BuildContext context) {
     final hosp=widget.todo["Hospital_name"].toString();
     final hospid=widget.todo["uid"].toString();
@@ -621,6 +688,8 @@ class MyCustomFormState extends State<MyCustomForm> {
 
     final locs=widget.loca[0].toString()+","+widget.loca[1].toString();
     // Build a Form widget using the _formKey created above.
+
+
     return Form(
       key: _formKey,
       child: Column(
@@ -699,6 +768,79 @@ class MyCustomFormState extends State<MyCustomForm> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
                   ))),
+
+            Center(
+            child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+                      Container(
+                      child: Center(
+                      child: Text(
+                             _timerText,
+                              style: TextStyle(fontSize: 40, color: Color(0xFFA34247)),
+                              ),
+                      ),
+                      ),
+             Container(
+               child: Center(
+                 child:  Row(
+                   mainAxisAlignment: MainAxisAlignment.center,
+                   children: [
+                     ElevatedButton(
+                       onPressed: () {
+                         setState(() {
+                           _playAudio = !_playAudio;
+                         });
+                         if (_playAudio) playFunc();
+                         if (!_playAudio) stopPlayFunc();
+                         // Validate returns true if the form is valid, or false otherwise.
+
+                       },
+                       child: Icon(Icons.play_circle_fill),
+                       style: ButtonStyle(
+                         backgroundColor:
+                         MaterialStateProperty.all(Color(0xFFA34747)),
+                       ),
+                     ),
+                     Padding(
+                       padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                     ),
+                     ElevatedButton(
+                       onPressed: () {
+                         // Validate returns true if the form is valid, or false otherwise.
+startRecording();
+                       },
+                       child: Icon(Icons.mic),
+                       style: ButtonStyle(
+                         backgroundColor:
+                         MaterialStateProperty.all(Color(0xFFA34747)),
+                       ),
+                     ), Padding(
+                       padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                     ),
+                     ElevatedButton(
+                       onPressed: () {
+                         // Validate returns true if the form is valid, or false otherwise.
+stopRecording();
+                       },
+                       child: Icon(Icons.stop_circle),
+                       style: ButtonStyle(
+                         backgroundColor:
+                         MaterialStateProperty.all(Color(0xFFA34747)),
+                       ),
+                     ),
+                   ],
+                 ),
+               )
+             )
+
+            ]
+            ),
+            ),
+
+
+
+
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: Center(
@@ -727,6 +869,7 @@ class MyCustomFormState extends State<MyCustomForm> {
               ),
             ),
           ),
+
         ],
       ),
     );
@@ -783,6 +926,10 @@ class MyCustomFormState extends State<MyCustomForm> {
 
 
   }
+
+
+
+
 
 }
 

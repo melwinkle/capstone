@@ -637,7 +637,7 @@ class Loader extends State<LoaderPage> with TickerProviderStateMixin {
     Map<dynamic, dynamic> values = event.value as Map<dynamic, dynamic>;
 
     values.forEach((key, value) {
-      if(value['Status']=="Accepted"){
+      if(value['Status']=="Ongoing"){
 
         Navigator.of(context).push(_createRouter());
 

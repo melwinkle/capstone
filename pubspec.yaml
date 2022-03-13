@@ -45,6 +45,8 @@ dependencies:
   geocoding: ^2.0.2
   location: ^2.3.5
   google_maps_widget: ^1.0.1
+  assets_audio_player: ^3.0.4+1
+  permission_handler: ^9.2.0
 
 
 
