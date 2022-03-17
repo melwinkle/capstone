@@ -65,7 +65,7 @@ class Profilepage extends State<MyProfilePage> {
               const Align(
                 alignment: Alignment(-0.88, 0.0),
                 child: Text(
-                  'Aileen Akpalu',
+                  'Account',
                   style: TextStyle(
                     fontFamily: 'Helvetica',
                     fontSize: 25.0,

@@ -21,6 +21,7 @@ import 'package:intl/intl.dart' show DateFormat;
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as path;
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:path_provider/path_provider.dart';
 
 void main() async {
@@ -183,7 +184,7 @@ locat='${position.latitude} , ${position
                         final hosplong=double.parse(hospl[1]);
 
                         double dis=calculateDistance(langf, longf, hosplang, hosplong);
-                        if(dis<=2.0){
+                        if(dis<=5.0){
                           lst.add(values);
                         }
 
@@ -531,7 +532,8 @@ class BookPage extends StatelessWidget {
     return event.value;
   }
   int _currentIndex = 0;
-
+  firebase_storage.FirebaseStorage storage =
+      firebase_storage.FirebaseStorage.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -659,7 +661,7 @@ class MyCustomFormState extends State<MyCustomForm> {
           isUtc: true);
       var timeText = DateFormat('mm:ss:SS', 'en_GB').format(date);
       setState(() {
-        _timerText = timeText.substring(0, 8);
+       _timerText = timeText.substring(0, 8);
       });
     }) as StreamSubscription;
     _recorderSubscription.cancel();
@@ -897,6 +899,8 @@ stopRecording();
     final requestid=username.toString().substring(0,3).trim()+hosp.toString().substring(0,3).trim()+times.toString();
 
     DatabaseReference request = FirebaseDatabase.instance.ref("requests/$requestid");
+    firebase_storage.Reference audio =
+    firebase_storage.FirebaseStorage.instance.ref('audio/$requestid');
 
 
     try {
@@ -917,6 +921,9 @@ stopRecording();
 
 
       });
+      audio.child(
+          pathToAudio.substring(pathToAudio.lastIndexOf('/'), pathToAudio.length))
+          .putFile(File(pathToAudio));
       Navigator.of(context).push(_requestsent());
     } on Exception catch (e, s) {
       print(s);

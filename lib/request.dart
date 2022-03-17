@@ -16,6 +16,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_maps_widget/google_maps_widget.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'map.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -863,7 +864,20 @@ class ConfirmFPage extends StatelessWidget {
 
   int _currentIndex = 1;
 
+  late final _ratingController;
+  late double _rating;
 
+  double _userRating = 3.0;
+  int _ratingBarMode = 1;
+  double _initialRating = 2.0;
+  @override
+  void initState() {
+
+    _ratingController = TextEditingController(text: '3.0');
+    _rating = _initialRating;
+  }
+
+  IconData? _selectedIcon;
   @override
   Widget build(BuildContext context) {
     // Use the Todo to create the UI.
@@ -874,6 +888,10 @@ class ConfirmFPage extends StatelessWidget {
           _children[_currentIndex])); // this has changed
     }
     return Scaffold(
+      appBar: AppBar(
+        title: Text(todo["Hospital_name"].toString()),
+        backgroundColor: const Color(0xFFA34747),
+      ),
       backgroundColor: const Color(0xFFEFDCDC),
       body: Align(
         alignment: Alignment(0.01, 0.09),
@@ -885,18 +903,7 @@ class ConfirmFPage extends StatelessWidget {
               const Spacer(flex: 5),
 // Group: Group 32
 
-              Align(
-                alignment: Alignment(-0.88, 0.0),
-                child: Text(
-                  todo["Request_id"].toString(),
-                  style: TextStyle(
-                    fontFamily: 'Helvetica',
-                    fontSize: 25.0,
-                    color: const Color(0xFFA34747),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
+
 
               Spacer(flex: 2),
               Container(
@@ -983,11 +990,25 @@ class ConfirmFPage extends StatelessWidget {
                                 color: const Color(0xFFA34747),
                               ),
                             ),
+                      Text(
+                          "Personnel:"+todo["Personnel"].toString(),
+                          style: TextStyle(
+                            fontFamily: 'Helvetica',
+                            fontSize: 15.0,
+                            color: const Color(0xFFA34747),
+                          ),),
                           ]),
                         )),
                   )),
 
               Spacer(flex: 10),
+              Text(
+                "RATE THE TRIP",
+                style: TextStyle(
+                  fontFamily: 'Helvetica',
+                  fontSize: 20.0,
+                  color: const Color(0xFFA34747),
+                ),),
               Container(
                   width: 300,
                   height: 100,
@@ -997,54 +1018,25 @@ class ConfirmFPage extends StatelessWidget {
                   ),
                   child: Padding(
                       padding: const EdgeInsets.all(25.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Column(
-                            children: [
-                              Container(
-                                width: 50.0,
-                                height: 50.0,
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                        'assets/images/ambulance.jpg'),
-                                    fit: BoxFit.fill,
-                                  ),
-                                  borderRadius:
-                                  BorderRadius.all(Radius.circular(50.0)),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              Text(
-                                todo["Personnel"].toString(),
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20.0,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.of(context).push(_call());
-                                },
-                                child: Icon(Icons.phone),
-                                style: ButtonStyle(
-                                  backgroundColor: MaterialStateProperty.all(
-                                      Color(0xFF064457)),
-                                ),
-                              )
-                            ],
-                          )
-                        ],
-                      ))),
+                      child: RatingBar.builder(
+                        initialRating: 3,
+                        minRating: 1,
+                        direction: Axis.horizontal,
+                        allowHalfRating: true,
+                        itemCount: 5,
+                        itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                        itemBuilder: (context, _) => Icon(
+                          Icons.star,
+                          color: Colors.amber,
+                        ),
+                        onRatingUpdate: (rating) {
+                          rate(todo["Request_id"],rating);
+                          print(rating);
+                        },
+                      ),
 
+
+                      )),
               Spacer(flex: 20),
 
             ],
@@ -1053,13 +1045,18 @@ class ConfirmFPage extends StatelessWidget {
       ),
     );
   }
-  Route _call() {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => const Phone(),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return child;
-      },
-    );
+
+  Future<void> rate(id,rating) async {
+    DatabaseReference ref = FirebaseDatabase.instance.ref("requests/$id");
+    try {
+      await ref.update({
+        "Rating":rating
+      });
+    } on Exception catch (e, s) {
+      print(s);
+    }
+
+
   }
 
 }
@@ -1145,7 +1142,7 @@ final tod;
                             ),
                             // mock stream
                             driverCoordinatesStream: Stream.periodic(
-                            Duration(milliseconds: 500),
+                            Duration(milliseconds: 1000),
                             (i) => LatLng(
                               hosplang + i / 20000,
                               hosplong - i / 20000,
@@ -1158,17 +1155,7 @@ final tod;
                             },
                             totalTimeCallback: (time) => print(time),
                             totalDistanceCallback: (distance) => print(distance),
-
-
                             ),
-
-                          // child: GoogleMap(
-                          //   onMapCreated: _onMapCreated,
-                          //   initialCameraPosition: CameraPosition(
-                          //     target: _center,
-                          //     zoom: 14.0,
-                          //   ),
-                          // ),
                         ),
                       ))),
                       Padding(
@@ -1179,8 +1166,7 @@ final tod;
     itemBuilder: (BuildContext context, int index) {
       var ongoing;
       if(tod["Status"]=="Ongoing"){
-        ongoing=
-          Column(
+        ongoing= Column(
             children: [
               Row(
                 children: [
@@ -1396,7 +1382,7 @@ final tod;
                   Text("EMS is arrving soon",style: TextStyle(
                       fontSize: 15.0,
                       color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
+                      fontWeight: FontWeight.w500
                   ),),
 
 

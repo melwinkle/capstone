@@ -63,13 +63,8 @@ class Homepage extends State<MyHomePage> {
   Future<Position> _getGeoLocationPosition() async {
     bool serviceEnabled;
     LocationPermission permission;
-
-    // Test if location services are enabled.
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the
-      // App to enable the location services.
       await Geolocator.openLocationSettings();
       return Future.error('Location services are disabled.');
     }
@@ -83,13 +78,9 @@ class Homepage extends State<MyHomePage> {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately.
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
-
-    // When we reach here, permissions are granted and we can
-    // continue accessing the position of the device.
     return await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
   }
@@ -362,16 +353,12 @@ return address;
 
   Future<void> sosrequest(String street, String locat) async {
     final userid = FirebaseAuth.instance.currentUser?.uid;
-
     DatabaseReference ref = FirebaseDatabase.instance.ref("users/clients");
     Query query = ref.orderByKey().equalTo(userid);
     DataSnapshot event = await query.get();
     var username;
     var phone;
-
-
     Map<dynamic, dynamic> values = event.value as Map<dynamic, dynamic>;
-
     values.forEach((key, value) {
       username = value['FullName'].toString();
       phone = value['Phone'].toString();
@@ -380,13 +367,9 @@ return address;
         DateTime.now());
     final times = DateFormat("MMddyyyyHHmm").format(DateTime.now());
     final pick = DateFormat("HH:mm:ss a").format(DateTime.now());
-    final requestid = username.toString().substring(0, 3).trim() + "Gen" +
-        times.toString();
-
+    final requestid = username.toString().substring(0, 3).trim() + "Gen" + times.toString();
     DatabaseReference request = FirebaseDatabase.instance.ref(
         "requests/$requestid");
-
-
     try {
       await request.set({
         "Customer_Name": username,
@@ -399,10 +382,7 @@ return address;
         "Request_Type": "General",
         "Status": "Pending",
         "Request_id": requestid,
-
-
       });
-
       Navigator.push(
         context,
         MaterialPageRoute(
