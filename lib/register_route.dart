@@ -35,11 +35,13 @@ class Registerpage extends State<Register> {
           height: 812.0,
           child: Column(
             children: <Widget>[
-              Spacer(flex: 2),
+
+          Padding(
+          padding: const EdgeInsets.symmetric(vertical: 13.0)),
 // Group: Group 32
 
               SizedBox(
-                width: 120.0,
+                width: 200.0,
                 height: 85.76,
                 child: Stack(
                   alignment: Alignment.topCenter,
@@ -47,7 +49,7 @@ class Registerpage extends State<Register> {
                     Positioned(
                       bottom: 0,
                       child: Text(
-                        'LAMBER',
+                        'LAMBER EMS',
                         style: TextStyle(
                           fontSize: 30.0,
                           color: const Color(0xFF830C0C),
@@ -65,11 +67,12 @@ class Registerpage extends State<Register> {
                   ],
                 ),
               ),
-              Spacer(flex: 2),
+              Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 13.0)),
               Align(
                 alignment: Alignment(-0.88, 0.0),
                 child: Text(
-                  'Create an Account',
+                  'Verify your email',
                   style: TextStyle(
                     fontFamily: 'Helvetica',
                     fontSize: 20.0,
@@ -77,14 +80,16 @@ class Registerpage extends State<Register> {
                   ),
                 ),
               ),
-              Spacer(flex: 1),
+              Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 13.0)),
               Align(
                 child: const MyCustomForm(),
               ),
-              Spacer(flex: 1),
+              Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 13.0)),
               Container(
                   width: 200.0,
-                  height: 20.0,
+                  height: 40.0,
                   margin: EdgeInsets.all(25),
                   child: Expanded(
                     child: OutlinedButton(
@@ -132,12 +137,9 @@ class MyCustomFormState extends State<MyCustomForm> {
   // not a GlobalKey<MyCustomFormState>.
   final _formKey = GlobalKey<FormState>();
   FirebaseAuth auth = FirebaseAuth.instance;
-  final myController = TextEditingController();
-  final password = TextEditingController();
-  final username = TextEditingController();
+
   final fullname = TextEditingController();
-  final phone = TextEditingController();
-  final name = "users/clients/";
+  final name = "users/ems/";
   final fb = FirebaseDatabase.instance;
 
   @override
@@ -151,50 +153,6 @@ class MyCustomFormState extends State<MyCustomForm> {
         children: [
           TextFormField(
               controller: fullname,
-              // The validator receives the text that the user has entered.
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your full name(s)';
-                }
-                return null;
-              },
-              decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.person),
-                  hintText: 'Full Name',
-                  hintStyle: TextStyle(color: Colors.black87),
-                  filled: true,
-                  fillColor: Color(0xFFEFDCDC),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5),
-                    borderSide: BorderSide.none,
-                  ))),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
-          ),
-          TextFormField(
-              controller: username,
-              // The validator receives the text that the user has entered.
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter username';
-                }
-                return null;
-              },
-              decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.person),
-                  hintText: 'Username',
-                  hintStyle: TextStyle(color: Colors.black87),
-                  filled: true,
-                  fillColor: Color(0xFFEFDCDC),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5),
-                    borderSide: BorderSide.none,
-                  ))),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
-          ),
-          TextFormField(
-              controller: myController,
               // The validator receives the text that the user has entered.
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -212,53 +170,8 @@ class MyCustomFormState extends State<MyCustomForm> {
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide.none,
                   ))),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
-          ),
-          TextFormField(
-              controller: phone,
-              // The validator receives the text that the user has entered.
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter phone number';
-                }
-                return null;
-              },
-              decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.person),
-                  hintText: 'Phone Number',
-                  hintStyle: TextStyle(color: Colors.black87),
-                  filled: true,
-                  fillColor: Color(0xFFEFDCDC),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5),
-                    borderSide: BorderSide.none,
-                  ))),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
-          ),
-          TextFormField(
-              controller: password,
-              // The validator receives the text that the user has entered.
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter password';
-                }
-                return null;
-              },
-              decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.person),
-                  hintText: 'Password',
-                  hintStyle: TextStyle(color: Colors.black87),
-                  filled: true,
-                  fillColor: Color(0xFFEFDCDC),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5),
-                    borderSide: BorderSide.none,
-                  ))),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
-          ),
+
+
 
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 13.0),
@@ -270,14 +183,14 @@ class MyCustomFormState extends State<MyCustomForm> {
                   onPressed: () {
                     // Validate returns true if the form is valid, or false otherwise.
                     if (_formKey.currentState!.validate()) {
-                      reg(myController.text, password.text);
+                      verify(fullname.text);
                       // If the form is valid, display a snackbar. In the real world,
                       // you'd often call a server or save the information in a database.
-                      Navigator.of(context).push(_createRoutes());
+
 
                     }
                   },
-                  child: const Text('Register'),
+                  child: const Text('Verify'),
                   style: ButtonStyle(
                     backgroundColor:
                         MaterialStateProperty.all(Color(0xFFA34747)),
@@ -291,22 +204,12 @@ class MyCustomFormState extends State<MyCustomForm> {
     );
   }
 
-  void reg(mail,pass) async{
+  void verify(mail) async{
     final ref = fb.reference();
     try {
-      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: mail,
-          password: pass
-      );
-      String user=userCredential.user?.uid as String;
-      Map<String, String> userData = {
-        'Email':mail,
-        'Username':username.text,
-        'FullName': fullname.text,
-        'Phone': phone.text,
-        'uid': user
-      };
-      ref.child(name+user).set(userData);
+      print(mail);
+      Navigator.of(context).push(_createRoutes());
+
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         print('The password provided is too weak.');

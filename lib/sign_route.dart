@@ -55,7 +55,7 @@ class SignInpage extends State<SignIn> {
 // Group: Group 32
 
               SizedBox(
-                width: 120.0,
+                width: 200.0,
                 height: 85.76,
                 child: Stack(
                   alignment: Alignment.topCenter,
@@ -63,7 +63,7 @@ class SignInpage extends State<SignIn> {
                     Positioned(
                       bottom: 0,
                       child: Text(
-                        'LAMBER',
+                        'LAMBER EMS',
                         style: TextStyle(
                           fontSize: 30.0,
                           color: Color(0xFF830C0C),
@@ -110,7 +110,7 @@ class SignInpage extends State<SignIn> {
                           Navigator.of(context).push(_createRoutes());
                         },
                         child: const Text(
-                          'Sign Up',
+                          'Verify',
                           style: TextStyle(
                             color: const Color(0xFFA34747),
                           ),

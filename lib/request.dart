@@ -1,11 +1,13 @@
 import 'dart:ffi';
+
+
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lamber/request_confirm.dart';
-import 'package:lamber/request_accepted.dart';
+
 import 'package:lamber/request_final.dart';
 import 'package:flutter/material.dart';
 import 'package:lamber/sign_route.dart';
@@ -16,6 +18,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_maps_widget/google_maps_widget.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'map.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,7 +52,7 @@ class Requestpage extends State<MyRequestPage> {
   int _currentIndex = 1;
   FirebaseAuth auth = FirebaseAuth.instance;
   final userid=FirebaseAuth.instance.currentUser?.uid;
-  final fb = FirebaseDatabase.instance.ref("requests").orderByChild("Customer_uid");
+  final fb = FirebaseDatabase.instance.ref("requests").orderByChild("Personnel_uid");
   String hospital='';
   List<dynamic> hos=[];
   List<dynamic> lst = [];
@@ -122,7 +125,7 @@ class Requestpage extends State<MyRequestPage> {
   showData () async{
     DatabaseReference ref = FirebaseDatabase.instance.ref("requests");
 
-    Query query = ref.orderByChild("Customer_uid").equalTo(userid);
+    Query query = ref.orderByChild("Personnel_uid").equalTo(userid);
 
     DataSnapshot event = await query.get();
 
@@ -139,7 +142,6 @@ class Requestpage extends State<MyRequestPage> {
   final List<Widget> _children = [
     const MyHomePage(),
     const MyRequestPage(),
-    const MyAidPage(),
     const MyProfilePage(),
   ];
 
@@ -196,6 +198,9 @@ class Requestpage extends State<MyRequestPage> {
                                 var stat;
                                 var ems;
                                 backloc();
+                                final hospl=lst[index]["Hospital_location"].toString().split(",");
+                                final hosplang=double.parse(hospl[0]);
+                                final hosplong=double.parse(hospl[1]);
                                 if(lst[index]['Status']=="Pending"){
                                   stat=Container(
                                     alignment: const Alignment(1.0, -0.4),
@@ -203,7 +208,7 @@ class Requestpage extends State<MyRequestPage> {
                                     Icon(Icons.shield,
                                         size: 15, color: Colors.orange),
                                   );
-                                  ems=ConfirmPage(todo: lst[index]);
+                                  ems= MapTrackPage(long: hosplong, lang:hosplang, tod:lst[index]);
 
 
 
@@ -214,7 +219,7 @@ class Requestpage extends State<MyRequestPage> {
                                     Icon(Icons.shield,
                                         size: 15, color: Colors.green[500]),
                                   );
-                                  ems=ConfirmFPage(todo: lst[index]);
+                                  ems=MapTrackPage(long: hosplong, lang:hosplang, tod:lst[index]);
                                 }else if(lst[index]['Status']=="Cancel"){
                                   stat=Container(
                                     alignment: const Alignment(1.0, -0.4),
@@ -222,7 +227,7 @@ class Requestpage extends State<MyRequestPage> {
                                     Icon(Icons.shield,
                                         size: 15, color: Colors.red),
                                   );
-                                  ems=CancelPage(todo: lst[index]);
+                                  ems=MapTrackPage(long: hosplong, lang:hosplang, tod:lst[index]);
                                 }else{
                                   stat=Container(
                                     alignment: const Alignment(1.0, -0.4),
@@ -230,7 +235,7 @@ class Requestpage extends State<MyRequestPage> {
                                     Icon(Icons.shield,
                                         size: 15, color: Colors.lightGreen),
                                   );
-                                  ems=ConfirmAPage(todo: lst[index],locat:locat);
+                                  ems=MapTrackPage(long: hosplong, lang:hosplang, tod:lst[index]);
                                 };
                                 return Container(
 
@@ -273,27 +278,21 @@ class Requestpage extends State<MyRequestPage> {
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
                                                   Text(
-                                                    lst[index]["Hospital_name"],
+                                                    "#"+lst[index]["Request_id"],
                                                     style: const TextStyle(
                                                       color: Color(0xFFA34747),
                                                       fontWeight: FontWeight.w700,
                                                     ),
                                                   ),
-                                                  Row(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: const [
-                                                      Icon(Icons.star,
-                                                          size: 12, color: Colors.yellow),
-                                                      Icon(Icons.star,
-                                                          size: 12, color: Colors.yellow),
-                                                      Icon(Icons.star,
-                                                          size: 12, color: Colors.yellow),
-                                                      Icon(Icons.star,
-                                                          size: 12, color: Colors.yellow),
-                                                      Icon(Icons.star,
-                                                          size: 12, color: Colors.yellow)
-                                                    ],
+                                                  Text(
+                                                    lst[index]["Customer_Name"],
+                                                    style: const TextStyle(
+                                                      color: Color(0xFFA34747),
+                                                      fontWeight: FontWeight.w500,
+                                                      fontSize: 10.0,
+                                                    ),
                                                   ),
+
                                                   Text(
                                                     lst[index]["Request_DateTime"],
                                                     style: TextStyle(
@@ -345,10 +344,7 @@ class Requestpage extends State<MyRequestPage> {
                     label: 'Requests',
                     icon: Icon(Icons.receipt_outlined),
                   ),
-                  BottomNavigationBarItem(
-                    label: 'First Aid',
-                    icon: Icon(Icons.health_and_safety_outlined),
-                  ),
+
                   BottomNavigationBarItem(
                     label: 'Account',
                     icon: Icon(Icons.person_outlined),
@@ -377,16 +373,7 @@ class Page2 extends StatelessWidget {
   }
 }
 
-class Page3 extends StatelessWidget {
-  const Page3({Key? key}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: MyConfirmAPage(),
-    );
-  }
-}
 
 class Page4 extends StatelessWidget {
   const Page4({Key? key}) : super(key: key);
@@ -400,669 +387,665 @@ class Page4 extends StatelessWidget {
 }
 
 
-class ConfirmPage extends StatelessWidget {
-  // In the constructor, require a Todo.
-  ConfirmPage({Key? key, required this.todo}) : super(key: key);
-
-  // Declare a field that holds the Todo.
-  final todo;
-
-
-  final List<Widget> _children = [
-    const MyHomePage(),
-    const MyRequestPage(),
-    const MyAidPage(),
-    const MyProfilePage(),
-  ];
-
-  int _currentIndex = 1;
-
-
-  @override
-  Widget build(BuildContext context) {
-    // Use the Todo to create the UI.
-
-    _onTap() {
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (BuildContext context) =>
-          _children[_currentIndex])); // this has changed
-    }
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(todo["Hospital_name"].toString()),
-        backgroundColor: const Color(0xFFA34747),
-      ),
-      backgroundColor: const Color(0xFFEFDCDC),
-      body: Align(
-        alignment: Alignment(0.01, 0.09),
-        child: SizedBox(
-
-          height: 812.0,
-          child: Column(
-            children: <Widget>[
-              const Spacer(flex: 5),
-// Group: Group 32
-
-              Align(
-                alignment: Alignment(-0.88, 0.0),
-                child: Text(
-                  'Hospital will approve soon!',
-                  style: TextStyle(
-                    fontFamily: 'Helvetica',
-                    fontSize: 25.0,
-                    color: const Color(0xFFA34747),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-
-              Spacer(flex: 2),
-              Container(
-                  alignment: Alignment(-0.78, -0.04),
-                  width: 350.0,
-                  height: 300.0,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: Colors.white,
-                  ),
-                  child: SizedBox(
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Column(children: [
-                        Text(
-                          todo["Hospital_name"].toString(),
-                          style: TextStyle(
-                            fontFamily: 'Helvetica',
-                            fontSize: 20.0,
-                            color: const Color(0xFFA34747),
-                          ),
-                        ),
-
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.star, size: 12, color: Colors.yellow),
-                            Icon(Icons.star, size: 12, color: Colors.yellow),
-                            Icon(Icons.star, size: 12, color: Colors.yellow),
-                            Icon(Icons.star, size: 12, color: Colors.yellow),
-                            Icon(Icons.star, size: 12, color: Colors.yellow)
-                          ],
-                        ),
-                        Padding(padding: const EdgeInsets.all(20.0)),
-
-                        Text(
-                          "Pick Up Time:"+todo["Pick_Up_Time"].toString(),
-                          style: TextStyle(
-                            fontFamily: 'Helvetica',
-                            fontSize: 15.0,
-                            color: const Color(0xFFA34747),
-                          ),
-                        ),
-                        Text(
-                          "Request:"+todo["Request_DateTime"].toString(),
-                          style: TextStyle(
-                            fontFamily: 'Helvetica',
-                            fontSize: 15.0,
-                            color: const Color(0xFFA34747),
-                          ),
-                        ),
-                        Text(
-                          todo["Reason"].toString(),
-                          style: TextStyle(
-                            fontFamily: 'Helvetica',
-                            fontSize: 15.0,
-                            color: const Color(0xFFA34747),
-                          ),
-                        ),
-                        const Spacer(flex: 3),
-                        Container(
-                          child: Center(
-                            child: LinearProgressIndicator(
-                              value: 50,
-                              semanticsLabel: 'Request confirmation',
-                              minHeight: 10.0,
-                              color: Color(0xFF064457),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: 100.0,
-                          height: 50.0,
-                          margin: EdgeInsets.all(20),
-                          child: Center(
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  _cancel(todo["Request_id"].toString());
-
-                                },
-                                child: const Text(
-                                  'Cancel',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                  MaterialStateProperty.all(Color(0xFFB53A24)),
-                                ),
-                              )),
-                        )
-                      ]),
-                    ),
-                  )),
-
-              Spacer(flex: 20),
-
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-  void _cancel(id) async {
-    DatabaseReference ref = FirebaseDatabase.instance.ref("requests/$id");
-    await ref.update({
-      "Status": "Cancel",
-    });
-  }
-
-}
-class ConfirmAPage extends StatelessWidget {
-
-
-  // In the constructor, require a Todo.
-  ConfirmAPage({Key? key, required this.todo, required this.locat}) : super(key: key);
-
-  // Declare a field that holds the Todo.
-  final todo;
-
-final locat;
-
-
-
-  final List<Widget> _children = [
-    const MyHomePage(),
-    const MyRequestPage(),
-    const MyAidPage(),
-    const MyProfilePage(),
-  ];
-
-  int _currentIndex = 1;
-
-
-
-  double calculateDistance(lat1, lon1, lat2, lon2){
-    var p = 0.017453292519943295;
-    var a = 0.5 - cos((lat2 - lat1) * p)/2 +
-        cos(lat1 * p) * cos(lat2 * p) *
-            (1 - cos((lon2 - lon1) * p))/2;
-    return 12742 * asin(sqrt(a));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final long=locat[0];
-    final longf=long;
-    final lang=locat[1];
-    final langf=lang;
-
-
-    final hospl=todo["Hospital_location"].toString().split(",");
-    final hosplang=double.parse(hospl[0]);
-    final hosplong=double.parse(hospl[1]);
-    double dis=calculateDistance(longf, langf, hosplang, hosplong);
-
-    // Use the Todo to create the UI.
-
-    _onTap() {
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (BuildContext context) =>
-          _children[_currentIndex])); // this has changed
-    }
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(todo["Hospital_name"].toString()),
-        backgroundColor: const Color(0xFFA34747),
-      ),
-      backgroundColor: const Color(0xFFEFDCDC),
-      body: Align(
-        alignment: Alignment(0.01, 0.09),
-        child: SizedBox(
-
-          height: 812.0,
-          child: Column(
-            children: <Widget>[
-              const Spacer(flex: 5),
-// Group: Group 32
-
-              Align(
-                alignment: Alignment(-0.88, 0.0),
-                child: Text(
-                  'EMS are on their way!',
-                  style: TextStyle(
-                    fontFamily: 'Helvetica',
-                    fontSize: 25.0,
-                    color: const Color(0xFFA34747),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-
-              Spacer(flex: 2),
-              Container(
-                  alignment: Alignment(-0.78, -0.04),
-                  width: 300.0,
-                  height: 300.0,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: Colors.white,
-                  ),
-                  child: SizedBox(
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Center(
-                          child: Column(children: [
-                            Text(
-                              todo["Hospital_name"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 20.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-
-                            Text(
-                              todo["Vehicle_Registration"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(Icons.star, size: 12, color: Colors.yellow),
-                                Icon(Icons.star, size: 12, color: Colors.yellow),
-                                Icon(Icons.star, size: 12, color: Colors.yellow),
-                                Icon(Icons.star, size: 12, color: Colors.yellow),
-                                Icon(Icons.star, size: 12, color: Colors.yellow)
-                              ],
-                            ),
-                            Padding(padding: const EdgeInsets.all(3.0)),
-                            Text(
-                              todo["Destination"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              todo["Pick_Up_Time"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              todo["Request_DateTime"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              todo["Reason"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              dis.toStringAsFixed(2) + " km away",
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                                fontWeight: FontWeight.w500
-                              ),
-                            ),
-                            Container(
-                              width: 200.0,
-                              height: 50.0,
-                              margin: EdgeInsets.all(20),
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>  MapTrackPage(long: longf, lang:langf, tod:todo),
-                                    ),
-                                  );
-                                },
-                                child: const Text(
-                                  'TRACK AMBULANCE',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                  MaterialStateProperty.all(Color(0xFFA43247)),
-                                ),
-                              ),
-                            )
-                          ])),
-                    ),
-                  )),
-
-              Spacer(flex: 10),
-              Container(
-                  width: 300,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: Color(0xFFA43247),
-                  ),
-                  child: Padding(
-                      padding: const EdgeInsets.all(25.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Column(
-                            children: [
-                              Container(
-                                width: 50.0,
-                                height: 50.0,
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                        'assets/images/ambulance.jpg'),
-                                    fit: BoxFit.fill,
-                                  ),
-                                  borderRadius:
-                                  BorderRadius.all(Radius.circular(50.0)),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              Text(
-                                todo["Personnel"].toString(),
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20.0,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.of(context).push(_call());
-                                },
-                                child: Icon(Icons.phone),
-                                style: ButtonStyle(
-                                  backgroundColor: MaterialStateProperty.all(
-                                      Color(0xFF064457)),
-                                ),
-                              )
-                            ],
-                          )
-                        ],
-                      ))),
-
-              Spacer(flex: 20),
-
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-
-  // Route _track() {
-  //   return PageRouteBuilder(
-  //     pageBuilder: (context, animation, secondaryAnimation) => const MapTrackPage(),
-  //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-  //       return child;
-  //     },
-  //   );
-  // }
-
-  Route _call() {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => const Phone(),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return child;
-      },
-    );
-  }
-
-}
-class ConfirmFPage extends StatelessWidget {
-  // In the constructor, require a Todo.
-  ConfirmFPage({Key? key, required this.todo}) : super(key: key);
-
-  // Declare a field that holds the Todo.
-  final todo;
-
-  final List<Widget> _children = [
-    const MyHomePage(),
-    const MyRequestPage(),
-    const MyAidPage(),
-    const MyProfilePage(),
-  ];
-
-  int _currentIndex = 1;
-
-
-  @override
-  Widget build(BuildContext context) {
-    // Use the Todo to create the UI.
-
-    _onTap() {
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (BuildContext context) =>
-          _children[_currentIndex])); // this has changed
-    }
-    return Scaffold(
-      backgroundColor: const Color(0xFFEFDCDC),
-      body: Align(
-        alignment: Alignment(0.01, 0.09),
-        child: SizedBox(
-
-          height: 812.0,
-          child: Column(
-            children: <Widget>[
-              const Spacer(flex: 5),
-// Group: Group 32
-
-              Align(
-                alignment: Alignment(-0.88, 0.0),
-                child: Text(
-                  todo["Request_id"].toString(),
-                  style: TextStyle(
-                    fontFamily: 'Helvetica',
-                    fontSize: 25.0,
-                    color: const Color(0xFFA34747),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-
-              Spacer(flex: 2),
-              Container(
-                  alignment: Alignment(-0.78, -0.04),
-                  width: 300.0,
-                  height: 300.0,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: Colors.white,
-                  ),
-                  child: SizedBox(
-                    child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Center(
-                          child: Column(children: [
-                            Text(
-                              todo["Hospital_name"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 20.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              todo["Vehicle_Registration"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(Icons.star,
-                                    size: 12, color: Colors.yellow),
-                                Icon(Icons.star,
-                                    size: 12, color: Colors.yellow),
-                                Icon(Icons.star,
-                                    size: 12, color: Colors.yellow),
-                                Icon(Icons.star,
-                                    size: 12, color: Colors.yellow),
-                                Icon(Icons.star, size: 12, color: Colors.yellow)
-                              ],
-                            ),
-                            Padding(padding: const EdgeInsets.all(3.0)),
-                            Text(
-                              todo["Destination"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              todo["Pick_Up_Time"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              todo["Request_DateTime"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              todo["Reason"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              "Total Trip time:20 minutes",
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                          ]),
-                        )),
-                  )),
-
-              Spacer(flex: 10),
-              Container(
-                  width: 300,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: Color(0xFFA43247),
-                  ),
-                  child: Padding(
-                      padding: const EdgeInsets.all(25.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Column(
-                            children: [
-                              Container(
-                                width: 50.0,
-                                height: 50.0,
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                        'assets/images/ambulance.jpg'),
-                                    fit: BoxFit.fill,
-                                  ),
-                                  borderRadius:
-                                  BorderRadius.all(Radius.circular(50.0)),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              Text(
-                                todo["Personnel"].toString(),
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20.0,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.of(context).push(_call());
-                                },
-                                child: Icon(Icons.phone),
-                                style: ButtonStyle(
-                                  backgroundColor: MaterialStateProperty.all(
-                                      Color(0xFF064457)),
-                                ),
-                              )
-                            ],
-                          )
-                        ],
-                      ))),
-
-              Spacer(flex: 20),
-
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-  Route _call() {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => const Phone(),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return child;
-      },
-    );
-  }
-
-}
+// class ConfirmPage extends StatelessWidget {
+//   // In the constructor, require a Todo.
+//   ConfirmPage({Key? key, required this.todo}) : super(key: key);
+//
+//   // Declare a field that holds the Todo.
+//   final todo;
+//
+//
+//   final List<Widget> _children = [
+//     const MyHomePage(),
+//     const MyRequestPage(),
+//     const MyAidPage(),
+//     const MyProfilePage(),
+//   ];
+//
+//   int _currentIndex = 1;
+//
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     // Use the Todo to create the UI.
+//
+//     _onTap() {
+//       Navigator.of(context).push(MaterialPageRoute(
+//           builder: (BuildContext context) =>
+//           _children[_currentIndex])); // this has changed
+//     }
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text(todo["Customer_Name"].toString()),
+//         backgroundColor: const Color(0xFFA34747),
+//       ),
+//       backgroundColor: const Color(0xFFEFDCDC),
+//       body: Align(
+//         alignment: Alignment(0.01, 0.09),
+//         child: SizedBox(
+//
+//           height: 812.0,
+//           child: Column(
+//             children: <Widget>[
+//               const Spacer(flex: 5),
+// // Group: Group 32
+//
+//               Align(
+//                 alignment: Alignment(-0.88, 0.0),
+//                 child: Text(
+//                   'START TRIP !',
+//                   style: TextStyle(
+//                     fontFamily: 'Helvetica',
+//                     fontSize: 25.0,
+//                     color: const Color(0xFFA34747),
+//                     fontWeight: FontWeight.w700,
+//                   ),
+//                 ),
+//               ),
+//
+//               Spacer(flex: 2),
+//               Container(
+//                   alignment: Alignment(-0.78, -0.04),
+//                   width: 350.0,
+//                   height: 300.0,
+//                   decoration: BoxDecoration(
+//                     borderRadius: BorderRadius.circular(10.0),
+//                     color: Colors.white,
+//                   ),
+//                   child: SizedBox(
+//                     child: Padding(
+//                       padding: const EdgeInsets.all(5.0),
+//                       child: Column(children: [
+//                         Text(
+//                           todo["Hospital_name"].toString(),
+//                           style: TextStyle(
+//                             fontFamily: 'Helvetica',
+//                             fontSize: 20.0,
+//                             color: const Color(0xFFA34747),
+//                           ),
+//                         ),
+//
+//                         Row(
+//                           mainAxisSize: MainAxisSize.min,
+//                           children: const [
+//                             Icon(Icons.star, size: 12, color: Colors.yellow),
+//                             Icon(Icons.star, size: 12, color: Colors.yellow),
+//                             Icon(Icons.star, size: 12, color: Colors.yellow),
+//                             Icon(Icons.star, size: 12, color: Colors.yellow),
+//                             Icon(Icons.star, size: 12, color: Colors.yellow)
+//                           ],
+//                         ),
+//                         Padding(padding: const EdgeInsets.all(20.0)),
+//
+//                         Text(
+//                           "Pick Up Time:"+todo["Pick_Up_Time"].toString(),
+//                           style: TextStyle(
+//                             fontFamily: 'Helvetica',
+//                             fontSize: 15.0,
+//                             color: const Color(0xFFA34747),
+//                           ),
+//                         ),
+//                         Text(
+//                           "Request:"+todo["Request_DateTime"].toString(),
+//                           style: TextStyle(
+//                             fontFamily: 'Helvetica',
+//                             fontSize: 15.0,
+//                             color: const Color(0xFFA34747),
+//                           ),
+//                         ),
+//                         Text(
+//                           todo["Reason"].toString(),
+//                           style: TextStyle(
+//                             fontFamily: 'Helvetica',
+//                             fontSize: 15.0,
+//                             color: const Color(0xFFA34747),
+//                           ),
+//                         ),
+//                         const Spacer(flex: 3),
+//                         Container(
+//                           child: Center(
+//                             child: LinearProgressIndicator(
+//                               value: 50,
+//                               semanticsLabel: 'Request confirmation',
+//                               minHeight: 10.0,
+//                               color: Color(0xFF064457),
+//                             ),
+//                           ),
+//                         ),
+//                         Container(
+//                           width: 100.0,
+//                           height: 50.0,
+//                           margin: EdgeInsets.all(20),
+//                           child: Center(
+//                               child: ElevatedButton(
+//                                 onPressed: () {
+//                                   _cancel(todo["Request_id"].toString());
+//
+//                                 },
+//                                 child: const Text(
+//                                   'Cancel',
+//                                   style: TextStyle(
+//                                     color: Colors.white,
+//                                   ),
+//                                 ),
+//                                 style: ButtonStyle(
+//                                   backgroundColor:
+//                                   MaterialStateProperty.all(Color(0xFFB53A24)),
+//                                 ),
+//                               )),
+//                         )
+//                       ]),
+//                     ),
+//                   )),
+//
+//               Spacer(flex: 20),
+//
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+//   void _cancel(id) async {
+//     DatabaseReference ref = FirebaseDatabase.instance.ref("requests/$id");
+//     await ref.update({
+//       "Status": "Cancel",
+//     });
+//   }
+//
+// }
+// class ConfirmAPage extends StatelessWidget {
+//
+//
+//   // In the constructor, require a Todo.
+//   ConfirmAPage({Key? key, required this.todo, required this.locat}) : super(key: key);
+//
+//   // Declare a field that holds the Todo.
+//   final todo;
+//
+// final locat;
+//
+//
+//
+//   final List<Widget> _children = [
+//     const MyHomePage(),
+//     const MyRequestPage(),
+//     const MyAidPage(),
+//     const MyProfilePage(),
+//   ];
+//
+//   int _currentIndex = 1;
+//
+//
+//
+//   double calculateDistance(lat1, lon1, lat2, lon2){
+//     var p = 0.017453292519943295;
+//     var a = 0.5 - cos((lat2 - lat1) * p)/2 +
+//         cos(lat1 * p) * cos(lat2 * p) *
+//             (1 - cos((lon2 - lon1) * p))/2;
+//     return 12742 * asin(sqrt(a));
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     final long=locat[0];
+//     final longf=long;
+//     final lang=locat[1];
+//     final langf=lang;
+//
+//
+//     final hospl=todo["Hospital_location"].toString().split(",");
+//     final hosplang=double.parse(hospl[0]);
+//     final hosplong=double.parse(hospl[1]);
+//     double dis=calculateDistance(longf, langf, hosplang, hosplong);
+//
+//     // Use the Todo to create the UI.
+//
+//     _onTap() {
+//       Navigator.of(context).push(MaterialPageRoute(
+//           builder: (BuildContext context) =>
+//           _children[_currentIndex])); // this has changed
+//     }
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text(todo["Request_id"].toString()),
+//         backgroundColor: const Color(0xFFA34747),
+//       ),
+//       backgroundColor: const Color(0xFFEFDCDC),
+//       body: Align(
+//         alignment: Alignment(0.01, 0.09),
+//         child: SizedBox(
+//
+//           height: 812.0,
+//           child: Column(
+//             children: <Widget>[
+//               const Spacer(flex: 5),
+// // Group: Group 32
+//
+//               Align(
+//                 alignment: Alignment(-0.88, 0.0),
+//                 child: Text(
+//                   'TRip yet to start!',
+//                   style: TextStyle(
+//                     fontFamily: 'Helvetica',
+//                     fontSize: 25.0,
+//                     color: const Color(0xFFA34747),
+//                     fontWeight: FontWeight.w700,
+//                   ),
+//                 ),
+//               ),
+//
+//               Spacer(flex: 2),
+//               Container(
+//                   alignment: Alignment(-0.78, -0.04),
+//                   width: 300.0,
+//                   height: 300.0,
+//                   decoration: BoxDecoration(
+//                     borderRadius: BorderRadius.circular(10.0),
+//                     color: Colors.white,
+//                   ),
+//                   child: SizedBox(
+//                     child: Padding(
+//                       padding: const EdgeInsets.all(5.0),
+//                       child: Center(
+//                           child: Column(children: [
+//                             Text(
+//                               todo["Hospital_name"].toString(),
+//                               style: TextStyle(
+//                                 fontFamily: 'Helvetica',
+//                                 fontSize: 20.0,
+//                                 color: const Color(0xFFA34747),
+//                               ),
+//                             ),
+//
+//                             Text(
+//                               todo["Vehicle_Registration"].toString(),
+//                               style: TextStyle(
+//                                 fontFamily: 'Helvetica',
+//                                 fontSize: 15.0,
+//                                 color: const Color(0xFFA34747),
+//                               ),
+//                             ),
+//                             Row(
+//                               mainAxisSize: MainAxisSize.min,
+//                               children: const [
+//                                 Icon(Icons.star, size: 12, color: Colors.yellow),
+//                                 Icon(Icons.star, size: 12, color: Colors.yellow),
+//                                 Icon(Icons.star, size: 12, color: Colors.yellow),
+//                                 Icon(Icons.star, size: 12, color: Colors.yellow),
+//                                 Icon(Icons.star, size: 12, color: Colors.yellow)
+//                               ],
+//                             ),
+//                             Padding(padding: const EdgeInsets.all(3.0)),
+//                             Text(
+//                               todo["Destination"].toString(),
+//                               style: TextStyle(
+//                                 fontFamily: 'Helvetica',
+//                                 fontSize: 15.0,
+//                                 color: const Color(0xFFA34747),
+//                               ),
+//                             ),
+//                             Text(
+//                               todo["Pick_Up_Time"].toString(),
+//                               style: TextStyle(
+//                                 fontFamily: 'Helvetica',
+//                                 fontSize: 15.0,
+//                                 color: const Color(0xFFA34747),
+//                               ),
+//                             ),
+//                             Text(
+//                               todo["Request_DateTime"].toString(),
+//                               style: TextStyle(
+//                                 fontFamily: 'Helvetica',
+//                                 fontSize: 15.0,
+//                                 color: const Color(0xFFA34747),
+//                               ),
+//                             ),
+//                             Text(
+//                               todo["Reason"].toString(),
+//                               style: TextStyle(
+//                                 fontFamily: 'Helvetica',
+//                                 fontSize: 15.0,
+//                                 color: const Color(0xFFA34747),
+//                               ),
+//                             ),
+//                             Text(
+//                               dis.toStringAsFixed(2) + " km away",
+//                               style: TextStyle(
+//                                 fontFamily: 'Helvetica',
+//                                 fontSize: 15.0,
+//                                 color: const Color(0xFFA34747),
+//                                 fontWeight: FontWeight.w500
+//                               ),
+//                             ),
+//                             Container(
+//                               width: 200.0,
+//                               height: 50.0,
+//                               margin: EdgeInsets.all(20),
+//                               child: ElevatedButton(
+//                                 onPressed: () {
+//                                   Navigator.push(
+//                                     context,
+//                                     MaterialPageRoute(
+//                                       builder: (context) =>  MapTrackPage(long: longf, lang:langf, tod:todo),
+//                                     ),
+//                                   );
+//                                 },
+//                                 child: const Text(
+//                                   'TRACK AMBULANCE',
+//                                   style: TextStyle(
+//                                     color: Colors.white,
+//                                   ),
+//                                 ),
+//                                 style: ButtonStyle(
+//                                   backgroundColor:
+//                                   MaterialStateProperty.all(Color(0xFFA43247)),
+//                                 ),
+//                               ),
+//                             )
+//                           ])),
+//                     ),
+//                   )),
+//
+//               Spacer(flex: 10),
+//               Container(
+//                   width: 300,
+//                   height: 100,
+//                   decoration: BoxDecoration(
+//                     borderRadius: BorderRadius.circular(10.0),
+//                     color: Color(0xFFA43247),
+//                   ),
+//                   child: Padding(
+//                       padding: const EdgeInsets.all(25.0),
+//                       child: Row(
+//                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//                         children: [
+//                           Column(
+//                             children: [
+//                               Container(
+//                                 width: 50.0,
+//                                 height: 50.0,
+//                                 decoration: BoxDecoration(
+//                                   image: DecorationImage(
+//                                     image: NetworkImage(
+//                                         'assets/images/ambulance.jpg'),
+//                                     fit: BoxFit.fill,
+//                                   ),
+//                                   borderRadius:
+//                                   BorderRadius.all(Radius.circular(50.0)),
+//                                 ),
+//                               ),
+//                             ],
+//                           ),
+//                           Column(
+//                             children: [
+//                               Text(
+//                                 todo["Personnel"].toString(),
+//                                 style: TextStyle(
+//                                   color: Colors.white,
+//                                   fontSize: 20.0,
+//                                 ),
+//                               ),
+//                             ],
+//                           ),
+//                           Column(
+//                             children: [
+//                               ElevatedButton(
+//                                 onPressed: () {
+//                                   Navigator.of(context).push(_call());
+//                                 },
+//                                 child: Icon(Icons.phone),
+//                                 style: ButtonStyle(
+//                                   backgroundColor: MaterialStateProperty.all(
+//                                       Color(0xFF064457)),
+//                                 ),
+//                               )
+//                             ],
+//                           )
+//                         ],
+//                       ))),
+//
+//               Spacer(flex: 20),
+//
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+//
+//
+//   // Route _track() {
+//   //   return PageRouteBuilder(
+//   //     pageBuilder: (context, animation, secondaryAnimation) => const MapTrackPage(),
+//   //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
+//   //       return child;
+//   //     },
+//   //   );
+//   // }
+//
+//   Route _call() {
+//     return PageRouteBuilder(
+//       pageBuilder: (context, animation, secondaryAnimation) => const Phone(),
+//       transitionsBuilder: (context, animation, secondaryAnimation, child) {
+//         return child;
+//       },
+//     );
+//   }
+//
+// }
+// class ConfirmFPage extends StatelessWidget {
+//   // In the constructor, require a Todo.
+//   ConfirmFPage({Key? key, required this.todo}) : super(key: key);
+//
+//   // Declare a field that holds the Todo.
+//   final todo;
+//
+//   final List<Widget> _children = [
+//     const MyHomePage(),
+//     const MyRequestPage(),
+//     const MyAidPage(),
+//     const MyProfilePage(),
+//   ];
+//
+//   int _currentIndex = 1;
+//
+//   late final _ratingController;
+//   late double _rating;
+//
+//   double _userRating = 3.0;
+//   int _ratingBarMode = 1;
+//   double _initialRating = 2.0;
+//   @override
+//   void initState() {
+//
+//     _ratingController = TextEditingController(text: '3.0');
+//     _rating = _initialRating;
+//   }
+//
+//   IconData? _selectedIcon;
+//   @override
+//   Widget build(BuildContext context) {
+//     // Use the Todo to create the UI.
+//
+//     _onTap() {
+//       Navigator.of(context).push(MaterialPageRoute(
+//           builder: (BuildContext context) =>
+//           _children[_currentIndex])); // this has changed
+//     }
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text(todo["Hospital_name"].toString()),
+//         backgroundColor: const Color(0xFFA34747),
+//       ),
+//       backgroundColor: const Color(0xFFEFDCDC),
+//       body: Align(
+//         alignment: Alignment(0.01, 0.09),
+//         child: SizedBox(
+//
+//           height: 812.0,
+//           child: Column(
+//             children: <Widget>[
+//               const Spacer(flex: 5),
+// // Group: Group 32
+//
+//
+//
+//               Spacer(flex: 2),
+//               Container(
+//                   alignment: Alignment(-0.78, -0.04),
+//                   width: 300.0,
+//                   height: 300.0,
+//                   decoration: BoxDecoration(
+//                     borderRadius: BorderRadius.circular(10.0),
+//                     color: Colors.white,
+//                   ),
+//                   child: SizedBox(
+//                     child: Padding(
+//                         padding: const EdgeInsets.all(5.0),
+//                         child: Center(
+//                           child: Column(children: [
+//                             Text(
+//                               todo["Hospital_name"].toString(),
+//                               style: TextStyle(
+//                                 fontFamily: 'Helvetica',
+//                                 fontSize: 20.0,
+//                                 color: const Color(0xFFA34747),
+//                               ),
+//                             ),
+//                             Text(
+//                               todo["Vehicle_Registration"].toString(),
+//                               style: TextStyle(
+//                                 fontFamily: 'Helvetica',
+//                                 fontSize: 15.0,
+//                                 color: const Color(0xFFA34747),
+//                               ),
+//                             ),
+//                             Row(
+//                               mainAxisSize: MainAxisSize.min,
+//                               children: const [
+//                                 Icon(Icons.star,
+//                                     size: 12, color: Colors.yellow),
+//                                 Icon(Icons.star,
+//                                     size: 12, color: Colors.yellow),
+//                                 Icon(Icons.star,
+//                                     size: 12, color: Colors.yellow),
+//                                 Icon(Icons.star,
+//                                     size: 12, color: Colors.yellow),
+//                                 Icon(Icons.star, size: 12, color: Colors.yellow)
+//                               ],
+//                             ),
+//                             Padding(padding: const EdgeInsets.all(3.0)),
+//                             Text(
+//                               todo["Destination"].toString(),
+//                               style: TextStyle(
+//                                 fontFamily: 'Helvetica',
+//                                 fontSize: 15.0,
+//                                 color: const Color(0xFFA34747),
+//                               ),
+//                             ),
+//                             Text(
+//                               todo["Pick_Up_Time"].toString(),
+//                               style: TextStyle(
+//                                 fontFamily: 'Helvetica',
+//                                 fontSize: 15.0,
+//                                 color: const Color(0xFFA34747),
+//                               ),
+//                             ),
+//                             Text(
+//                               todo["Request_DateTime"].toString(),
+//                               style: TextStyle(
+//                                 fontFamily: 'Helvetica',
+//                                 fontSize: 15.0,
+//                                 color: const Color(0xFFA34747),
+//                               ),
+//                             ),
+//                             Text(
+//                               todo["Reason"].toString(),
+//                               style: TextStyle(
+//                                 fontFamily: 'Helvetica',
+//                                 fontSize: 15.0,
+//                                 color: const Color(0xFFA34747),
+//                               ),
+//                             ),
+//                             Text(
+//                               "Total Trip time:20 minutes",
+//                               style: TextStyle(
+//                                 fontFamily: 'Helvetica',
+//                                 fontSize: 15.0,
+//                                 color: const Color(0xFFA34747),
+//                               ),
+//                             ),
+//                       Text(
+//                           "Personnel:"+todo["Personnel"].toString(),
+//                           style: TextStyle(
+//                             fontFamily: 'Helvetica',
+//                             fontSize: 15.0,
+//                             color: const Color(0xFFA34747),
+//                           ),),
+//                           ]),
+//                         )),
+//                   )),
+//
+//               Spacer(flex: 10),
+//               Text(
+//                 "RATE THE TRIP",
+//                 style: TextStyle(
+//                   fontFamily: 'Helvetica',
+//                   fontSize: 20.0,
+//                   color: const Color(0xFFA34747),
+//                 ),),
+//               Container(
+//                   width: 300,
+//                   height: 100,
+//                   decoration: BoxDecoration(
+//                     borderRadius: BorderRadius.circular(10.0),
+//                     color: Color(0xFFA43247),
+//                   ),
+//                   child: Padding(
+//                       padding: const EdgeInsets.all(25.0),
+//                       child: RatingBar.builder(
+//                         initialRating: 3,
+//                         minRating: 1,
+//                         direction: Axis.horizontal,
+//                         allowHalfRating: true,
+//                         itemCount: 5,
+//                         itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+//                         itemBuilder: (context, _) => Icon(
+//                           Icons.star,
+//                           color: Colors.amber,
+//                         ),
+//                         onRatingUpdate: (rating) {
+//                           rate(todo["Request_id"],rating);
+//                           print(rating);
+//                         },
+//                       ),
+//
+//
+//                       )),
+//               Spacer(flex: 20),
+//
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+//
+//   Future<void> rate(id,rating) async {
+//     DatabaseReference ref = FirebaseDatabase.instance.ref("requests/$id");
+//     try {
+//       await ref.update({
+//         "Rating":rating
+//       });
+//     } on Exception catch (e, s) {
+//       print(s);
+//     }
+//
+//
+//   }
+//
+// }
 class Page5 extends StatelessWidget {
   const Page5({Key? key}) : super(key: key);
 
@@ -1098,14 +1081,14 @@ final tod;
     final LatLng _center = LatLng(longf,langf);
 
 
-    final hospl=tod["Hospital_location"].toString().split(",");
+    final hospl=tod["Customer_location"].toString().split(",");
     final hosplang=double.parse(hospl[0]);
     final hosplong=double.parse(hospl[1]);
 
     return  Scaffold(
       backgroundColor: const Color(0xFFEFDCDC),
       appBar: AppBar(
-        title: Text(tod["Hospital_name"].toString()),
+        title: Text(tod["Request_id"].toString()),
         backgroundColor: const Color(0xFFA34747),
       ),
       body:
@@ -1117,7 +1100,7 @@ final tod;
               Container(
                   alignment: Alignment(-0.78, -0.04),
                   width: 450.0,
-                  height: 350.0,
+                  height: 300.0,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
                     color: Colors.white,
@@ -1128,8 +1111,8 @@ final tod;
                         child: Center(
                           child: GoogleMapsWidget(
                             apiKey: "AIzaSyCaG0u5EfOCiQTSWQyEia2HBbhl3wxcB-g",
-                            sourceLatLng: LatLng(hosplang, hosplong),
-                            destinationLatLng: LatLng(longf, langf),
+                            sourceLatLng: LatLng(langf,longf),
+                            destinationLatLng: LatLng(hosplang, hosplong),
 
 
                             routeWidth: 2,
@@ -1145,10 +1128,10 @@ final tod;
                             ),
                             // mock stream
                             driverCoordinatesStream: Stream.periodic(
-                            Duration(milliseconds: 500),
+                            Duration(milliseconds: 1000),
                             (i) => LatLng(
-                              hosplang + i / 20000,
-                              hosplong - i / 20000,
+                              langf ,
+                              longf ,
                             ),
                             ),
                             sourceName: tod["Hospital_name"].toString(),
@@ -1158,479 +1141,207 @@ final tod;
                             },
                             totalTimeCallback: (time) => print(time),
                             totalDistanceCallback: (distance) => print(distance),
-
-
                             ),
-
-                          // child: GoogleMap(
-                          //   onMapCreated: _onMapCreated,
-                          //   initialCameraPosition: CameraPosition(
-                          //     target: _center,
-                          //     zoom: 14.0,
-                          //   ),
-                          // ),
                         ),
                       ))),
                       Padding(
                       padding: const EdgeInsets.all(5.0),),
+              Container(
+                  alignment: Alignment(-0.78, -0.04),
+                  width: 350.0,
+                  height: 150.0,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                    color: Colors.white,
+                  ),
+                  child: SizedBox(
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Center(
+                          child: Column(children: [
+                            Text(
+                              tod["Customer_Name"].toString(),
+                              style: TextStyle(
+                                fontFamily: 'Helvetica',
+                                fontSize: 20.0,
+                                color: const Color(0xFFA34747),
+                              ),
+                            ),
+
+                            Text(
+                              tod["Customer_location"].toString(),
+                              style: TextStyle(
+                                fontFamily: 'Helvetica',
+                                fontSize: 15.0,
+                                color: const Color(0xFFA34747),
+                              ),
+                            ),
+                            Padding(padding: const EdgeInsets.all(3.0)),
+                            Text(
+                              tod["Destination"].toString(),
+                              style: TextStyle(
+                                fontFamily: 'Helvetica',
+                                fontSize: 15.0,
+                                color: const Color(0xFFA34747),
+                              ),
+                            ),
+                            Text(
+                              tod["Pick_Up_Time"].toString(),
+                              style: TextStyle(
+                                fontFamily: 'Helvetica',
+                                fontSize: 15.0,
+                                color: const Color(0xFFA34747),
+                              ),
+                            ),
+                            Text(
+                              tod["Request_DateTime"].toString(),
+                              style: TextStyle(
+                                fontFamily: 'Helvetica',
+                                fontSize: 15.0,
+                                color: const Color(0xFFA34747),
+                              ),
+                            ),
+
+
+
+                          ])),
+                    ),
+                  )),
+              Padding(padding: const EdgeInsets.all(3.0)),
     ListView.builder(
     shrinkWrap: true,
     itemCount: 1,
     itemBuilder: (BuildContext context, int index) {
       var ongoing;
       if(tod["Status"]=="Ongoing"){
-        ongoing=
-          Column(
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+        ongoing=  ElevatedButton(
 
+          onPressed: () {
+            var bol=tripupdate(tod["Request_id"].toString(),"Started");
+            if(bol==true){
 
-                  Text("EMS yet to leave hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>   MapTrackPage(long: long, lang:lang, tod:tod),
+                ),
+              );
 
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
+            }
 
+          },
+          child: Text(
+              "START"
 
-                  Text("EMS has left the hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
+          ),style: ElevatedButton.styleFrom(
+             primary: Color(0xFFA34747)),
 
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS is arrving soon",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS has arrived at your location",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS has started trip to hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS has ended trip",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-
-                ],),
-
-            ],
           );
       }
       else if(tod["Status"]=="Started"){
-        ongoing=Column(
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+        ongoing=ElevatedButton(
 
+          onPressed: () {
+            var bol=tripupdate(tod["Request_id"].toString(),"Arrived");
+            if(bol==true){
 
-                  Text("EMS yet to leave hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>   MapTrackPage(long: long, lang:lang, tod:tod),
+                ),
+              );
 
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+            }
+          },
+          child: Text(
+              "ARRIVED"
 
+          ),style: ElevatedButton.styleFrom(
+             primary: Color(0xFFA34747)),
 
-                  Text("EMS has left the hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS is arrving soon",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS has arrived at your location",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS has started trip to hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS has ended trip",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-
-                ],),
-
-            ],
-          );
+        );
 
       }
       else if(tod["Status"]=="Arrived"){
-        ongoing=Column(
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+        ongoing=ElevatedButton(
 
+          onPressed: () {
+            var bol=tripupdate(tod["Request_id"].toString(),"Trip");
+            if(bol==true){
 
-                  Text("EMS yet to leave hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>   MapTrackPage(long: long, lang:lang, tod:tod),
+                ),
+              );
 
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+            }
+          },
+          child: Text(
+              "START TRIP"
 
+          ),style: ElevatedButton.styleFrom(
+            primary: Color(0xFFA34747)),
 
-                  Text("EMS has left the hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
-
-
-                  Text("EMS is arrving soon",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
-
-
-                  Text("EMS has arrived at your location",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS has started trip to hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS has ended trip",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-
-                ],),
-
-            ],
-          );
+        );
 
       }
       else if(tod["Status"]=="Trip"){
-        ongoing=Column(
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+        ongoing=ElevatedButton(
 
+          onPressed: () {
+            var bol=tripupdate(tod["Request_id"].toString(),"Completed");
+            if(bol==true){
 
-                  Text("EMS yet to leave hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>   MapTrackPage(long: long, lang:lang, tod:tod),
+                ),
+              );
 
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+            }
+          },
+          child: Text(
+              "HOSPITAL REACHED"
 
+          ),style: ElevatedButton.styleFrom(
+             primary: Color(0xFFA34747)),
 
-                  Text("EMS has left the hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
-
-
-                  Text("EMS is arrving soon",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
-
-
-                  Text("EMS has arrived at your location",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
-
-
-                  Text("EMS has started trip to hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS has ended trip",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-
-                ],),
-
-            ],
-          );
+        );
 
       }
       else if(tod["Status"]=="Completed"){
-        ongoing=Column(
+        ongoing= ElevatedButton(
+
+          onPressed: () {  },
+          child: Column(
             children: [
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+              Icon(Icons.star),
+              Text(
+                  "RATING"
 
+              ),
+              Text(
+                  "4.0"
 
-                  Text("EMS yet to leave hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
-
-
-                  Text("EMS has left the hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS is arrving soon",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
-
-
-                  Text("EMS has arrived at your location",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
-
-
-                  Text("EMS has started trip to hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
-
-
-                  Text("EMS has ended trip",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-
-                ],),
-
+              )
             ],
-          );
+          ),style: ElevatedButton.styleFrom(
+
+           primary: Color(0xFFA34747)),
+        );
+
+
 
       }
 
 
+
       return Container(
+
         child:ongoing
       );
     })
@@ -1645,6 +1356,44 @@ final tod;
 
 
 
+    );
+  }
+
+
+  Future<bool> tripupdate(id,status) async {
+    DatabaseReference ref = FirebaseDatabase.instance.ref("requests/$id");
+    var bol=false;
+    try {
+      await ref.update({
+        "Status": status,
+      });
+      bol=true;
+
+
+
+    } on Exception catch (e, s) {
+      print(s);
+    }
+    return bol;
+
+  }
+}
+Route _createRoute() {
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => const Rel(),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return child;
+    },
+  );
+}
+
+class Rel extends StatelessWidget{
+  const Rel({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      home: MyRequestPage(),
     );
   }
 }

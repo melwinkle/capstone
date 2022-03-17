@@ -35,7 +35,7 @@ class Page1 extends StatelessWidget {
 // Group: Group 32
 
               SizedBox(
-                width: 120.0,
+                width: 200.0,
                 height: 85.76,
                 child: Stack(
                   alignment: Alignment.topCenter,
@@ -43,7 +43,7 @@ class Page1 extends StatelessWidget {
                     Positioned(
                       bottom: 0,
                       child: Text(
-                        'LAMBER',
+                        'LAMBER EMS',
                         style: TextStyle(
                           fontSize: 30.0,
                           color: Color(0xFF830C0C),
@@ -65,7 +65,7 @@ class Page1 extends StatelessWidget {
               const Align(
                 alignment: Alignment(-0.88, 0.0),
                 child: Text(
-                  'Request for an ambulance',
+                  'Manage and track your requests',
                   style: TextStyle(
                     fontFamily: 'Helvetica',
                     fontSize: 20.0,
@@ -107,7 +107,7 @@ class Page1 extends StatelessWidget {
                           Navigator.of(context).push(_createRoutes());
                         },
                         child: const Text(
-                          'Create account',
+                          'Verify your Email',
                           style: TextStyle(
                             color: Color(0xFFA34747),
                           ),

@@ -1,3 +1,4 @@
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:lamber/ambulances.dart';
@@ -6,7 +7,7 @@ import 'package:lamber/sign_route.dart';
 import 'package:lamber/request.dart';
 import 'package:lamber/first_aid.dart';
 import 'package:lamber/profile.dart';
-import 'package:lamber/loader.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -50,7 +51,6 @@ class Homepage extends State<MyHomePage> {
   final List<Widget> _children = [
     const MyHomePage(),
     const MyRequestPage(),
-    const MyAidPage(),
     const MyProfilePage(),
   ];
 
@@ -59,17 +59,15 @@ class Homepage extends State<MyHomePage> {
   String FullAddress='';
   String Street='';
   String locat='';
-
+  List<dynamic> lst = [];
+  List<dynamic> hosp = [];
+  FirebaseAuth auth = FirebaseAuth.instance;
+  final userid=FirebaseAuth.instance.currentUser?.uid;
   Future<Position> _getGeoLocationPosition() async {
     bool serviceEnabled;
     LocationPermission permission;
-
-    // Test if location services are enabled.
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the
-      // App to enable the location services.
       await Geolocator.openLocationSettings();
       return Future.error('Location services are disabled.');
     }
@@ -83,13 +81,9 @@ class Homepage extends State<MyHomePage> {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately.
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
-
-    // When we reach here, permissions are granted and we can
-    // continue accessing the position of the device.
     return await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
   }
@@ -117,6 +111,20 @@ return address;
   }
 
 
+  showData () async{
+    DatabaseReference ref = FirebaseDatabase.instance.ref("requests");
+
+    Query query = ref.orderByChild("Personnel_uid").equalTo(userid);
+
+
+
+    DataSnapshot event = await query.get();
+
+
+    print(event.value.toString());
+    return event.value;
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -130,61 +138,8 @@ return address;
           height: 812.0,
           child: Column(
             children: <Widget>[
-              const Spacer(flex: 50),
+
 // Group: Group 32
-
-              const Align(
-                alignment: Alignment(-0.88, 0.0),
-                child: Text(
-                  'Emergency',
-                  style: TextStyle(
-                    fontFamily: 'Helvetica',
-                    fontSize: 30.0,
-                    color: Color(0xFFA34747),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-
-              const Align(
-                alignment: Alignment(-0.88, 0.0),
-                child: Text(
-                  'Press and hold to send a message',
-                  style: TextStyle(
-                    fontFamily: 'Helvetica',
-                    fontSize: 15.0,
-                    color: Color(0xFF807E7E),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const Spacer(flex: 5),
-              Container(
-                  width: 600.0,
-                  height: 250.0,
-                  margin: const EdgeInsets.all(25),
-                  child: Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        sosrequest(Address,locat);
-                      },
-                      child: const Text(
-                        'SOS',
-                        style: TextStyle(
-                          fontFamily: 'Helvetica',
-                          fontSize: 30.0,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(
-                              const Color(0xFF8E2525)),
-                          shape: MaterialStateProperty.all(const CircleBorder(
-                              side: BorderSide(
-                                  width: 12, color: Color(0xFFCE9595))))),
-                    ),
-                  )),
-
               FutureBuilder(
                 future: GetAddressFromLatLong(),
                 builder: (context, AsyncSnapshot<String> snapshot) {
@@ -265,38 +220,217 @@ return address;
                   return const CircularProgressIndicator();
                 },
               ),
+              Spacer(flex: 5),
+              FutureBuilder(
+                  future:showData(),
+
+                  builder: (context, AsyncSnapshot snapshot) {
+
+                    if (snapshot.hasData) {
+                      lst.clear();
+                      Map<dynamic, dynamic> values = snapshot.data;
+
+                      values.forEach((key, values) {
+                        // lst.add(values);
+                        lst.add(values);
 
 
-              Spacer(flex: 20),
-              Container(
-                  width: 250.0,
-                  height: 50.0,
-                  margin: const EdgeInsets.all(25),
-                  child: Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>  MyAmbulancePage(),
+                      });
+                     int rat=0;
+                      int tot=0;
+                      lst.forEach((element) {
+                        if(element["Rating"]==null){
+                          tot=0;
+                        }else{
+                          tot=int.parse(element["Rating"].toString());
+                        }
+                        rat+=tot;
+                        print("tot"+rat.toString());
+                      });
+
+                      return Container(
+                          width:400,
+                          child:Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton(
+
+                                onPressed: () {  },
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.receipt),
+                                    Text(
+                                        "TOTAL REQUESTS"
+
+                                    ),
+                                    Text(
+                                        lst.length.toString()
+
+                                    )
+                                  ],
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 40),
+                                    fixedSize: const Size(150, 150), primary: Color(0xFFA34747)),
+                              ),
+                              ElevatedButton(
+
+                                onPressed: () {  },
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.star),
+                                    Text(
+                                        "AVERAGE RATING"
+
+                                    ),
+                                    Text(
+                                        rat.toString()
+                                    )
+                                  ],
+                                ),style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 40),
+                                  fixedSize: const Size(150, 150), primary: Color(0xFFA34747)),
+                              )
+
+                            ],
+                          )
+                      );
+                    }
+                    return CircularProgressIndicator();
+                  }),
+
+
+
+              Spacer(flex: 10),
+              const Align(
+                alignment: Alignment(-0.59, 0.0),
+                child: Text(
+                  'New Request',
+                  style: TextStyle(
+                    fontFamily: 'Helvetica',
+                    fontSize: 20.0,
+                    color: Color(0xFFA34747),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+
+              FutureBuilder(
+                  future:showData(),
+
+                  builder: (context, AsyncSnapshot snapshot) {
+
+                    if (snapshot.hasData) {
+                      lst.clear();
+                      Map<dynamic, dynamic> values = snapshot.data;
+
+                      values.forEach((key, values) {
+                        // lst.add(values);
+                        lst.add(values);
+
+
+                      });
+
+                      var tot;
+                      var hosplong;
+                      var hosplang;
+                      var index;
+
+
+                      lst.forEach((element) {
+                        if(element["Status"]=="Ongoing"){
+                          tot=element["Request_id"].toString();
+                          final hospl=element["Hospital_location"].toString().split(",");
+                          hosplang=double.parse(hospl[0]);
+                          hosplong=double.parse(hospl[1]);
+                          // hosp.add(element);
+                          index=0;
+                          hosp.insert(index, element);
+
+
+                        }
+
+
+                      });
+                      print(hosp);
+
+                      return   Container(
+                          width: 320.0,
+                          height: 90.0,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10.0),
                           ),
-                        );
-                      },
-                      child: const Text(
-                        'AVAILABLE AMBULANCES',
-                        style: TextStyle(
-                          fontFamily: 'Helvetica',
-                          fontSize: 15.0,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      style: ButtonStyle(
-                        backgroundColor:
-                        MaterialStateProperty.all(Color(0xFFA34747)),
-                      ),
-                    ),
-                  )),
+                          child:SizedBox(
+                              child:DecoratedBox(
+                                  decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      border: Border.all(color: Color(0xFFA34747))
+                                  ),
+                                  child:Column(
+                                    children: [
+                                      Text("Assgined Request for #"+tot.toString(),style: TextStyle(
+                                        fontFamily: 'Helvetica',
+                                        fontSize: 15.0,
+                                        color: Color(0xFFA34747),
+                                        fontWeight: FontWeight.w500,
+                                      )),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          OutlinedButton(
+
+                                            onPressed: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => MapTrackPage(long: hosplong, lang:hosplang, tod:hosp[index]),
+                                                ),
+                                              );
+
+                                            },
+                                            child: Text(
+                                                "VIEW REQUEST",
+                                                style: TextStyle(
+                                                  fontFamily: 'Helvetica',
+                                                  fontSize: 12.0,
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w500,
+                                                )
+
+                                            ),
+                                            style: OutlinedButton.styleFrom(
+                                              backgroundColor: Color(0xFFA34747),
+                                              side: BorderSide(
+                                                width: 1.0,
+                                                color: Color(0xFFA34747),
+                                                style: BorderStyle.solid,
+                                              ),
+                                            ),
+                                          ),
+
+
+                                        ],
+
+                                      )
+                                    ],
+                                  )
+                              )
+
+                          )
+                      );
+                    }
+                    return CircularProgressIndicator();
+                  }),
+
+
+
+
+
               Spacer(flex: 20),
+
+
+
 
           Container(
             decoration: BoxDecoration(
@@ -328,10 +462,7 @@ return address;
                     label: 'Requests',
                     icon: Icon(Icons.receipt_outlined),
                   ),
-                  BottomNavigationBarItem(
-                    label: 'First Aid',
-                    icon: Icon(Icons.health_and_safety_outlined),
-                  ),
+
                   BottomNavigationBarItem(
                     label: 'Account',
                     icon: Icon(Icons.person_outlined),
@@ -362,16 +493,12 @@ return address;
 
   Future<void> sosrequest(String street, String locat) async {
     final userid = FirebaseAuth.instance.currentUser?.uid;
-
     DatabaseReference ref = FirebaseDatabase.instance.ref("users/clients");
     Query query = ref.orderByKey().equalTo(userid);
     DataSnapshot event = await query.get();
     var username;
     var phone;
-
-
     Map<dynamic, dynamic> values = event.value as Map<dynamic, dynamic>;
-
     values.forEach((key, value) {
       username = value['FullName'].toString();
       phone = value['Phone'].toString();
@@ -380,13 +507,9 @@ return address;
         DateTime.now());
     final times = DateFormat("MMddyyyyHHmm").format(DateTime.now());
     final pick = DateFormat("HH:mm:ss a").format(DateTime.now());
-    final requestid = username.toString().substring(0, 3).trim() + "Gen" +
-        times.toString();
-
+    final requestid = username.toString().substring(0, 3).trim() + "Gen" + times.toString();
     DatabaseReference request = FirebaseDatabase.instance.ref(
         "requests/$requestid");
-
-
     try {
       await request.set({
         "Customer_Name": username,
@@ -399,10 +522,7 @@ return address;
         "Request_Type": "General",
         "Status": "Pending",
         "Request_id": requestid,
-
-
       });
-
       Navigator.push(
         context,
         MaterialPageRoute(

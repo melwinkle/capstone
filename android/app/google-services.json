@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:546879107116:android:699409d481a48127116189",
         "android_client_info": {
-          "package_name": "com.example.lamber"
+          "package_name": "com.example.lamber_ems"
         }
       },
       "oauth_client": [
@@ -30,6 +30,49 @@
             {
               "client_id": "546879107116-lrc8s69odo7p63c3vuh8vqcb8ak4pm7b.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "546879107116-midfq7dii83mh8d81hin8rl7m16rdjr9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.lamber"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:546879107116:android:0023e6ce172d1c5f116189",
+        "android_client_info": {
+          "package_name": "com.example.lamber_ems"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "546879107116-lrc8s69odo7p63c3vuh8vqcb8ak4pm7b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuh8q2m0mhZuJuHBRaQrKJ0snE8Svj0Uw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "546879107116-lrc8s69odo7p63c3vuh8vqcb8ak4pm7b.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "546879107116-midfq7dii83mh8d81hin8rl7m16rdjr9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.lamber"
+              }
             }
           ]
         }

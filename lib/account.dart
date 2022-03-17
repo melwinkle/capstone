@@ -40,13 +40,13 @@ class Accountpage extends State<MyAccountPage> {
   int _currentIndex = 3;
   FirebaseAuth auth = FirebaseAuth.instance;
   final userid=FirebaseAuth.instance.currentUser?.uid;
-  final fb = FirebaseDatabase.instance.ref('users/clients').orderByKey();
+  final fb = FirebaseDatabase.instance.ref('users/ems').orderByKey();
   List<dynamic> lst = [];
 
 
   final _formKey = GlobalKey<FormState>();
   final fullname = TextEditingController();
-
+  final lastname = TextEditingController();
   @override
   void initState(){
 
@@ -68,7 +68,6 @@ class Accountpage extends State<MyAccountPage> {
   final List<Widget> _children = [
     const MyHomePage(),
     const MyRequestPage(),
-    const MyAidPage(),
     const MyProfilePage(),
   ];
 
@@ -140,27 +139,47 @@ class Accountpage extends State<MyAccountPage> {
                                                 borderRadius: BorderRadius.circular(8.0),
                                                 color: Colors.white,
                                               ),
-                                              child: TextFormField(
-                                controller: fullname,
-                                // The validator receives the text that the user has entered.
-                                validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                return 'Please enter full name';
-                                }
-                                return  lst[index]["FullName"];
-                                }, decoration: InputDecoration(
-                                hintText: lst[index]["FullName"],
-                                hintStyle: TextStyle(color: Color(0xFFA43247), fontWeight: FontWeight.w400,
-                                  fontSize:20.0,),
-                                filled: true,
-                                fillColor: Colors.white,
-                                border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide.none,
-                                )),)),
+                                              child: Text(
+                                                lst[index]["First_name"],
+                                                style: TextStyle(
+                                                  color: Color(0xFFA43247),
+                                                  fontSize: 20.0,
+
+                                                ),
+                                              )),
 
                                           Padding(
                                               padding: const EdgeInsets.all(5.0)),
+                                          Container(
+                                            child: const Text(
+                                              "Last Name",
+                                              style: TextStyle(
+                                                color: Color(0xFFA43247),
+                                                fontWeight: FontWeight.w300,
+                                                fontSize: 10.0,
+                                              ),
+                                            ),
+                                            alignment: Alignment.topLeft,
+                                          ),
+                                          Padding(
+                                              padding: const EdgeInsets.all(5.0)),
+
+
+                                          Container(
+                                              width: 300.0,
+                                              height: 40.0,
+                                              decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(8.0),
+                                                color: Colors.white,
+                                              ),
+                                              child: Text(
+                                                lst[index]["Last_name"],
+                                                style: TextStyle(
+                                                  color: Color(0xFFA43247),
+                                                  fontSize: 20.0,
+
+                                                ),
+                                              )),
                                           Container(
                                             child: const Text(
                                               "Email",
@@ -208,7 +227,35 @@ class Accountpage extends State<MyAccountPage> {
                                                 color: Colors.white,
                                               ),
                                               child: Text(
-                                                lst[index]["Phone"],
+                                                lst[index]["Number"],
+                                                style: TextStyle(
+                                                  color: Color(0xFFA43247),
+                                                  fontSize: 20.0,
+
+                                                ),
+                                              )),
+                                          Padding(
+                                              padding: const EdgeInsets.all(5.0)),
+                                          Container(
+                                            child: const Text(
+                                              "Role",
+                                              style: TextStyle(
+                                                color: Color(0xFFA43247),
+                                                fontWeight: FontWeight.w300,
+                                                fontSize: 10.0,
+                                              ),
+                                            ),
+                                            alignment: Alignment.topLeft,
+                                          ),
+                                          Container(
+                                              width: 300.0,
+                                              height: 40.0,
+                                              decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(8.0),
+                                                color: Colors.white,
+                                              ),
+                                              child: Text(
+                                                lst[index]["Role"],
                                                 style: TextStyle(
                                                   color: Color(0xFFA43247),
                                                   fontSize: 20.0,
@@ -217,33 +264,7 @@ class Accountpage extends State<MyAccountPage> {
                                               )),
                                           Padding(
                                               padding: const EdgeInsets.all(20.0)),
-                                          Container(
-                                            width: 250,
-                                            height: 50,
-                                            child: ElevatedButton(
-                                              onPressed: () {
-                                                // Validate returns true if the form is valid, or false otherwise.
-                                                if (_formKey.currentState!.validate()) {
-                                                  // If the form is valid, display a snackbar. In the real world,
-                                                  // you'd often call a server or save the information in a database.
-                                                  sig(fullname.text);
 
-                                                  // ScaffoldMessenger.of(context).showSnackBar(
-                                                  //    SnackBar(content:  Text(myController.text+password.text)),
-                                                  // );
-                                                }else{
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                         SnackBar(content:  Text(fullname.text)),
-                                                      );
-                                                }
-                                              },
-                                              child: const Text('Edit'),
-                                              style: ButtonStyle(
-                                                backgroundColor:
-                                                MaterialStateProperty.all(Color(0xFFA34747)),
-                                              ),
-                                            ),
-                                          ),
                                         ])
                                 ));
 
@@ -264,10 +285,11 @@ class Accountpage extends State<MyAccountPage> {
     );
   }
 
-  void sig(name) async{
-    DatabaseReference ref = FirebaseDatabase.instance.ref("users/clients/$userid");
+  void sig(name,lname) async{
+    DatabaseReference ref = FirebaseDatabase.instance.ref("users/ems/$userid");
     await ref.update({
-      "FullName": name,
+      "First_name": name,
+      "Last_name":lname
     });
   }
 }

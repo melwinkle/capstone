@@ -33,7 +33,7 @@ class MyProfilePage extends StatefulWidget {
 }
 
 class Profilepage extends State<MyProfilePage> {
-  int _currentIndex = 3;
+  int _currentIndex = 2;
 
   _onTap() {
     Navigator.of(context).push(MaterialPageRoute(
@@ -44,7 +44,6 @@ class Profilepage extends State<MyProfilePage> {
   final List<Widget> _children = [
     const MyHomePage(),
     const MyRequestPage(),
-    const MyAidPage(),
     const MyProfilePage(),
   ];
 
@@ -65,7 +64,7 @@ class Profilepage extends State<MyProfilePage> {
               const Align(
                 alignment: Alignment(-0.88, 0.0),
                 child: Text(
-                  'Aileen Akpalu',
+                  'Account',
                   style: TextStyle(
                     fontFamily: 'Helvetica',
                     fontSize: 25.0,
@@ -112,79 +111,7 @@ class Profilepage extends State<MyProfilePage> {
                         )),
                   )),
 
-              Container(
-                  alignment: Alignment(-0.78, -0.04),
-                  width: 300.0,
-                  height: 90.0,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: SizedBox(
-                    child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.of(context).push(_createRoutes());
-                        },
-                        child: Row(
-                          children: [
-                            Align(
-                                alignment: Alignment.centerLeft,
-                                child: Icon(Icons.verified_user,
-                                    size: 32, color: Color(0xFFA34747))),
-                            Container(
-                              margin: const EdgeInsets.only(left: 10.0),
-                              child: const Text(
-                                'Account Upgrade',
-                                style: TextStyle(
-                                  color: Color(0xFFA34747),
-                                  fontWeight: FontWeight.w300,
-                                  fontSize: 20.0,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          fixedSize: const Size(350, 80),
-                        )),
-                  )),
 
-              Container(
-                  alignment: Alignment(-0.78, -0.04),
-                  width: 300.0,
-                  height: 90.0,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: SizedBox(
-                    child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.of(context).push(_createRouter());
-                        },
-                        child: Row(
-                          children: [
-                            Align(
-                                alignment: Alignment.centerLeft,
-                                child: Icon(Icons.credit_card,
-                                    size: 32, color: Color(0xFFA34747))),
-                            Container(
-                              margin: const EdgeInsets.only(left: 10.0),
-                              child: const Text(
-                                'Payment Options',
-                                style: TextStyle(
-                                  color: Color(0xFFA34747),
-                                  fontWeight: FontWeight.w300,
-                                  fontSize: 20.0,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          fixedSize: const Size(350, 80),
-                        )),
-                  )),
 
               Container(
                   alignment: Alignment(-0.78, -0.04),
@@ -282,10 +209,6 @@ class Profilepage extends State<MyProfilePage> {
                   BottomNavigationBarItem(
                     label: 'Requests',
                     icon: Icon(Icons.receipt_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'First Aid',
-                    icon: Icon(Icons.health_and_safety_outlined),
                   ),
                   BottomNavigationBarItem(
                     label: 'Account',
