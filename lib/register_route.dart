@@ -139,6 +139,7 @@ class MyCustomFormState extends State<MyCustomForm> {
   FirebaseAuth auth = FirebaseAuth.instance;
 
   final fullname = TextEditingController();
+  final password = TextEditingController();
   final name = "users/ems/";
   final fb = FirebaseDatabase.instance;
 
@@ -170,8 +171,27 @@ class MyCustomFormState extends State<MyCustomForm> {
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide.none,
                   ))),
-
-
+          Padding(
+              padding: const EdgeInsets.symmetric(vertical: 13.0)),
+          TextFormField(
+              controller: password,
+              // The validator receives the text that the user has entered.
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your password';
+                }
+                return null;
+              },
+              decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.person),
+                  hintText: 'Password',
+                  hintStyle: TextStyle(color: Colors.black87),
+                  filled: true,
+                  fillColor: Color(0xFFEFDCDC),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5),
+                    borderSide: BorderSide.none,
+                  ))),
 
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 13.0),
@@ -183,7 +203,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                   onPressed: () {
                     // Validate returns true if the form is valid, or false otherwise.
                     if (_formKey.currentState!.validate()) {
-                      verify(fullname.text);
+                      verify(fullname.text,password.text);
                       // If the form is valid, display a snackbar. In the real world,
                       // you'd often call a server or save the information in a database.
 
@@ -204,11 +224,65 @@ class MyCustomFormState extends State<MyCustomForm> {
     );
   }
 
-  void verify(mail) async{
+  void verify(mail,pass) async{
     final ref = fb.reference();
+    final refs=fb.ref('users/ems_temp').orderByChild("Email");
+    final ems=refs.equalTo(mail);
+    final dat=await ems.get();
+    List<dynamic> lst = [];
+
+
+    if(dat.exists){
+      lst.clear();
+      Map<dynamic,dynamic> values = dat.value as Map;
+
+      values.forEach((key, values) {
+        lst.add(values);
+
+
+      });
+    }
+
+    final fl=lst[0]['First_name']+lst[0]['Last_name'];
+
+
     try {
-      print(mail);
-      Navigator.of(context).push(_createRoutes());
+
+      if(ems!=null){
+        print(lst[0]);
+        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+            email: mail,
+            password: pass
+        );
+        String user=userCredential.user?.uid as String;
+
+        Map<String, String> userData = {
+          'Email':mail,
+          'First_name':lst[0]['First_name'],
+          'Last_name': lst[0]['Last_name'],
+          'Number': lst[0]['Number'],
+          'uid': user,
+          'Role':lst[0]['Role'],
+          'Online':'0',
+          'Status':'Active',
+          'Hospital':lst[0]['Hospital'],
+          'Hospital_uid':lst[0]['Hospital_uid']
+        };
+        ref.child(name+user).set(userData);
+        User? users = FirebaseAuth.instance.currentUser;
+
+        if (users!= null && !users.emailVerified) {
+          await users.sendEmailVerification();
+        }
+        fb.ref('users/ems_temp/$fl').remove();
+        print(mail);
+        Navigator.of(context).push(_createRoutes());
+
+      }else{
+        print("Email does not exist");
+      }
+
+
 
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {

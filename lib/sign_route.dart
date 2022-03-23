@@ -262,8 +262,15 @@ class MyCustomFormState extends State<MyCustomForm> {
           email: mail,
           password:pass
       );
-      if(userCredential.user!=null){
-        Navigator.of(context).push(_createRoute());
+      if(userCredential.user!=null ){
+        User? user = FirebaseAuth.instance.currentUser;
+
+        if (user!= null && user.emailVerified) {
+          Navigator.of(context).push(_createRoute());
+        }else{
+          await user?.sendEmailVerification();
+        }
+
       }
       else{
         print('User signed in');
