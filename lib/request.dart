@@ -1,4 +1,7 @@
-import 'dart:ffi';
+import 'dart:async';
+
+import 'dart:io';
+
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -17,7 +20,10 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_maps_widget/google_maps_widget.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:flutter_paystack/flutter_paystack.dart';
+import 'package:lamber/pay_button.dart';
 import 'map.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -144,12 +150,40 @@ class Requestpage extends State<MyRequestPage> {
     const MyProfilePage(),
   ];
 
+  RefreshController _refreshController =
+  RefreshController(initialRefresh: false);
+
+  void _onRefresh() async{
+    // monitor network fetch
+    await Future.delayed(Duration(milliseconds: 1000));
+    // if failed,use refreshFailed()
+    _refreshController.refreshCompleted();
+  }
+  void _onLoading() async{
+    // monitor network fetch
+    await Future.delayed(Duration(milliseconds: 1000));
+    // if failed,use loadFailed(),if no data return,use LoadNodata()
+
+    const MyRequestPage();
+    if(mounted)
+      setState(() {
+
+      });
+    _refreshController.loadComplete();
+  }
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
       backgroundColor: const Color(0xFFEFDCDC),
-      body: Align(
+      body:SmartRefresher(
+      enablePullDown: true,
+      enablePullUp: true,
+      header: WaterDropHeader(),
+      controller: _refreshController,
+      onRefresh: _onRefresh,
+      onLoading: _onLoading,
+      child: Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
 
@@ -158,7 +192,7 @@ class Requestpage extends State<MyRequestPage> {
             children: <Widget>[
 
 // Group: Group 32
-              Padding(padding: const EdgeInsets.all(30.0)),
+              Padding(padding: const EdgeInsets.all(10.0)),
               const Align(
                 alignment: Alignment(-0.88, 0.0),
                 child: Text(
@@ -172,7 +206,7 @@ class Requestpage extends State<MyRequestPage> {
                 ),
               ),
               Container(
-                height: 600,
+
                   child:FutureBuilder(
                       future:showData(),
 
@@ -204,7 +238,7 @@ class Requestpage extends State<MyRequestPage> {
                                     Icon(Icons.shield,
                                         size: 15, color: Colors.orange),
                                   );
-                                  ems=ConfirmPage(todo: lst[index]);
+                                  ems=ConfirmP(todo: lst[index]);
 
 
 
@@ -215,7 +249,7 @@ class Requestpage extends State<MyRequestPage> {
                                     Icon(Icons.shield,
                                         size: 15, color: Colors.green[500]),
                                   );
-                                  ems=ConfirmFPage(todo: lst[index]);
+                                  ems=ConfirmFP(todo: lst[index]);
                                 }else if(lst[index]['Status']=="Cancel"){
                                   stat=Container(
                                     alignment: const Alignment(1.0, -0.4),
@@ -299,7 +333,8 @@ class Requestpage extends State<MyRequestPage> {
                                                     lst[index]["Request_DateTime"],
                                                     style: TextStyle(
                                                       color: Color(0xFFA34747),
-                                                      fontSize: 10.0,
+                                                      fontSize: 8.0,
+                                                      overflow: TextOverflow.ellipsis
                                                     ),
                                                   ),
                                                 ],
@@ -360,7 +395,7 @@ class Requestpage extends State<MyRequestPage> {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -400,13 +435,25 @@ class Page4 extends StatelessWidget {
   }
 }
 
+class ConfirmP extends StatefulWidget {
 
-class ConfirmPage extends StatelessWidget {
+
+  const ConfirmP({Key? key,required this.todo}) : super(key: key);
+
+  final todo;
+
+
+  @override
+  ConfirmPage createState() {
+    return ConfirmPage();
+  }
+}
+class ConfirmPage extends State<ConfirmP> {
   // In the constructor, require a Todo.
-  ConfirmPage({Key? key, required this.todo}) : super(key: key);
+  // ConfirmPage({Key? key, required this.todo}) : super(key: key);
 
   // Declare a field that holds the Todo.
-  final todo;
+  // final todo;
 
 
   final List<Widget> _children = [
@@ -418,7 +465,30 @@ class ConfirmPage extends StatelessWidget {
 
   int _currentIndex = 1;
 
+  String publicKeyTest =
+      'pk_test_ee1a5a462b6bc7c438af874774e763febc528369'; //pass in the public test key obtained from paystack dashboard here
 
+  final plugin = PaystackPlugin();
+  final userid=FirebaseAuth.instance.currentUser?.uid;
+  final Account='';
+  final mail='';
+  @override
+  void initState() {
+    plugin.initialize(publicKey: publicKeyTest);
+    super.initState();
+
+  }
+  void _showMessage(String message) {
+    final snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  //used to generate a unique reference for payment
+  String _getReference() {
+    var platform = (Platform.isIOS) ? 'iOS' : 'Android';
+    final thisDate = DateTime.now().millisecondsSinceEpoch;
+    return 'ChargedFrom${platform}_$thisDate';
+  }
   @override
   Widget build(BuildContext context) {
     // Use the Todo to create the UI.
@@ -428,17 +498,19 @@ class ConfirmPage extends StatelessWidget {
           builder: (BuildContext context) =>
           _children[_currentIndex])); // this has changed
     }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(todo["Hospital_name"].toString()),
+        title: Text(widget.todo["Hospital_name"].toString()),
         backgroundColor: const Color(0xFFA34747),
       ),
       backgroundColor: const Color(0xFFEFDCDC),
-      body: Align(
+      body: ListView(
+    children:[Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
 
-          height: 812.0,
+          height: 580.0,
           child: Column(
             children: <Widget>[
               const Spacer(flex: 5),
@@ -471,7 +543,7 @@ class ConfirmPage extends StatelessWidget {
                       padding: const EdgeInsets.all(5.0),
                       child: Column(children: [
                         Text(
-                          todo["Hospital_name"].toString(),
+                          widget.todo["Hospital_name"].toString(),
                           style: TextStyle(
                             fontFamily: 'Helvetica',
                             fontSize: 20.0,
@@ -492,7 +564,7 @@ class ConfirmPage extends StatelessWidget {
                         Padding(padding: const EdgeInsets.all(20.0)),
 
                         Text(
-                          "Pick Up Time:"+todo["Pick_Up_Time"].toString(),
+                          "Pick Up Time:"+widget.todo["Pick_Up_Time"].toString(),
                           style: TextStyle(
                             fontFamily: 'Helvetica',
                             fontSize: 15.0,
@@ -500,7 +572,7 @@ class ConfirmPage extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          "Request:"+todo["Request_DateTime"].toString(),
+                          "Request:"+widget.todo["Request_DateTime"].toString(),
                           style: TextStyle(
                             fontFamily: 'Helvetica',
                             fontSize: 15.0,
@@ -508,7 +580,7 @@ class ConfirmPage extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          todo["Reason"].toString(),
+                          widget.todo["Reason"].toString(),
                           style: TextStyle(
                             fontFamily: 'Helvetica',
                             fontSize: 15.0,
@@ -533,7 +605,7 @@ class ConfirmPage extends StatelessWidget {
                           child: Center(
                               child: ElevatedButton(
                                 onPressed: () {
-                                  _cancel(todo["Request_id"].toString());
+                                  _cancel(widget.todo["Request_id"].toString(),widget.todo["Hospital_Account"].toString(),widget.todo["Customer_Name"].toString(),widget.todo["Customer_Email"].toString());
 
                                 },
                                 child: const Text(
@@ -558,13 +630,46 @@ class ConfirmPage extends StatelessWidget {
           ),
         ),
       ),
+    ])
     );
   }
-  void _cancel(id) async {
+
+
+  void _cancel(id,acc,username,email) async {
     DatabaseReference ref = FirebaseDatabase.instance.ref("requests/$id");
-    await ref.update({
-      "Status": "Cancel",
-    });
+    var charge = Charge()
+      ..amount = 2*100  //the money should be in kobo hence the need to multiply the value by 100
+      ..reference = _getReference()
+      ..putCustomField('username',
+          username) //to pass extra parameters to be retrieved on the response from Paystack
+      ..email = email
+      ..currency="GHS"
+      ..subAccount=acc;
+
+    CheckoutResponse response = await plugin.checkout(
+      context,
+      method: CheckoutMethod.card,
+      charge: charge,
+    );
+
+    try{
+      if(response.status==true){
+        await ref.update({
+          "Status": "Cancel",
+        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>  MyRequestPage()
+          ),
+        );
+      }else{
+        _showMessage('Payment Failed!!!');
+      }
+    }on Exception catch (e, s) {
+      print(s);
+    }
+
   }
 
 }
@@ -626,7 +731,8 @@ final locat;
         backgroundColor: const Color(0xFFA34747),
       ),
       backgroundColor: const Color(0xFFEFDCDC),
-      body: Align(
+      body:ListView(
+    children:[Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
 
@@ -825,6 +931,7 @@ final locat;
           ),
         ),
       ),
+    ])
     );
   }
 
@@ -848,12 +955,29 @@ final locat;
   }
 
 }
-class ConfirmFPage extends StatelessWidget {
+
+
+
+
+class ConfirmFP extends StatefulWidget {
+
+
+  const ConfirmFP({Key? key,required this.todo}) : super(key: key);
+
+  final todo;
+
+
+  @override
+  ConfirmFPage createState() {
+    return ConfirmFPage();
+  }
+}
+class ConfirmFPage extends State<ConfirmFP> {
   // In the constructor, require a Todo.
-  ConfirmFPage({Key? key, required this.todo}) : super(key: key);
+  // ConfirmFPage({Key? key, required this.todo}) : super(key: key);
 
   // Declare a field that holds the Todo.
-  final todo;
+  // final todo;
 
   final List<Widget> _children = [
     const MyHomePage(),
@@ -870,11 +994,29 @@ class ConfirmFPage extends StatelessWidget {
   double _userRating = 3.0;
   int _ratingBarMode = 1;
   double _initialRating = 2.0;
+
+  String publicKeyTest =
+      'pk_test_ee1a5a462b6bc7c438af874774e763febc528369'; //pass in the public test key obtained from paystack dashboard here
+
+  final plugin = PaystackPlugin();
+
+  void _showMessage(String message) {
+    final snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  //used to generate a unique reference for payment
+  String _getReference() {
+    var platform = (Platform.isIOS) ? 'iOS' : 'Android';
+    final thisDate = DateTime.now().millisecondsSinceEpoch;
+    return 'ChargedFrom${platform}_$thisDate';
+  }
   @override
   void initState() {
-
+    plugin.initialize(publicKey: publicKeyTest);
     _ratingController = TextEditingController(text: '3.0');
     _rating = _initialRating;
+    super.initState();
   }
 
   IconData? _selectedIcon;
@@ -889,7 +1031,7 @@ class ConfirmFPage extends StatelessWidget {
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text(todo["Hospital_name"].toString()),
+        title: Text(widget.todo["Hospital_name"].toString()),
         backgroundColor: const Color(0xFFA34747),
       ),
       backgroundColor: const Color(0xFFEFDCDC),
@@ -920,7 +1062,7 @@ class ConfirmFPage extends StatelessWidget {
                         child: Center(
                           child: Column(children: [
                             Text(
-                              todo["Hospital_name"].toString(),
+                              widget.todo["Hospital_name"].toString(),
                               style: TextStyle(
                                 fontFamily: 'Helvetica',
                                 fontSize: 20.0,
@@ -928,7 +1070,7 @@ class ConfirmFPage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              todo["Vehicle_Registration"].toString(),
+                              widget.todo["Vehicle_Registration"].toString(),
                               style: TextStyle(
                                 fontFamily: 'Helvetica',
                                 fontSize: 15.0,
@@ -951,7 +1093,7 @@ class ConfirmFPage extends StatelessWidget {
                             ),
                             Padding(padding: const EdgeInsets.all(3.0)),
                             Text(
-                              todo["Destination"].toString(),
+                              widget.todo["Destination"].toString(),
                               style: TextStyle(
                                 fontFamily: 'Helvetica',
                                 fontSize: 15.0,
@@ -959,7 +1101,7 @@ class ConfirmFPage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              todo["Pick_Up_Time"].toString(),
+                              widget.todo["Pick_Up_Time"].toString(),
                               style: TextStyle(
                                 fontFamily: 'Helvetica',
                                 fontSize: 15.0,
@@ -967,7 +1109,7 @@ class ConfirmFPage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              todo["Request_DateTime"].toString(),
+                              widget.todo["Request_DateTime"].toString(),
                               style: TextStyle(
                                 fontFamily: 'Helvetica',
                                 fontSize: 15.0,
@@ -975,7 +1117,7 @@ class ConfirmFPage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              todo["Reason"].toString(),
+                              widget.todo["Reason"].toString(),
                               style: TextStyle(
                                 fontFamily: 'Helvetica',
                                 fontSize: 15.0,
@@ -991,7 +1133,7 @@ class ConfirmFPage extends StatelessWidget {
                               ),
                             ),
                       Text(
-                          "Personnel:"+todo["Personnel"].toString(),
+                          "Personnel:"+widget.todo["Personnel"].toString(),
                           style: TextStyle(
                             fontFamily: 'Helvetica',
                             fontSize: 15.0,
@@ -1030,13 +1172,25 @@ class ConfirmFPage extends StatelessWidget {
                           color: Colors.amber,
                         ),
                         onRatingUpdate: (rating) {
-                          rate(todo["Request_id"],rating);
+                          rate(widget.todo["Request_id"],rating);
                           print(rating);
                         },
                       ),
 
 
                       )),
+              Container(
+                child: ElevatedButton(
+                  onPressed: () {
+                      payb(widget.todo['Username'], widget.todo['Email'],widget.todo["Account"]);
+                  },
+                  child: Text('Pay'),
+                  style: ButtonStyle(
+                    backgroundColor:
+                    MaterialStateProperty.all(Color(0xFFA34747)),
+                  ),
+                ),
+              ),
               Spacer(flex: 20),
 
             ],
@@ -1057,6 +1211,33 @@ class ConfirmFPage extends StatelessWidget {
     }
 
 
+  }
+
+  Future<void> payb(username,cmail,acc) async {
+    var charge = Charge()
+      ..amount = 2*100  //the money should be in kobo hence the need to multiply the value by 100
+      ..reference = _getReference()
+      ..putCustomField('username',
+          username) //to pass extra parameters to be retrieved on the response from Paystack
+      ..email = cmail
+      ..currency="GHS"
+      ..subAccount=acc;
+
+    CheckoutResponse response = await plugin.checkout(
+      context,
+      method: CheckoutMethod.card,
+      charge: charge,
+    );
+
+
+    if (response.status == true) {
+      //you can send some data from the response to an API or use webhook to record the payment on a database
+      _showMessage('Payment was successful!!!');
+    }
+    else {
+      //the payment wasn't successsful or the user cancelled the payment
+      _showMessage('Payment Failed!!!');
+    }
   }
 
 }

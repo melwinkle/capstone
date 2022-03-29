@@ -35,7 +35,7 @@ class Page1 extends StatelessWidget {
 // Group: Group 32
 
               SizedBox(
-                width: 120.0,
+                width: 150.0,
                 height: 85.76,
                 child: Stack(
                   alignment: Alignment.topCenter,
@@ -45,7 +45,7 @@ class Page1 extends StatelessWidget {
                       child: Text(
                         'LAMBER',
                         style: TextStyle(
-                          fontSize: 30.0,
+                          fontSize: 25.0,
                           color: Color(0xFF830C0C),
                           fontWeight: FontWeight.w700,
                         ),
@@ -61,14 +61,14 @@ class Page1 extends StatelessWidget {
                   ],
                 ),
               ),
-              const Spacer(flex: 77),
+
               const Align(
                 alignment: Alignment(-0.88, 0.0),
                 child: Text(
                   'Request for an ambulance',
                   style: TextStyle(
                     fontFamily: 'Helvetica',
-                    fontSize: 20.0,
+                    fontSize: 15.0,
                     color: Color(0xFFA34747),
                   ),
                 ),
@@ -76,10 +76,10 @@ class Page1 extends StatelessWidget {
 
               SizedBox(
                 width: 350.0,
-                height: 350.0,
+                height: 250.0,
                 child: Image.asset('assets/images/ambulance.jpg'),
               ),
-              const Spacer(flex: 56),
+              const Spacer(flex: 5),
               Container(
                   width: 250.0,
                   height: 50.0,
@@ -96,7 +96,7 @@ class Page1 extends StatelessWidget {
                       ),
                     ),
                   )),
-              const Spacer(flex: 20),
+
               Container(
                   width: 250.0,
                   height: 50.0,

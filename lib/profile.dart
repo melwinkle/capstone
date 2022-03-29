@@ -52,15 +52,16 @@ class Profilepage extends State<MyProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEFDCDC),
-      body: Align(
+      body: ListView(
+      children:[Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
 
-          height: 812.0,
+          height: 575.0,
           child: Column(
             children: <Widget>[
 
-              Padding(padding: const EdgeInsets.all(30.0)),
+              Padding(padding: const EdgeInsets.all(6.0)),
 
               const Align(
                 alignment: Alignment(-0.88, 0.0),
@@ -226,7 +227,7 @@ class Profilepage extends State<MyProfilePage> {
               Container(
                   alignment: Alignment(-0.78, -0.04),
                   width: 300.0,
-                  height: 90.0,
+                  height: 50.0,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
                   ),
@@ -260,7 +261,7 @@ class Profilepage extends State<MyProfilePage> {
                           fixedSize: const Size(350, 80),
                         )),
                   )),
-              Spacer(flex: 20),
+              Spacer(flex: 15),
               BottomNavigationBar(
                 type: BottomNavigationBarType.fixed,
                 currentIndex: _currentIndex,
@@ -297,6 +298,7 @@ class Profilepage extends State<MyProfilePage> {
           ),
         ),
       ),
+    ])
     );
   }
 

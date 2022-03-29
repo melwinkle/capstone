@@ -56,14 +56,17 @@ class Aidpage extends State<MyAidPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEFDCDC),
-      body: Align(
+      body:  ListView(
+          children:[
+            Align(
         alignment: Alignment(0.01, 0.09),
-        child: SizedBox(
+        child:
+      SizedBox(
 
-          height: 812.0,
+          height: 600.0,
           child: Column(
             children: <Widget>[
-              const Padding(padding: EdgeInsets.only(top: 60.0)),
+              const Padding(padding: EdgeInsets.only(top: 5.0)),
 // Group: Group 32
               const Align(
                 alignment: Alignment(-0.88, 0.0),
@@ -82,7 +85,7 @@ class Aidpage extends State<MyAidPage> {
 
 
               Container(
-                height: 580,
+                height: 470,
                 child:FutureBuilder(
                     future: fb.get(),
 
@@ -160,7 +163,7 @@ class Aidpage extends State<MyAidPage> {
                     }),
                 ),
 
-              Spacer(flex: 20),
+
               BottomNavigationBar(
                 type: BottomNavigationBarType.fixed,
                 currentIndex: _currentIndex,
@@ -196,7 +199,9 @@ class Aidpage extends State<MyAidPage> {
             ],
           ),
         ),
+
       ),
+          ])
     );
   }
 }
@@ -245,32 +250,7 @@ class DetailScreen extends StatelessWidget {
           child: Column(
             children: <Widget>[
 
-// Group: Group 32
 
-              // Align(
-              //   alignment: Alignment(-0.88, 0.0),
-              //   child: Text(
-              //     'todo["Name"].toString()',
-              //     style: TextStyle(
-              //       fontFamily: 'Helvetica',
-              //       fontSize: 25.0,
-              //       color: const Color(0xFFA34747),
-              //       fontWeight: FontWeight.w700,
-              //     ),
-              //   ),
-              // ),
-
-              // Container(
-              //   width: 300.0,
-              //   height: 150.0,
-              //   decoration: BoxDecoration(
-              //     image: DecorationImage(
-              //       image: NetworkImage('assets/images/ambulance.jpg'),
-              //       fit: BoxFit.fill,
-              //     ),
-              //     borderRadius: BorderRadius.all(Radius.circular(10.0)),
-              //   ),
-              // ),
               Padding(padding: const EdgeInsets.all(5.0)),
               Container(
                   alignment: Alignment.topLeft,

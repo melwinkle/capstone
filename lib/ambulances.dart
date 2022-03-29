@@ -23,7 +23,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as path;
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:path_provider/path_provider.dart';
-
+import 'package:flutter_paystack/flutter_paystack.dart';
+import 'package:lamber/pay_button.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -73,6 +75,9 @@ class Ambulancepage extends State<MyAmbulancePage> {
   String Street='';
   List<dynamic> locati=[];
   String locat='';
+  double longff=0.0;
+  double langff=0.0;
+
 
   Future<Position> _getGeoLocationPosition() async {
     bool serviceEnabled;
@@ -116,6 +121,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
     List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude, position.longitude);
     print(placemarks);
+
     Placemark place = placemarks[0];
     Address = '${place.street},${place.name},${place.subLocality}\n${place.thoroughfare},${place.country}';
     FullAddress = '${place.street}, ${place.name}, ${place.subLocality}, ${place
@@ -133,12 +139,66 @@ class Ambulancepage extends State<MyAmbulancePage> {
     'Lat: ${position.latitude} , Long: ${position
         .longitude}';
 
-locat='${position.latitude} , ${position
+    locat='${position.latitude} , ${position
         .longitude}';
+    longff=position.longitude;
+    langff=position.latitude;
     locati.add(position.latitude);
     locati.add(position.longitude);
     GetAddressFromLatLong(position);
 
+  }
+
+
+  RefreshController _refreshController =
+  RefreshController(initialRefresh: false);
+
+  void _onRefresh() async{
+    // monitor network fetch
+    await Future.delayed(Duration(milliseconds: 1000));
+    // if failed,use refreshFailed()
+    _refreshController.refreshCompleted();
+  }
+
+  late Map<dynamic, dynamic> values;
+
+  void onoading(Map value) async{
+    lst.clear();
+    values = value;
+    values.forEach((key, values) {
+
+
+
+      final hospl=values["Hospital_location"].toString().split(",");
+      final hosplang=double.parse(hospl[0]);
+      final hosplong=double.parse(hospl[1]);
+
+      double dis=calculateDistance(langff, longff, hosplang, hosplong);
+      if(dis<=10.0){
+        lst.add(values);
+      }
+      print(lst);
+    });
+
+  }
+
+  void _onLoading() async{
+    // monitor network fetch
+    await Future.delayed(Duration(milliseconds: 1000));
+    // if failed,use loadFailed(),if no data return,use LoadNodata()
+
+   const MyAmbulancePage();
+    if(mounted)
+      setState(() {
+
+      });
+    _refreshController.loadComplete();
+  }
+
+  @override
+  void initState() {
+    backloc();
+    super.initState();
   }
   @override
   Widget build(BuildContext context) {
@@ -149,48 +209,56 @@ locat='${position.latitude} , ${position
         backgroundColor: Color(0xFFA34747),
       ),
       backgroundColor: const Color(0xFFEFDCDC),
-      body: Align(
+      body:SmartRefresher(
+    enablePullDown: true,
+    enablePullUp: true,
+    header: WaterDropHeader(),
+    controller: _refreshController,
+    onRefresh: _onRefresh,
+    onLoading: _onLoading,
+    child: ListView(
+    children:[
+      Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
           width: 304.0,
-          height: 812.0,
+          height: 400.0,
           child: Column(
             children: <Widget>[
-              Padding(padding: const EdgeInsets.all(30.0)),
+              Padding(padding: const EdgeInsets.all(15.0)),
 
 
 
               Container(
-                height: 540,
+
                 child:FutureBuilder(
                   future: fb.get(),
 
                   builder: (context, AsyncSnapshot snapshot) {
-                    backloc();
+                    // backloc();
 
                     if (snapshot.hasData) {
+
                       lst.clear();
                       Map<dynamic, dynamic> values = snapshot.data.value;
+                      // onoading(values);
                       values.forEach((key, values) {
 
                         final loct=locat.split(",");
-                        final langf=double.parse(loct[0]);
+                        final langf=langff;
 
-                        final longf=double.parse(loct[1]);
-
+                        final longf=longff;
+                        print(langf);
+                        print(longf);
 
                         final hospl=values["Hospital_location"].toString().split(",");
                         final hosplang=double.parse(hospl[0]);
                         final hosplong=double.parse(hospl[1]);
 
                         double dis=calculateDistance(langf, longf, hosplang, hosplong);
-                        if(dis<=5.0){
+                        if(dis<=30.0){
                           lst.add(values);
                         }
-
-
-
-
                       });
 
                       return ListView.builder(
@@ -385,85 +453,9 @@ locat='${position.latitude} , ${position
                             return Container(
 
                               child:Flexible(
-                                // to apply margin in the cross axis of the wrap
+
                                 child:
                                     amp,
-  //                               Column(
-  //                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //                                   children: <Widget>[
-  //                                       SizedBox(
-  //                                             child: OutlinedButton(
-  //                                                     onPressed: () {
-  //                                                       Navigator.push(
-  //                                                         context,
-  //                                                         MaterialPageRoute(
-  //                                                           builder: (context) =>  BookPage(todo: lst[index],add:Address,loca:locati),
-  //                                                         ),
-  //                                                       );
-  //
-  //
-  //                                                     },
-  //                                                 child: Row(
-  //                                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //                                             children: [
-  //                                               SizedBox(
-  //                                                 width: 50.0,
-  //                                                 height: 50.0,
-  //                                                 child: Image.asset('assets/images/ambulance.jpg'),
-  //                                               ),
-  //                                             Column(
-  //                                             crossAxisAlignment: CrossAxisAlignment.start,
-  //                                             mainAxisAlignment: MainAxisAlignment.center,
-  //                                             children: [
-  //                                             Text(
-  //                                             lst[index]["Hospital_name"],
-  //                                             style: const TextStyle(
-  //                                             color: Color(0xFFA34747),
-  //                                             fontWeight: FontWeight.w700,
-  //                                             ),
-  //                                             ),
-  //                                             Row(
-  //                                             mainAxisSize: MainAxisSize.min,
-  //                                             children: const [
-  //                                             Icon(Icons.star,
-  //                                             size: 12, color: Colors.yellow),
-  //                                             Icon(Icons.star,
-  //                                             size: 12, color: Colors.yellow),
-  //                                             Icon(Icons.star,
-  //                                             size: 12, color: Colors.yellow),
-  //                                             Icon(Icons.star,
-  //                                             size: 12, color: Colors.yellow),
-  //                                             Icon(Icons.star,
-  //                                             size: 12, color: Colors.yellow)
-  //                                             ],
-  //                                             ),
-  //                                             Text(
-  //                                               dis.toStringAsFixed(2)+"km away" ,
-  //                                             style: const TextStyle(
-  //                                             color: Color(0xFFA34747),
-  //                                             fontSize: 10.0,
-  //                                             ),
-  //                                             ),
-  //                                             ],
-  //                                             ),
-  //
-  //
-  //                                             Container(
-  //                                             alignment: const Alignment(1.0, -0.4),
-  //                                             child: const Icon(Icons.verified_user,
-  //                                             size: 15, color: Colors.green),
-  //                                             )
-  //                                             ],
-  //                                             ),
-  //                                             style: OutlinedButton.styleFrom(
-  //                                             backgroundColor: Colors.white,
-  //                                             fixedSize: const Size(350, 80),
-  //                                             )),
-  //                           ),
-  //                                     const Padding(padding: EdgeInsets.only(top: 10.0)),
-  //
-  // ]
-  //                               )
                             )
                             );
 
@@ -480,6 +472,8 @@ locat='${position.latitude} , ${position
           ),
         ),
       ),
+    ])
+      )
     );
   }
 }
@@ -550,11 +544,12 @@ class BookPage extends StatelessWidget {
         backgroundColor: const Color(0xFFA34747),
       ),
       backgroundColor: const Color(0xFFEFDCDC),
-      body: Align(
+      body: ListView(
+    children:[Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
           width: 304.0,
-          height: 812.0,
+          height: 575.0,
           child: Column(
             children: <Widget>[
 
@@ -587,6 +582,7 @@ class BookPage extends StatelessWidget {
           ),
         ),
       ),
+    ])
     );
   }
 
@@ -605,7 +601,6 @@ final loca;
     return MyCustomFormState();
   }
 }
-
 class MyCustomFormState extends State<MyCustomForm> {
   // Create a global key that uniquely identifies the Form widget
   // and allows validation of the form.
@@ -624,10 +619,14 @@ class MyCustomFormState extends State<MyCustomForm> {
   final recordingPlayer = AssetsAudioPlayer();
   late String pathToAudio;
   String _timerText = '00:00:00';
+  String publicKeyTest =
+      'pk_test_ee1a5a462b6bc7c438af874774e763febc528369'; //pass in the public test key obtained from paystack dashboard here
 
+  final plugin = PaystackPlugin();
 
   @override
   void initState() {
+    plugin.initialize(publicKey: publicKeyTest);
     super.initState();
     initializer();
   }
@@ -643,6 +642,42 @@ class MyCustomFormState extends State<MyCustomForm> {
     await Permission.manageExternalStorage.request();
   }
 
+
+  void _showMessage(String message) {
+    final snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  //used to generate a unique reference for payment
+  String _getReference() {
+    var platform = (Platform.isIOS) ? 'iOS' : 'Android';
+    final thisDate = DateTime.now().millisecondsSinceEpoch;
+    return 'ChargedFrom${platform}_$thisDate';
+  }
+
+  chargeCard(mail,id) async {
+    var charge = Charge()
+      ..amount = 2  //the money should be in kobo hence the need to multiply the value by 100
+      ..reference = _getReference()
+      ..putCustomField('user_id',
+          id) //to pass extra parameters to be retrieved on the response from Paystack
+      ..email = mail;
+
+    CheckoutResponse response = await plugin.checkout(
+      context,
+      method: CheckoutMethod.card,
+      charge: charge,
+    );
+
+    //check if the response is true or not
+    if (response.status == true) {
+      //you can send some data from the response to an API or use webhook to record the payment on a database
+      _showMessage('Payment was successful!!!');
+    } else {
+      //the payment wasn't successsful or the user cancelled the payment
+      _showMessage('Payment Failed!!!');
+    }
+  }
 
   Future<void> startRecording() async {
     Directory directory = Directory(path.dirname(pathToAudio));
@@ -687,6 +722,7 @@ class MyCustomFormState extends State<MyCustomForm> {
     final hospid=widget.todo["uid"].toString();
 
     final loc=widget.add;
+    final acc=widget.todo["Account"].toString();
 
     final locs=widget.loca[0].toString()+","+widget.loca[1].toString();
     // Build a Form widget using the _formKey created above.
@@ -722,26 +758,51 @@ class MyCustomFormState extends State<MyCustomForm> {
                       borderRadius: BorderRadius.circular(5),
                     )),readOnly: true,  //set it true, so that user will not able to edit text
               onTap: () async {
-                TimeOfDay? pickedTime =  await showTimePicker(
-                  initialTime: TimeOfDay.now(),
-                  context: context,
-                );
-
-                if(pickedTime != null ){
-                  print(pickedTime.format(context));   //output 10:51 PM
-                  DateTime parsedTime = DateFormat.jm().parse(pickedTime.format(context).toString());
-                  //converting to DateTime so that we can further format on different pattern.
-                  print(parsedTime); //output 1970-01-01 22:53:00.000
-                  String formattedTime = DateFormat('HH:mm:ss').format(parsedTime);
-                  print(formattedTime); //output 14:59:00
-                  //DateFormat() is from intl package, you can format the time on any pattern you need.
-
+                final TimeOfDay? result =
+                await showTimePicker(context: context, initialTime: TimeOfDay.now());
+                if (result != null) {
                   setState(() {
-                    timeinput.text = formattedTime; //set the value of text field.
+                    timeinput.text = result.format(context);
                   });
-                }else{
-                  print("Time is not selected");
                 }
+                // final TimeOfDay? _timePicked = await showTimePicker(
+                //   context: context,
+                //   initialTime: TimeOfDay.now(),
+                // );
+                // var _dt;
+                // if (_timePicked != null) {
+                //   _dt = DateTime(
+                //
+                //     _timePicked.hour,
+                //     _timePicked.minute,
+                //   );
+                //   setState(() {
+                //     timeinput.text = DateFormat('h:mm a')
+                //         .format(_dt); //_timePicked.format(context);
+                //
+                //   });
+                // }
+
+               // final TimeOfDay? pickedTime =  await showTimePicker(
+               //    initialTime: TimeOfDay.now(),
+               //    context: context,
+               //  );
+               //  //
+               //  if(pickedTime != null ){
+               //    print(pickedTime.format(context));   //output 10:51 PM
+               //    DateTime parsedTime = DateFormat.jm().parse(pickedTime.format(context).toString());
+               //    //converting to DateTime so that we can further format on different pattern.
+               //    print(parsedTime); //output 1970-01-01 22:53:00.000
+               //    String formattedTime = DateFormat('HH:mm:ss').format(parsedTime);
+               //    print(formattedTime); //output 14:59:00
+               //    //DateFormat() is from intl package, you can format the time on any pattern you need.
+               //
+               //    setState(() {
+               //      timeinput.text = formattedTime; //set the value of text field.
+               //    });
+               //  }else{
+               //    print("Time is not selected");
+               //  }
               },),
           ),
           Padding(
@@ -856,7 +917,7 @@ stopRecording();
                       // If the form is valid, display a snackbar. In the real world,
                       // you'd often call a server or save the information in a database.
                       // Navigator.of(context).push(_createRouter());
-                      sendrequest(timeinput.text,snotes.text,loc,hosp,hospid,locs);
+                      sendrequest(timeinput.text,snotes.text,loc,hosp,hospid,locs,acc);
                       // ScaffoldMessenger.of(context).showSnackBar(
                       //    SnackBar(content: Text(timeinput.text+location.text+snotes.text)),
                       // );
@@ -877,7 +938,7 @@ stopRecording();
     );
   }
 
-  Future<void> sendrequest(pick,notes,location,hosp,hospid,locs) async {
+  Future<void> sendrequest(pick,notes,location,hosp,hospid,locs,acc) async {
 
     final userid=FirebaseAuth.instance.currentUser?.uid;
 
@@ -886,6 +947,8 @@ stopRecording();
     DataSnapshot event = await query.get();
     var username;
     var phone;
+    var cid;
+    var cmail;
 
 
     Map<dynamic, dynamic> values = event.value as Map<dynamic, dynamic>;
@@ -893,6 +956,8 @@ stopRecording();
     values.forEach((key, value) {
       username=value['FullName'].toString();
       phone=value['Phone'].toString();
+      cid=value['uid'].toString();
+      cmail=value['Email'].toString();
     });
     final time=DateFormat("EEEEE MMM dd yyyy HH:mm:ss a").format(DateTime.now());
     final times=DateFormat("MMddyyyyHHmm").format(DateTime.now());
@@ -903,28 +968,58 @@ stopRecording();
     firebase_storage.FirebaseStorage.instance.ref('audio/$requestid');
 
 
+    var charge = Charge()
+      ..amount = 2*100  //the money should be in kobo hence the need to multiply the value by 100
+      ..reference = _getReference()
+      ..putCustomField('username',
+          username) //to pass extra parameters to be retrieved on the response from Paystack
+      ..email = cmail
+      ..currency="GHS"
+      ..subAccount=acc;
+
+    CheckoutResponse response = await plugin.checkout(
+      context,
+      method: CheckoutMethod.card,
+      charge: charge,
+    );
+
+    //check if the response is true or not
+
+
+
     try {
-      await request.set({
-        "Customer_Name": username,
-        "Customer_Number": phone,
-        "Customer_uid": userid,
-        "Customer_location": locs,
-        "Destination":location,
-        "Pick_Up_Time":pick,
-        "Reason":notes,
-        "Request_DateTime":time,
-        "Request_Type":"Specific",
-        "Status":"Pending",
-        "Hospital_name":hosp,
-        "Hospital_uid":hospid,
-        "Request_id":requestid,
+      if (response.status == true) {
+        //you can send some data from the response to an API or use webhook to record the payment on a database
+        _showMessage('Payment was successful!!!');
+        await request.set({
+          "Customer_Name": username,
+          "Customer_Number": phone,
+          "Customer_uid": userid,
+          "Customer_location": locs,
+          "Destination":location,
+          "Pick_Up_Time":pick,
+          "Reason":notes,
+          "Request_DateTime":time,
+          "Request_Type":"Specific",
+          "Status":"Pending",
+          "Hospital_name":hosp,
+          "Hospital_uid":hospid,
+          "Request_id":requestid,
+          "Payment_Status":"Paid",
+          "Customer_Email":cmail,
+          "Hospital_Account":acc
 
 
-      });
-      audio.child(
-          pathToAudio.substring(pathToAudio.lastIndexOf('/'), pathToAudio.length))
-          .putFile(File(pathToAudio));
-      Navigator.of(context).push(_requestsent());
+        });
+        audio.child(
+            pathToAudio.substring(pathToAudio.lastIndexOf('/'), pathToAudio.length))
+            .putFile(File(pathToAudio));
+        Navigator.of(context).push(_requestsent());
+      } else {
+        //the payment wasn't successsful or the user cancelled the payment
+        _showMessage('Payment Failed!!!'+acc);
+      }
+
     } on Exception catch (e, s) {
       print(s);
     }
@@ -938,6 +1033,88 @@ stopRecording();
 
 
 
+}
+class PaystackCardMethod extends StatefulWidget {
+  @override
+  _PaystackCardMethodState createState() => _PaystackCardMethodState();
+}
+
+class _PaystackCardMethodState extends State<PaystackCardMethod> {
+  String publicKeyTest =
+      'pk_test_ee1a5a462b6bc7c438af874774e763febc528369'; //pass in the public test key obtained from paystack dashboard here
+
+  final plugin = PaystackPlugin();
+
+  @override
+  void initState() {
+    //initialize the publicKey
+    plugin.initialize(publicKey: publicKeyTest);
+    super.initState();
+  }
+
+  //a method to show the message
+  void _showMessage(String message) {
+    final snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  //used to generate a unique reference for payment
+  String _getReference() {
+    var platform = (Platform.isIOS) ? 'iOS' : 'Android';
+    final thisDate = DateTime.now().millisecondsSinceEpoch;
+    return 'ChargedFrom${platform}_$thisDate';
+  }
+
+  //async method to charge users card and return a response
+  chargeCard() async {
+    var charge = Charge()
+      ..amount = 2  //the money should be in kobo hence the need to multiply the value by 100
+      ..reference = _getReference()
+      ..putCustomField('user_id',
+          '846gey6w') //to pass extra parameters to be retrieved on the response from Paystack
+      ..email = 'tutorial@email.com';
+
+    CheckoutResponse response = await plugin.checkout(
+      context,
+      method: CheckoutMethod.card,
+      charge: charge,
+    );
+
+    //check if the response is true or not
+    if (response.status == true) {
+      //you can send some data from the response to an API or use webhook to record the payment on a database
+      _showMessage('Payment was successful!!!');
+    } else {
+      //the payment wasn't successsful or the user cancelled the payment
+      _showMessage('Payment Failed!!!');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "Paystack Integration",
+        ),
+        centerTitle: true,
+        elevation: 0.0,
+      ),
+      body: Container(
+          padding: EdgeInsets.all(10),
+          child: Center(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.all(15),
+//PayButton widget is imported at the top of this file
+              child: PayButton(
+                //call the chargeCard method
+                callback: () => chargeCard(),
+              ),
+            ),
+          )),
+    );
+  }
 }
 
 Route _requestsent() {

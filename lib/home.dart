@@ -115,13 +115,16 @@ return address;
     GetAddressFromLatLong();
     return Scaffold(
       backgroundColor: const Color(0xFFEFDCDC),
-      body: Align(
+      body: ListView(
+        children: [
+      Align(
         alignment: const Alignment(0.01, 0.09),
         child: SizedBox(
-          height: 812.0,
+          height: 575.0,
           child: Column(
             children: <Widget>[
-              const Spacer(flex: 50),
+              Padding(
+                  padding: const EdgeInsets.all(2.0)),
 // Group: Group 32
 
               const Align(
@@ -130,7 +133,7 @@ return address;
                   'Emergency',
                   style: TextStyle(
                     fontFamily: 'Helvetica',
-                    fontSize: 30.0,
+                    fontSize: 25.0,
                     color: Color(0xFFA34747),
                     fontWeight: FontWeight.w700,
                   ),
@@ -152,7 +155,7 @@ return address;
               const Spacer(flex: 5),
               Container(
                   width: 600.0,
-                  height: 250.0,
+                  height: 200.0,
                   margin: const EdgeInsets.all(25),
                   child: Expanded(
                     child: ElevatedButton(
@@ -190,22 +193,11 @@ return address;
 
                         return Container(
                             width: 200.0,
-                            height: 50.0,
                             margin: EdgeInsets.all(25),
                             child: Expanded(
                               child: OutlinedButton(
                                   onPressed: ()  {
-                                    // Navigator.push(
-                                    //   context,
-                                    //   MaterialPageRoute(
-                                    //     builder: (context) => MapTest(),
-                                    //   ),
-                                    // );
-                                    // Position position = await _getGeoLocationPosition();
-                                    // location =
-                                    // 'Lat: ${position.latitude} , Long: ${position
-                                    //     .longitude}';
-                                    // GetAddressFromLatLong(position);
+
                                   }
 
 
@@ -258,7 +250,8 @@ return address;
               ),
 
 
-              Spacer(flex: 20),
+              Padding(
+                  padding: const EdgeInsets.all(1.0)),
               Container(
                   width: 250.0,
                   height: 50.0,
@@ -277,7 +270,7 @@ return address;
                         'AVAILABLE AMBULANCES',
                         style: TextStyle(
                           fontFamily: 'Helvetica',
-                          fontSize: 15.0,
+                          fontSize: 10.0,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -335,6 +328,7 @@ return address;
           ),
         ),
       ),
+    ])
     );
   }
 
@@ -358,10 +352,12 @@ return address;
     DataSnapshot event = await query.get();
     var username;
     var phone;
+    var cmail;
     Map<dynamic, dynamic> values = event.value as Map<dynamic, dynamic>;
     values.forEach((key, value) {
       username = value['FullName'].toString();
       phone = value['Phone'].toString();
+      cmail=value['Email'].toString();
     });
     final time = DateFormat("EEEEE MMM dd yyyy HH:mm:ss a").format(
         DateTime.now());
@@ -382,6 +378,8 @@ return address;
         "Request_Type": "General",
         "Status": "Pending",
         "Request_id": requestid,
+        "Customer_Email":cmail,
+        "Payment_Status":"Not Paid"
       });
       Navigator.push(
         context,

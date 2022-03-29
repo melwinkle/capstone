@@ -39,6 +39,7 @@ class MyAccountPage extends StatefulWidget {
 class Accountpage extends State<MyAccountPage> {
   int _currentIndex = 3;
   FirebaseAuth auth = FirebaseAuth.instance;
+  final usid=FirebaseAuth.instance.currentUser;
   final userid=FirebaseAuth.instance.currentUser?.uid;
   final fb = FirebaseDatabase.instance.ref('users/clients').orderByKey();
   List<dynamic> lst = [];
@@ -244,6 +245,7 @@ class Accountpage extends State<MyAccountPage> {
                                               ),
                                             ),
                                           ),
+
                                         ])
                                 ));
 
@@ -271,6 +273,9 @@ class Accountpage extends State<MyAccountPage> {
     });
   }
 }
+
+
+
 
 Route _createRoute() {
   return PageRouteBuilder(

@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:lamber/payment.dart';
 import 'package:flutter/material.dart';
 import 'package:lamber/sign_route.dart';
@@ -53,11 +55,12 @@ class PaymentCpage extends State<MyPaymentCPage> {
         backgroundColor: const Color(0xFFA34747),
       ),
       backgroundColor: const Color(0xFFEFDCDC),
-      body: Align(
+      body: ListView(
+    children:[Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
           width: 304.0,
-          height: 812.0,
+          height: 560.0,
           child: Column(
             children: <Widget>[
 // Group: Group 32
@@ -67,7 +70,7 @@ class PaymentCpage extends State<MyPaymentCPage> {
               Container(
                 alignment: Alignment(-0.78, -0.04),
                 width: 300.0,
-                height: 600.0,
+                height: 500.0,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10.0),
                   color: Colors.white,
@@ -101,6 +104,7 @@ class PaymentCpage extends State<MyPaymentCPage> {
           ),
         ),
       ),
+    ])
     );
   }
 }
@@ -119,8 +123,8 @@ class Page2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: MyPaymentPage(),
+    return Scaffold(
+      body: MyPaymentPage(),
     );
   }
 }
@@ -143,7 +147,10 @@ class MyCustomFormState extends State<MyCustomForm> {
   // Note: This is a GlobalKey<FormState>,
   // not a GlobalKey<MyCustomFormState>.
   final _formKey = GlobalKey<FormState>();
-
+  final cardname = TextEditingController();
+  final cardnumber= TextEditingController();
+  final date = TextEditingController();
+  final pin = TextEditingController();
   @override
   Widget build(BuildContext context) {
     // Build a Form widget using the _formKey created above.
@@ -154,6 +161,7 @@ class MyCustomFormState extends State<MyCustomForm> {
         children: [
           TextFormField(
               // The validator receives the text that the user has entered.
+            controller: cardname,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter name on card';
@@ -163,9 +171,10 @@ class MyCustomFormState extends State<MyCustomForm> {
               decoration: InputDecoration(
                   prefixIcon: Icon(Icons.person),
                   hintText: 'Card Name',
-                  hintStyle: TextStyle(color: Colors.black87),
+                  hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
                   filled: true,
                   fillColor: Color(0xFFEFDCDC),
+                  contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide.none,
@@ -175,6 +184,7 @@ class MyCustomFormState extends State<MyCustomForm> {
           ),
           TextFormField(
               // The validator receives the text that the user has entered.
+              controller: cardnumber,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter Card number';
@@ -184,9 +194,10 @@ class MyCustomFormState extends State<MyCustomForm> {
               decoration: InputDecoration(
                   prefixIcon: Icon(Icons.lock),
                   hintText: 'Card number',
-                  hintStyle: TextStyle(color: Colors.black87),
+                  hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
                   filled: true,
                   fillColor: Color(0xFFEFDCDC),
+                  contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide.none,
@@ -195,6 +206,7 @@ class MyCustomFormState extends State<MyCustomForm> {
             padding: const EdgeInsets.symmetric(vertical: 16.0),
           ),
           TextFormField(
+              controller: date,
               // The validator receives the text that the user has entered.
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -205,9 +217,10 @@ class MyCustomFormState extends State<MyCustomForm> {
               decoration: InputDecoration(
                   prefixIcon: Icon(Icons.lock),
                   hintText: 'Expiry Date',
-                  hintStyle: TextStyle(color: Colors.black87),
+                  hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
                   filled: true,
                   fillColor: Color(0xFFEFDCDC),
+                  contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide.none,
@@ -217,6 +230,7 @@ class MyCustomFormState extends State<MyCustomForm> {
           ),
           TextFormField(
               // The validator receives the text that the user has entered.
+              controller: pin,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter CVV';
@@ -226,9 +240,10 @@ class MyCustomFormState extends State<MyCustomForm> {
               decoration: InputDecoration(
                   prefixIcon: Icon(Icons.lock),
                   hintText: 'CVV',
-                  hintStyle: TextStyle(color: Colors.black87),
+                  hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
                   filled: true,
                   fillColor: Color(0xFFEFDCDC),
+                  contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide.none,
@@ -245,7 +260,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                     if (_formKey.currentState!.validate()) {
                       // If the form is valid, display a snackbar. In the real world,
                       // you'd often call a server or save the information in a database.
-                      Navigator.of(context).push(_createRoute());
+                      cardet(cardname.text,cardnumber.text,date.text,pin.text);
                       // ScaffoldMessenger.of(context).showSnackBar(
                       //   const SnackBar(content: Text('Processing Data')),
                       // );
@@ -263,5 +278,30 @@ class MyCustomFormState extends State<MyCustomForm> {
         ],
       ),
     );
+  }
+
+  Future<void> cardet(name, number, date, pin) async {
+    final userid=FirebaseAuth.instance.currentUser?.uid;
+    DatabaseReference request = FirebaseDatabase.instance.ref("users/clients/$userid");
+
+    try {
+
+        await request.update({
+          "Card_Name": name,
+          "Card_number": number,
+          "Card_date": date,
+          "Card_pin": pin,
+
+
+
+        });
+
+        Navigator.of(context).push(_createRoute());
+
+
+    } on Exception catch (e, s) {
+      print(s);
+    }
+
   }
 }

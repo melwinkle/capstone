@@ -28,28 +28,32 @@ class Registerpage extends State<Register> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Align(
+      body:ListView(
+          children:[
+            Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
           width: 304.0,
-          height: 812.0,
+          height: 571.0,
           child: Column(
             children: <Widget>[
-              Spacer(flex: 2),
+              Padding(
+                  padding: const EdgeInsets.all(2.0)),
 // Group: Group 32
 
               SizedBox(
-                width: 120.0,
+                width: 150.0,
                 height: 85.76,
                 child: Stack(
                   alignment: Alignment.topCenter,
                   children: <Widget>[
+
                     Positioned(
                       bottom: 0,
                       child: Text(
                         'LAMBER',
                         style: TextStyle(
-                          fontSize: 30.0,
+                          fontSize: 25.0,
                           color: const Color(0xFF830C0C),
                           fontWeight: FontWeight.w700,
                         ),
@@ -65,26 +69,28 @@ class Registerpage extends State<Register> {
                   ],
                 ),
               ),
-              Spacer(flex: 2),
+
               Align(
                 alignment: Alignment(-0.88, 0.0),
                 child: Text(
                   'Create an Account',
                   style: TextStyle(
                     fontFamily: 'Helvetica',
-                    fontSize: 20.0,
+                    fontSize: 15.0,
                     color: const Color(0xFFA34747),
                   ),
                 ),
               ),
-              Spacer(flex: 1),
+              Padding(
+                  padding: const EdgeInsets.all(2.0)),
               Align(
                 child: const MyCustomForm(),
               ),
-              Spacer(flex: 1),
+              Padding(
+                  padding: const EdgeInsets.all(2.0)),
               Container(
                   width: 200.0,
-                  height: 20.0,
+                  height: 30.0,
                   margin: EdgeInsets.all(25),
                   child: Expanded(
                     child: OutlinedButton(
@@ -98,7 +104,7 @@ class Registerpage extends State<Register> {
                           ),
                         ),
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(
+                          side: const BorderSide(
                             width: 1.0,
                             color: Color(0xFFA34747),
                             style: BorderStyle.solid,
@@ -109,6 +115,7 @@ class Registerpage extends State<Register> {
           ),
         ),
       ),
+    ])
     );
   }
 }
@@ -161,15 +168,16 @@ class MyCustomFormState extends State<MyCustomForm> {
               decoration: InputDecoration(
                   prefixIcon: Icon(Icons.person),
                   hintText: 'Full Name',
-                  hintStyle: TextStyle(color: Colors.black87),
+                  hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
                   filled: true,
                   fillColor: Color(0xFFEFDCDC),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide.none,
-                  ))),
+                  ),
+                  contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),)),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            padding: const EdgeInsets.symmetric(vertical: 5.0),
           ),
           TextFormField(
               controller: username,
@@ -183,15 +191,16 @@ class MyCustomFormState extends State<MyCustomForm> {
               decoration: InputDecoration(
                   prefixIcon: Icon(Icons.person),
                   hintText: 'Username',
-                  hintStyle: TextStyle(color: Colors.black87),
+                  hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
                   filled: true,
                   fillColor: Color(0xFFEFDCDC),
+                  contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide.none,
                   ))),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            padding: const EdgeInsets.symmetric(vertical: 5.0),
           ),
           TextFormField(
               controller: myController,
@@ -205,15 +214,16 @@ class MyCustomFormState extends State<MyCustomForm> {
               decoration: InputDecoration(
                   prefixIcon: Icon(Icons.person),
                   hintText: 'Email',
-                  hintStyle: TextStyle(color: Colors.black87),
+                  hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
                   filled: true,
                   fillColor: Color(0xFFEFDCDC),
+                  contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide.none,
                   ))),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            padding: const EdgeInsets.symmetric(vertical: 5.0),
           ),
           TextFormField(
               controller: phone,
@@ -227,15 +237,16 @@ class MyCustomFormState extends State<MyCustomForm> {
               decoration: InputDecoration(
                   prefixIcon: Icon(Icons.person),
                   hintText: 'Phone Number',
-                  hintStyle: TextStyle(color: Colors.black87),
+                  hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
                   filled: true,
                   fillColor: Color(0xFFEFDCDC),
+                  contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide.none,
                   ))),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            padding: const EdgeInsets.symmetric(vertical: 5.0),
           ),
           TextFormField(
               controller: password,
@@ -249,19 +260,20 @@ class MyCustomFormState extends State<MyCustomForm> {
               decoration: InputDecoration(
                   prefixIcon: Icon(Icons.person),
                   hintText: 'Password',
-                  hintStyle: TextStyle(color: Colors.black87),
+                  hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
                   filled: true,
                   fillColor: Color(0xFFEFDCDC),
+                  contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide.none,
                   ))),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            padding: const EdgeInsets.symmetric(vertical: 5.0),
           ),
 
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 13.0),
+            padding: const EdgeInsets.symmetric(vertical: 5.0),
             child: Center(
               child: Container(
                 width: 250,
@@ -293,6 +305,8 @@ class MyCustomFormState extends State<MyCustomForm> {
 
   void reg(mail,pass) async{
     final ref = fb.reference();
+
+
     try {
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: mail,
@@ -307,6 +321,13 @@ class MyCustomFormState extends State<MyCustomForm> {
         'uid': user
       };
       ref.child(name+user).set(userData);
+      User? users = FirebaseAuth.instance.currentUser;
+
+      if (users!= null && !users.emailVerified) {
+        print(mail);
+        await users.sendEmailVerification();
+
+      }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         print('The password provided is too weak.');

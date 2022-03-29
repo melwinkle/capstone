@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:lamber/payment_options.dart';
 import 'package:flutter/material.dart';
 import 'package:lamber/sign_route.dart';
@@ -44,7 +46,10 @@ class Paymentpage extends State<MyPaymentPage> {
     const MyAidPage(),
     const MyProfilePage(),
   ];
-
+  final usid=FirebaseAuth.instance.currentUser;
+  final userid=FirebaseAuth.instance.currentUser?.uid;
+  final fb = FirebaseDatabase.instance.ref('users/clients').orderByKey();
+  List<dynamic> lst = [];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,7 +81,7 @@ class Paymentpage extends State<MyPaymentPage> {
                   padding: const EdgeInsets.all(5.0),
                   child: Column(children: [
 
-                    const Text('Select a payment option',
+                    const Text('Current payment option',
                         style: TextStyle(
                           color: Color(0xFFA43247),
                           fontWeight: FontWeight.w300,
@@ -90,62 +95,64 @@ class Paymentpage extends State<MyPaymentPage> {
                             width: 10,
                           ),
                           Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Color(0xFFA43247)),
-                              borderRadius: BorderRadius.circular(10),
-                              color: Color(0xFFA43247),
-                            ),
-                            child: CheckboxListTile(
-                              secondary: const Icon(Icons.credit_card),
-                              checkColor: Colors.white,
-                              activeColor: Colors.green,
-                              title: const Text('Mobile Money',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                  )),
-                              subtitle: Text('0240000000',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  )),
-                              value: this.valuefirst,
-                              onChanged: (value) {
-                                setState(() {
-                                  this.valuefirst = value!;
-                                });
-                              },
-                            ),
+                              child:FutureBuilder(
+                                  future: fb.equalTo(userid!).get(),
+
+                                  builder: (context, AsyncSnapshot snapshot) {
+
+                                    if (snapshot.hasData) {
+                                      lst.clear();
+                                      Map<dynamic,dynamic> values = snapshot.data.value;
+
+                                      values.forEach((key, values) {
+                                        lst.add(values);
+                                        print(values);
+
+                                      });
+
+                                      return ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount: lst.length,
+                                          itemBuilder: (BuildContext context, int index) {
+                                            return Container(
+
+                                                child:  Container(
+                                                decoration: BoxDecoration(
+                                                border: Border.all(color: Color(0xFFA43247)),
+                                            borderRadius: BorderRadius.circular(10),
+                                            color: Color(0xFFA43247),
+                                            ),
+                                            child: CheckboxListTile(
+                                            secondary: const Icon(Icons.money),
+                                            checkColor: Colors.white,
+                                            activeColor: Colors.green,
+                                            title: Text(lst[index]["Card_number"],
+                                            style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 12.0,
+                                            )),
+                                            subtitle: Text('Expires '+lst[index]["Card_date"],
+                                            style: TextStyle(
+                                            color: Colors.white,
+                                            )),
+                                            value: this.valuefirst,
+                                            onChanged: (value) {
+                                            setState(() {
+                                            this.valuefirst = value!;
+                                            });
+                                            },
+                                            ),
+                                            )
+                                            );
+
+                                          });
+                                    }
+                                    return CircularProgressIndicator();
+                                  })
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(5.0),
-                          ),
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Color(0xFFA43247)),
-                              borderRadius: BorderRadius.circular(10),
-                              color: Color(0xFFA43247),
-                            ),
-                            child: CheckboxListTile(
-                              secondary: const Icon(Icons.money),
-                              checkColor: Colors.white,
-                              activeColor: Colors.green,
-                              title: const Text('**** **** **** 2134',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                  )),
-                              subtitle: Text('Expires 01/22',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  )),
-                              value: this.valuesecond,
-                              onChanged: (value) {
-                                setState(() {
-                                  this.valuesecond = value!;
-                                });
-                              },
-                            ),
-                          ),
+
+
                           Padding(
                             padding: const EdgeInsets.all(5.0),
                           ),

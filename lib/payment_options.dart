@@ -58,7 +58,7 @@ class PaymentOpage extends State<MyPaymentOPage> {
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
           width: 304.0,
-          height: 812.0,
+          height: 570.0,
           child: Column(
             children: <Widget>[
 // Group: Group 32

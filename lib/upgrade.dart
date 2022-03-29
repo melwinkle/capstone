@@ -56,16 +56,17 @@ class Upgradepage extends State<MyUpgradePage> {
         backgroundColor: const Color(0xFFA34747),
       ),
       backgroundColor: const Color(0xFFEFDCDC),
-      body: Align(
+      body: ListView(
+    children:[Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
           width: 304.0,
-          height: 812.0,
+          height: 570.0,
           child: Column(
             children: <Widget>[
 // Group: Group 32
 
-              const Spacer(flex: 10),
+              const Spacer(flex: 2),
 
               Container(
                 alignment: Alignment(-0.78, -0.04),
@@ -185,42 +186,12 @@ class Upgradepage extends State<MyUpgradePage> {
               ),
 
               Spacer(flex: 20),
-              BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                currentIndex: _currentIndex,
-                backgroundColor: Color(0xFFFFFFFF),
-                selectedItemColor: Color(0xFFA34747),
-                unselectedItemColor: const Color(0xFFA34747).withOpacity(.60),
-                selectedFontSize: 14,
-                unselectedFontSize: 14,
-                onTap: (value) {
-                  // Respond to item press.
-                  setState(() => _currentIndex = value);
-                  _onTap();
-                },
-                items: const [
-                  BottomNavigationBarItem(
-                    label: 'Home',
-                    icon: Icon(Icons.home_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Requests',
-                    icon: Icon(Icons.receipt_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'First Aid',
-                    icon: Icon(Icons.health_and_safety_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Account',
-                    icon: Icon(Icons.person),
-                  ),
-                ],
-              ),
+
             ],
           ),
         ),
       ),
+    ])
     );
   }
 
