@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lamber/request_confirm.dart';
-
+import 'package:intl/intl.dart' show DateFormat;
 import 'package:lamber/request_final.dart';
 import 'package:flutter/material.dart';
 import 'package:lamber/sign_route.dart';
@@ -19,6 +19,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_maps_widget/google_maps_widget.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'map.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -145,21 +146,51 @@ class Requestpage extends State<MyRequestPage> {
     const MyProfilePage(),
   ];
 
+  RefreshController _refreshController =
+  RefreshController(initialRefresh: false);
+
+  void _onRefresh() async{
+    // monitor network fetch
+    await Future.delayed(Duration(milliseconds: 1000));
+    // if failed,use refreshFailed()
+    _refreshController.refreshCompleted();
+  }
+
+  void _onLoading() async{
+    // monitor network fetch
+    await Future.delayed(Duration(milliseconds: 1000));
+    // if failed,use loadFailed(),if no data return,use LoadNodata()
+
+    const MyRequestPage();
+    if(mounted)
+      setState(() {
+
+      });
+    _refreshController.loadComplete();
+  }
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
       backgroundColor: const Color(0xFFEFDCDC),
-      body: Align(
+      body: SmartRefresher(
+      enablePullDown: true,
+      enablePullUp: true,
+      header: WaterDropHeader(),
+      controller: _refreshController,
+      onRefresh: _onRefresh,
+      onLoading: _onLoading,
+      child:ListView(
+      children:[Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
+    height: 600,
 
-          height: 812.0,
           child: Column(
             children: <Widget>[
 
 // Group: Group 32
-              Padding(padding: const EdgeInsets.all(30.0)),
+              Padding(padding: const EdgeInsets.all(10.0)),
               const Align(
                 alignment: Alignment(-0.88, 0.0),
                 child: Text(
@@ -173,7 +204,7 @@ class Requestpage extends State<MyRequestPage> {
                 ),
               ),
               Container(
-                height: 600,
+                height: 480,
                   child:FutureBuilder(
                       future:showData(),
 
@@ -208,7 +239,7 @@ class Requestpage extends State<MyRequestPage> {
                                     Icon(Icons.shield,
                                         size: 15, color: Colors.orange),
                                   );
-                                  ems= MapTrackPage(long: hosplong, lang:hosplang, tod:lst[index]);
+                                  ems= MapPage(long: hosplong, lang:hosplang, tod:lst[index]);
 
 
 
@@ -219,7 +250,7 @@ class Requestpage extends State<MyRequestPage> {
                                     Icon(Icons.shield,
                                         size: 15, color: Colors.green[500]),
                                   );
-                                  ems=MapTrackPage(long: hosplong, lang:hosplang, tod:lst[index]);
+                                  ems=MapPage(long: hosplong, lang:hosplang, tod:lst[index]);
                                 }else if(lst[index]['Status']=="Cancel"){
                                   stat=Container(
                                     alignment: const Alignment(1.0, -0.4),
@@ -227,7 +258,7 @@ class Requestpage extends State<MyRequestPage> {
                                     Icon(Icons.shield,
                                         size: 15, color: Colors.red),
                                   );
-                                  ems=MapTrackPage(long: hosplong, lang:hosplang, tod:lst[index]);
+                                  ems=MapPage(long: hosplong, lang:hosplang, tod:lst[index]);
                                 }else{
                                   stat=Container(
                                     alignment: const Alignment(1.0, -0.4),
@@ -235,7 +266,7 @@ class Requestpage extends State<MyRequestPage> {
                                     Icon(Icons.shield,
                                         size: 15, color: Colors.lightGreen),
                                   );
-                                  ems=MapTrackPage(long: hosplong, lang:hosplang, tod:lst[index]);
+                                  ems=MapPage(long: hosplong, lang:hosplang, tod:lst[index]);
                                 };
                                 return Container(
 
@@ -249,7 +280,7 @@ class Requestpage extends State<MyRequestPage> {
                                           Padding(padding: const EdgeInsets.all(5.0)),
                                 Container(
                                     alignment: Alignment(-0.78, -0.04),
-                                    width: 300.0,
+                                    width: 310.0,
                                     height: 90.0,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(10.0),
@@ -282,6 +313,7 @@ class Requestpage extends State<MyRequestPage> {
                                                     style: const TextStyle(
                                                       color: Color(0xFFA34747),
                                                       fontWeight: FontWeight.w700,
+                                                      fontSize: 15.0
                                                     ),
                                                   ),
                                                   Text(
@@ -297,7 +329,7 @@ class Requestpage extends State<MyRequestPage> {
                                                     lst[index]["Request_DateTime"],
                                                     style: TextStyle(
                                                       color: Color(0xFFA34747),
-                                                      fontSize: 10.0,
+                                                      fontSize: 8.0,
                                                     ),
                                                   ),
                                                 ],
@@ -317,11 +349,18 @@ class Requestpage extends State<MyRequestPage> {
 
                               });
                         }
-                        return CircularProgressIndicator();
+                        return Container(
+                            child: Text("No Requests",style: TextStyle(
+                              fontFamily: 'Helvetica',
+                              fontSize: 15.0,
+                              color: Color(0xFFA34747),
+                              fontWeight: FontWeight.w500,
+                            )),
+                        );
                       })
               ),
 
-              Spacer(flex: 20),
+
               BottomNavigationBar(
                 type: BottomNavigationBarType.fixed,
                 currentIndex: _currentIndex,
@@ -355,6 +394,7 @@ class Requestpage extends State<MyRequestPage> {
           ),
         ),
       ),
+    ]))
     );
   }
 }
@@ -387,665 +427,7 @@ class Page4 extends StatelessWidget {
 }
 
 
-// class ConfirmPage extends StatelessWidget {
-//   // In the constructor, require a Todo.
-//   ConfirmPage({Key? key, required this.todo}) : super(key: key);
-//
-//   // Declare a field that holds the Todo.
-//   final todo;
-//
-//
-//   final List<Widget> _children = [
-//     const MyHomePage(),
-//     const MyRequestPage(),
-//     const MyAidPage(),
-//     const MyProfilePage(),
-//   ];
-//
-//   int _currentIndex = 1;
-//
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     // Use the Todo to create the UI.
-//
-//     _onTap() {
-//       Navigator.of(context).push(MaterialPageRoute(
-//           builder: (BuildContext context) =>
-//           _children[_currentIndex])); // this has changed
-//     }
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(todo["Customer_Name"].toString()),
-//         backgroundColor: const Color(0xFFA34747),
-//       ),
-//       backgroundColor: const Color(0xFFEFDCDC),
-//       body: Align(
-//         alignment: Alignment(0.01, 0.09),
-//         child: SizedBox(
-//
-//           height: 812.0,
-//           child: Column(
-//             children: <Widget>[
-//               const Spacer(flex: 5),
-// // Group: Group 32
-//
-//               Align(
-//                 alignment: Alignment(-0.88, 0.0),
-//                 child: Text(
-//                   'START TRIP !',
-//                   style: TextStyle(
-//                     fontFamily: 'Helvetica',
-//                     fontSize: 25.0,
-//                     color: const Color(0xFFA34747),
-//                     fontWeight: FontWeight.w700,
-//                   ),
-//                 ),
-//               ),
-//
-//               Spacer(flex: 2),
-//               Container(
-//                   alignment: Alignment(-0.78, -0.04),
-//                   width: 350.0,
-//                   height: 300.0,
-//                   decoration: BoxDecoration(
-//                     borderRadius: BorderRadius.circular(10.0),
-//                     color: Colors.white,
-//                   ),
-//                   child: SizedBox(
-//                     child: Padding(
-//                       padding: const EdgeInsets.all(5.0),
-//                       child: Column(children: [
-//                         Text(
-//                           todo["Hospital_name"].toString(),
-//                           style: TextStyle(
-//                             fontFamily: 'Helvetica',
-//                             fontSize: 20.0,
-//                             color: const Color(0xFFA34747),
-//                           ),
-//                         ),
-//
-//                         Row(
-//                           mainAxisSize: MainAxisSize.min,
-//                           children: const [
-//                             Icon(Icons.star, size: 12, color: Colors.yellow),
-//                             Icon(Icons.star, size: 12, color: Colors.yellow),
-//                             Icon(Icons.star, size: 12, color: Colors.yellow),
-//                             Icon(Icons.star, size: 12, color: Colors.yellow),
-//                             Icon(Icons.star, size: 12, color: Colors.yellow)
-//                           ],
-//                         ),
-//                         Padding(padding: const EdgeInsets.all(20.0)),
-//
-//                         Text(
-//                           "Pick Up Time:"+todo["Pick_Up_Time"].toString(),
-//                           style: TextStyle(
-//                             fontFamily: 'Helvetica',
-//                             fontSize: 15.0,
-//                             color: const Color(0xFFA34747),
-//                           ),
-//                         ),
-//                         Text(
-//                           "Request:"+todo["Request_DateTime"].toString(),
-//                           style: TextStyle(
-//                             fontFamily: 'Helvetica',
-//                             fontSize: 15.0,
-//                             color: const Color(0xFFA34747),
-//                           ),
-//                         ),
-//                         Text(
-//                           todo["Reason"].toString(),
-//                           style: TextStyle(
-//                             fontFamily: 'Helvetica',
-//                             fontSize: 15.0,
-//                             color: const Color(0xFFA34747),
-//                           ),
-//                         ),
-//                         const Spacer(flex: 3),
-//                         Container(
-//                           child: Center(
-//                             child: LinearProgressIndicator(
-//                               value: 50,
-//                               semanticsLabel: 'Request confirmation',
-//                               minHeight: 10.0,
-//                               color: Color(0xFF064457),
-//                             ),
-//                           ),
-//                         ),
-//                         Container(
-//                           width: 100.0,
-//                           height: 50.0,
-//                           margin: EdgeInsets.all(20),
-//                           child: Center(
-//                               child: ElevatedButton(
-//                                 onPressed: () {
-//                                   _cancel(todo["Request_id"].toString());
-//
-//                                 },
-//                                 child: const Text(
-//                                   'Cancel',
-//                                   style: TextStyle(
-//                                     color: Colors.white,
-//                                   ),
-//                                 ),
-//                                 style: ButtonStyle(
-//                                   backgroundColor:
-//                                   MaterialStateProperty.all(Color(0xFFB53A24)),
-//                                 ),
-//                               )),
-//                         )
-//                       ]),
-//                     ),
-//                   )),
-//
-//               Spacer(flex: 20),
-//
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-//   void _cancel(id) async {
-//     DatabaseReference ref = FirebaseDatabase.instance.ref("requests/$id");
-//     await ref.update({
-//       "Status": "Cancel",
-//     });
-//   }
-//
-// }
-// class ConfirmAPage extends StatelessWidget {
-//
-//
-//   // In the constructor, require a Todo.
-//   ConfirmAPage({Key? key, required this.todo, required this.locat}) : super(key: key);
-//
-//   // Declare a field that holds the Todo.
-//   final todo;
-//
-// final locat;
-//
-//
-//
-//   final List<Widget> _children = [
-//     const MyHomePage(),
-//     const MyRequestPage(),
-//     const MyAidPage(),
-//     const MyProfilePage(),
-//   ];
-//
-//   int _currentIndex = 1;
-//
-//
-//
-//   double calculateDistance(lat1, lon1, lat2, lon2){
-//     var p = 0.017453292519943295;
-//     var a = 0.5 - cos((lat2 - lat1) * p)/2 +
-//         cos(lat1 * p) * cos(lat2 * p) *
-//             (1 - cos((lon2 - lon1) * p))/2;
-//     return 12742 * asin(sqrt(a));
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final long=locat[0];
-//     final longf=long;
-//     final lang=locat[1];
-//     final langf=lang;
-//
-//
-//     final hospl=todo["Hospital_location"].toString().split(",");
-//     final hosplang=double.parse(hospl[0]);
-//     final hosplong=double.parse(hospl[1]);
-//     double dis=calculateDistance(longf, langf, hosplang, hosplong);
-//
-//     // Use the Todo to create the UI.
-//
-//     _onTap() {
-//       Navigator.of(context).push(MaterialPageRoute(
-//           builder: (BuildContext context) =>
-//           _children[_currentIndex])); // this has changed
-//     }
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(todo["Request_id"].toString()),
-//         backgroundColor: const Color(0xFFA34747),
-//       ),
-//       backgroundColor: const Color(0xFFEFDCDC),
-//       body: Align(
-//         alignment: Alignment(0.01, 0.09),
-//         child: SizedBox(
-//
-//           height: 812.0,
-//           child: Column(
-//             children: <Widget>[
-//               const Spacer(flex: 5),
-// // Group: Group 32
-//
-//               Align(
-//                 alignment: Alignment(-0.88, 0.0),
-//                 child: Text(
-//                   'TRip yet to start!',
-//                   style: TextStyle(
-//                     fontFamily: 'Helvetica',
-//                     fontSize: 25.0,
-//                     color: const Color(0xFFA34747),
-//                     fontWeight: FontWeight.w700,
-//                   ),
-//                 ),
-//               ),
-//
-//               Spacer(flex: 2),
-//               Container(
-//                   alignment: Alignment(-0.78, -0.04),
-//                   width: 300.0,
-//                   height: 300.0,
-//                   decoration: BoxDecoration(
-//                     borderRadius: BorderRadius.circular(10.0),
-//                     color: Colors.white,
-//                   ),
-//                   child: SizedBox(
-//                     child: Padding(
-//                       padding: const EdgeInsets.all(5.0),
-//                       child: Center(
-//                           child: Column(children: [
-//                             Text(
-//                               todo["Hospital_name"].toString(),
-//                               style: TextStyle(
-//                                 fontFamily: 'Helvetica',
-//                                 fontSize: 20.0,
-//                                 color: const Color(0xFFA34747),
-//                               ),
-//                             ),
-//
-//                             Text(
-//                               todo["Vehicle_Registration"].toString(),
-//                               style: TextStyle(
-//                                 fontFamily: 'Helvetica',
-//                                 fontSize: 15.0,
-//                                 color: const Color(0xFFA34747),
-//                               ),
-//                             ),
-//                             Row(
-//                               mainAxisSize: MainAxisSize.min,
-//                               children: const [
-//                                 Icon(Icons.star, size: 12, color: Colors.yellow),
-//                                 Icon(Icons.star, size: 12, color: Colors.yellow),
-//                                 Icon(Icons.star, size: 12, color: Colors.yellow),
-//                                 Icon(Icons.star, size: 12, color: Colors.yellow),
-//                                 Icon(Icons.star, size: 12, color: Colors.yellow)
-//                               ],
-//                             ),
-//                             Padding(padding: const EdgeInsets.all(3.0)),
-//                             Text(
-//                               todo["Destination"].toString(),
-//                               style: TextStyle(
-//                                 fontFamily: 'Helvetica',
-//                                 fontSize: 15.0,
-//                                 color: const Color(0xFFA34747),
-//                               ),
-//                             ),
-//                             Text(
-//                               todo["Pick_Up_Time"].toString(),
-//                               style: TextStyle(
-//                                 fontFamily: 'Helvetica',
-//                                 fontSize: 15.0,
-//                                 color: const Color(0xFFA34747),
-//                               ),
-//                             ),
-//                             Text(
-//                               todo["Request_DateTime"].toString(),
-//                               style: TextStyle(
-//                                 fontFamily: 'Helvetica',
-//                                 fontSize: 15.0,
-//                                 color: const Color(0xFFA34747),
-//                               ),
-//                             ),
-//                             Text(
-//                               todo["Reason"].toString(),
-//                               style: TextStyle(
-//                                 fontFamily: 'Helvetica',
-//                                 fontSize: 15.0,
-//                                 color: const Color(0xFFA34747),
-//                               ),
-//                             ),
-//                             Text(
-//                               dis.toStringAsFixed(2) + " km away",
-//                               style: TextStyle(
-//                                 fontFamily: 'Helvetica',
-//                                 fontSize: 15.0,
-//                                 color: const Color(0xFFA34747),
-//                                 fontWeight: FontWeight.w500
-//                               ),
-//                             ),
-//                             Container(
-//                               width: 200.0,
-//                               height: 50.0,
-//                               margin: EdgeInsets.all(20),
-//                               child: ElevatedButton(
-//                                 onPressed: () {
-//                                   Navigator.push(
-//                                     context,
-//                                     MaterialPageRoute(
-//                                       builder: (context) =>  MapTrackPage(long: longf, lang:langf, tod:todo),
-//                                     ),
-//                                   );
-//                                 },
-//                                 child: const Text(
-//                                   'TRACK AMBULANCE',
-//                                   style: TextStyle(
-//                                     color: Colors.white,
-//                                   ),
-//                                 ),
-//                                 style: ButtonStyle(
-//                                   backgroundColor:
-//                                   MaterialStateProperty.all(Color(0xFFA43247)),
-//                                 ),
-//                               ),
-//                             )
-//                           ])),
-//                     ),
-//                   )),
-//
-//               Spacer(flex: 10),
-//               Container(
-//                   width: 300,
-//                   height: 100,
-//                   decoration: BoxDecoration(
-//                     borderRadius: BorderRadius.circular(10.0),
-//                     color: Color(0xFFA43247),
-//                   ),
-//                   child: Padding(
-//                       padding: const EdgeInsets.all(25.0),
-//                       child: Row(
-//                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                         children: [
-//                           Column(
-//                             children: [
-//                               Container(
-//                                 width: 50.0,
-//                                 height: 50.0,
-//                                 decoration: BoxDecoration(
-//                                   image: DecorationImage(
-//                                     image: NetworkImage(
-//                                         'assets/images/ambulance.jpg'),
-//                                     fit: BoxFit.fill,
-//                                   ),
-//                                   borderRadius:
-//                                   BorderRadius.all(Radius.circular(50.0)),
-//                                 ),
-//                               ),
-//                             ],
-//                           ),
-//                           Column(
-//                             children: [
-//                               Text(
-//                                 todo["Personnel"].toString(),
-//                                 style: TextStyle(
-//                                   color: Colors.white,
-//                                   fontSize: 20.0,
-//                                 ),
-//                               ),
-//                             ],
-//                           ),
-//                           Column(
-//                             children: [
-//                               ElevatedButton(
-//                                 onPressed: () {
-//                                   Navigator.of(context).push(_call());
-//                                 },
-//                                 child: Icon(Icons.phone),
-//                                 style: ButtonStyle(
-//                                   backgroundColor: MaterialStateProperty.all(
-//                                       Color(0xFF064457)),
-//                                 ),
-//                               )
-//                             ],
-//                           )
-//                         ],
-//                       ))),
-//
-//               Spacer(flex: 20),
-//
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-//
-//
-//   // Route _track() {
-//   //   return PageRouteBuilder(
-//   //     pageBuilder: (context, animation, secondaryAnimation) => const MapTrackPage(),
-//   //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-//   //       return child;
-//   //     },
-//   //   );
-//   // }
-//
-//   Route _call() {
-//     return PageRouteBuilder(
-//       pageBuilder: (context, animation, secondaryAnimation) => const Phone(),
-//       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-//         return child;
-//       },
-//     );
-//   }
-//
-// }
-// class ConfirmFPage extends StatelessWidget {
-//   // In the constructor, require a Todo.
-//   ConfirmFPage({Key? key, required this.todo}) : super(key: key);
-//
-//   // Declare a field that holds the Todo.
-//   final todo;
-//
-//   final List<Widget> _children = [
-//     const MyHomePage(),
-//     const MyRequestPage(),
-//     const MyAidPage(),
-//     const MyProfilePage(),
-//   ];
-//
-//   int _currentIndex = 1;
-//
-//   late final _ratingController;
-//   late double _rating;
-//
-//   double _userRating = 3.0;
-//   int _ratingBarMode = 1;
-//   double _initialRating = 2.0;
-//   @override
-//   void initState() {
-//
-//     _ratingController = TextEditingController(text: '3.0');
-//     _rating = _initialRating;
-//   }
-//
-//   IconData? _selectedIcon;
-//   @override
-//   Widget build(BuildContext context) {
-//     // Use the Todo to create the UI.
-//
-//     _onTap() {
-//       Navigator.of(context).push(MaterialPageRoute(
-//           builder: (BuildContext context) =>
-//           _children[_currentIndex])); // this has changed
-//     }
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(todo["Hospital_name"].toString()),
-//         backgroundColor: const Color(0xFFA34747),
-//       ),
-//       backgroundColor: const Color(0xFFEFDCDC),
-//       body: Align(
-//         alignment: Alignment(0.01, 0.09),
-//         child: SizedBox(
-//
-//           height: 812.0,
-//           child: Column(
-//             children: <Widget>[
-//               const Spacer(flex: 5),
-// // Group: Group 32
-//
-//
-//
-//               Spacer(flex: 2),
-//               Container(
-//                   alignment: Alignment(-0.78, -0.04),
-//                   width: 300.0,
-//                   height: 300.0,
-//                   decoration: BoxDecoration(
-//                     borderRadius: BorderRadius.circular(10.0),
-//                     color: Colors.white,
-//                   ),
-//                   child: SizedBox(
-//                     child: Padding(
-//                         padding: const EdgeInsets.all(5.0),
-//                         child: Center(
-//                           child: Column(children: [
-//                             Text(
-//                               todo["Hospital_name"].toString(),
-//                               style: TextStyle(
-//                                 fontFamily: 'Helvetica',
-//                                 fontSize: 20.0,
-//                                 color: const Color(0xFFA34747),
-//                               ),
-//                             ),
-//                             Text(
-//                               todo["Vehicle_Registration"].toString(),
-//                               style: TextStyle(
-//                                 fontFamily: 'Helvetica',
-//                                 fontSize: 15.0,
-//                                 color: const Color(0xFFA34747),
-//                               ),
-//                             ),
-//                             Row(
-//                               mainAxisSize: MainAxisSize.min,
-//                               children: const [
-//                                 Icon(Icons.star,
-//                                     size: 12, color: Colors.yellow),
-//                                 Icon(Icons.star,
-//                                     size: 12, color: Colors.yellow),
-//                                 Icon(Icons.star,
-//                                     size: 12, color: Colors.yellow),
-//                                 Icon(Icons.star,
-//                                     size: 12, color: Colors.yellow),
-//                                 Icon(Icons.star, size: 12, color: Colors.yellow)
-//                               ],
-//                             ),
-//                             Padding(padding: const EdgeInsets.all(3.0)),
-//                             Text(
-//                               todo["Destination"].toString(),
-//                               style: TextStyle(
-//                                 fontFamily: 'Helvetica',
-//                                 fontSize: 15.0,
-//                                 color: const Color(0xFFA34747),
-//                               ),
-//                             ),
-//                             Text(
-//                               todo["Pick_Up_Time"].toString(),
-//                               style: TextStyle(
-//                                 fontFamily: 'Helvetica',
-//                                 fontSize: 15.0,
-//                                 color: const Color(0xFFA34747),
-//                               ),
-//                             ),
-//                             Text(
-//                               todo["Request_DateTime"].toString(),
-//                               style: TextStyle(
-//                                 fontFamily: 'Helvetica',
-//                                 fontSize: 15.0,
-//                                 color: const Color(0xFFA34747),
-//                               ),
-//                             ),
-//                             Text(
-//                               todo["Reason"].toString(),
-//                               style: TextStyle(
-//                                 fontFamily: 'Helvetica',
-//                                 fontSize: 15.0,
-//                                 color: const Color(0xFFA34747),
-//                               ),
-//                             ),
-//                             Text(
-//                               "Total Trip time:20 minutes",
-//                               style: TextStyle(
-//                                 fontFamily: 'Helvetica',
-//                                 fontSize: 15.0,
-//                                 color: const Color(0xFFA34747),
-//                               ),
-//                             ),
-//                       Text(
-//                           "Personnel:"+todo["Personnel"].toString(),
-//                           style: TextStyle(
-//                             fontFamily: 'Helvetica',
-//                             fontSize: 15.0,
-//                             color: const Color(0xFFA34747),
-//                           ),),
-//                           ]),
-//                         )),
-//                   )),
-//
-//               Spacer(flex: 10),
-//               Text(
-//                 "RATE THE TRIP",
-//                 style: TextStyle(
-//                   fontFamily: 'Helvetica',
-//                   fontSize: 20.0,
-//                   color: const Color(0xFFA34747),
-//                 ),),
-//               Container(
-//                   width: 300,
-//                   height: 100,
-//                   decoration: BoxDecoration(
-//                     borderRadius: BorderRadius.circular(10.0),
-//                     color: Color(0xFFA43247),
-//                   ),
-//                   child: Padding(
-//                       padding: const EdgeInsets.all(25.0),
-//                       child: RatingBar.builder(
-//                         initialRating: 3,
-//                         minRating: 1,
-//                         direction: Axis.horizontal,
-//                         allowHalfRating: true,
-//                         itemCount: 5,
-//                         itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-//                         itemBuilder: (context, _) => Icon(
-//                           Icons.star,
-//                           color: Colors.amber,
-//                         ),
-//                         onRatingUpdate: (rating) {
-//                           rate(todo["Request_id"],rating);
-//                           print(rating);
-//                         },
-//                       ),
-//
-//
-//                       )),
-//               Spacer(flex: 20),
-//
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-//
-//   Future<void> rate(id,rating) async {
-//     DatabaseReference ref = FirebaseDatabase.instance.ref("requests/$id");
-//     try {
-//       await ref.update({
-//         "Rating":rating
-//       });
-//     } on Exception catch (e, s) {
-//       print(s);
-//     }
-//
-//
-//   }
-//
-// }
+
 class Page5 extends StatelessWidget {
   const Page5({Key? key}) : super(key: key);
 
@@ -1056,11 +438,22 @@ class Page5 extends StatelessWidget {
     );
   }
 }
-class MapTrackPage extends StatelessWidget {
-  MapTrackPage({Key? key, required this.lang, required this.long, this.tod}) : super(key: key);
-final lang;
+
+
+class MapPage extends StatefulWidget {
+
+  MapPage({Key? key, required this.lang, required this.long, this.tod}) : super(key: key);
+  final lang;
 final long;
 final tod;
+  @override
+  MapTrackPage createState() => MapTrackPage();
+}
+class MapTrackPage extends State<MapPage> {
+//   MapTrackPage({Key? key, required this.lang, required this.long, this.tod}) : super(key: key);
+// final lang;
+// final long;
+// final tod;
 
   late GoogleMapController mapController;
 
@@ -1072,26 +465,59 @@ final tod;
     mapController = controller;
   }
 
+  RefreshController _refreshController =
+  RefreshController(initialRefresh: false);
+
+  void _onRefresh() async{
+    // monitor network fetch
+    await Future.delayed(Duration(milliseconds: 1000));
+    // if failed,use refreshFailed()
+    _refreshController.refreshCompleted();
+  }
+
+  void _onLoading() async{
+    // monitor network fetch
+    await Future.delayed(Duration(milliseconds: 1000));
+    // if failed,use loadFailed(),if no data return,use LoadNodata()
+
+
+   MapTrackPage();
+    if(mounted)
+      setState(() {
+
+      });
+    _refreshController.loadComplete();
+  }
 
 
   @override
   Widget build(BuildContext context) {
-    final longf=long;
-    final langf=lang;
+    final longf=widget.long;
+    final langf=widget.lang;
     final LatLng _center = LatLng(longf,langf);
+    String? times='';
+    String? distances='';
 
 
-    final hospl=tod["Customer_location"].toString().split(",");
+    final hospl=widget.tod["Customer_location"].toString().split(",");
     final hosplang=double.parse(hospl[0]);
     final hosplong=double.parse(hospl[1]);
 
     return  Scaffold(
       backgroundColor: const Color(0xFFEFDCDC),
       appBar: AppBar(
-        title: Text(tod["Request_id"].toString()),
+        title: Text(widget.tod["Request_id"].toString()),
         backgroundColor: const Color(0xFFA34747),
       ),
-      body:
+      body:SmartRefresher(
+      enablePullDown: true,
+    enablePullUp: true,
+    header: WaterDropHeader(),
+    controller: _refreshController,
+    onRefresh: _onRefresh,
+    onLoading: _onLoading,
+    child:ListView(
+      children:[
 
           Column(
             children: <Widget>[
@@ -1099,8 +525,8 @@ final tod;
                 padding: const EdgeInsets.all(5.0),),
               Container(
                   alignment: Alignment(-0.78, -0.04),
-                  width: 450.0,
-                  height: 300.0,
+                  width: 400.0,
+                  height: 250.0,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
                     color: Colors.white,
@@ -1134,8 +560,8 @@ final tod;
                               longf ,
                             ),
                             ),
-                            sourceName: tod["Hospital_name"].toString(),
-                            driverName: tod["Personnel"].toString(),
+                            sourceName: widget.tod["Hospital_name"].toString(),
+                            driverName: widget.tod["Personnel"].toString(),
                             onTapDriverMarker: (currentLocation) {
                             print("Driver is currently at $currentLocation");
                             },
@@ -1148,7 +574,7 @@ final tod;
                       padding: const EdgeInsets.all(5.0),),
               Container(
                   alignment: Alignment(-0.78, -0.04),
-                  width: 350.0,
+                  width: 300.0,
                   height: 150.0,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
@@ -1160,7 +586,7 @@ final tod;
                       child: Center(
                           child: Column(children: [
                             Text(
-                              tod["Customer_Name"].toString(),
+                              widget.tod["Customer_Name"].toString(),
                               style: TextStyle(
                                 fontFamily: 'Helvetica',
                                 fontSize: 20.0,
@@ -1169,7 +595,7 @@ final tod;
                             ),
 
                             Text(
-                              tod["Customer_location"].toString(),
+                              widget.tod["Customer_location"].toString(),
                               style: TextStyle(
                                 fontFamily: 'Helvetica',
                                 fontSize: 15.0,
@@ -1177,27 +603,20 @@ final tod;
                               ),
                             ),
                             Padding(padding: const EdgeInsets.all(3.0)),
+
                             Text(
-                              tod["Destination"].toString(),
+                              widget.tod["Pick_Up_Time"].toString(),
                               style: TextStyle(
                                 fontFamily: 'Helvetica',
-                                fontSize: 15.0,
+                                fontSize: 12.0,
                                 color: const Color(0xFFA34747),
                               ),
                             ),
                             Text(
-                              tod["Pick_Up_Time"].toString(),
+                              widget.tod["Request_DateTime"].toString(),
                               style: TextStyle(
                                 fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              tod["Request_DateTime"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
+                                fontSize: 12.0,
                                 color: const Color(0xFFA34747),
                               ),
                             ),
@@ -1213,17 +632,17 @@ final tod;
     itemCount: 1,
     itemBuilder: (BuildContext context, int index) {
       var ongoing;
-      if(tod["Status"]=="Ongoing"){
+      if(widget.tod["Status"]=="Ongoing"){
         ongoing=  ElevatedButton(
 
           onPressed: () {
-            var bol=tripupdate(tod["Request_id"].toString(),"Started");
+            var bol=tripupdate(widget.tod["Request_id"].toString(),"Started");
             if(bol==true){
 
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>   MapTrackPage(long: long, lang:lang, tod:tod),
+                  builder: (context) =>   MapPage(long: widget.long, lang:widget.lang, tod:widget.tod),
                 ),
               );
 
@@ -1238,17 +657,17 @@ final tod;
 
           );
       }
-      else if(tod["Status"]=="Started"){
+      else if(widget.tod["Status"]=="Started"){
         ongoing=ElevatedButton(
 
           onPressed: () {
-            var bol=tripupdate(tod["Request_id"].toString(),"Arrived");
+            var bol=tripupdate(widget.tod["Request_id"].toString(),"Arrived");
             if(bol==true){
 
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>   MapTrackPage(long: long, lang:lang, tod:tod),
+                  builder: (context) =>   MapPage(long: widget.long, lang:widget.lang,tod:widget.tod),
                 ),
               );
 
@@ -1263,17 +682,17 @@ final tod;
         );
 
       }
-      else if(tod["Status"]=="Arrived"){
+      else if(widget.tod["Status"]=="Arrived"){
         ongoing=ElevatedButton(
 
           onPressed: () {
-            var bol=tripupdate(tod["Request_id"].toString(),"Trip");
+            var bol=tripupdate(widget.tod["Request_id"].toString(),"Trip");
             if(bol==true){
 
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>   MapTrackPage(long: long, lang:lang, tod:tod),
+                  builder: (context) =>   MapPage(long: widget.long, lang:widget.lang, tod:widget.tod),
                 ),
               );
 
@@ -1288,24 +707,24 @@ final tod;
         );
 
       }
-      else if(tod["Status"]=="Trip"){
+      else if(widget.tod["Status"]=="Trip"){
         ongoing=ElevatedButton(
 
           onPressed: () {
-            var bol=tripupdate(tod["Request_id"].toString(),"Completed");
+            var bol=tripupdate(widget.tod["Request_id"].toString(),"Completed");
             if(bol==true){
 
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>   MapTrackPage(long: long, lang:lang, tod:tod),
+                  builder: (context) =>   MapPage(long:widget.long, lang:widget.lang, tod:widget.tod),
                 ),
               );
 
             }
           },
           child: Text(
-              "HOSPITAL REACHED"
+              "END TRIP"
 
           ),style: ElevatedButton.styleFrom(
              primary: Color(0xFFA34747)),
@@ -1313,7 +732,7 @@ final tod;
         );
 
       }
-      else if(tod["Status"]=="Completed"){
+      else if(widget.tod["Status"]=="Completed"){
         ongoing= ElevatedButton(
 
           onPressed: () {  },
@@ -1325,7 +744,7 @@ final tod;
 
               ),
               Text(
-                  "4.0"
+                  "0.0"
 
               )
             ],
@@ -1354,8 +773,8 @@ final tod;
 
 
 
-
-
+])
+      )
     );
   }
 
@@ -1363,10 +782,37 @@ final tod;
   Future<bool> tripupdate(id,status) async {
     DatabaseReference ref = FirebaseDatabase.instance.ref("requests/$id");
     var bol=false;
+
     try {
-      await ref.update({
-        "Status": status,
-      });
+      if(status=="Started"){
+        final time=DateFormat("EEEEE MMM dd yyyy HH:mm:ss a").format(DateTime.now());
+        await ref.update({
+          "Status": status,
+          "Trip":time
+        });
+      }
+      else if(status=="Arrived"){
+        final time=DateFormat("EEEEE MMM dd yyyy HH:mm:ss a").format(DateTime.now());
+        await ref.update({
+          "Status": status,
+          "Pick_Up_Arrival":time
+        });
+      }
+      else if(status=="Trip"){
+        final time=DateFormat("EEEEE MMM dd yyyy HH:mm:ss a").format(DateTime.now());
+        await ref.update({
+          "Status": status,
+          "Trip_Started":time
+        });
+      }
+      else if(status=="Completed"){
+        final time=DateFormat("EEEEE MMM dd yyyy HH:mm:ss a").format(DateTime.now());
+        await ref.update({
+          "Status": status,
+          "Arrival":time
+        });
+      }
+
       bol=true;
 
 

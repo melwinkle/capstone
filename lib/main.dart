@@ -24,11 +24,12 @@ class Page1 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Align(
+      body: ListView(
+        children:[Align(
         alignment: const Alignment(0.01, 0.09),
         child: SizedBox(
           width: 304.0,
-          height: 812.0,
+          height: 580.0,
           child: Column(
             children: <Widget>[
               const Spacer(flex: 70),
@@ -45,7 +46,7 @@ class Page1 extends StatelessWidget {
                       child: Text(
                         'LAMBER EMS',
                         style: TextStyle(
-                          fontSize: 30.0,
+                          fontSize: 25.0,
                           color: Color(0xFF830C0C),
                           fontWeight: FontWeight.w700,
                         ),
@@ -61,14 +62,14 @@ class Page1 extends StatelessWidget {
                   ],
                 ),
               ),
-              const Spacer(flex: 77),
+
               const Align(
                 alignment: Alignment(-0.88, 0.0),
                 child: Text(
                   'Manage and track your requests',
                   style: TextStyle(
                     fontFamily: 'Helvetica',
-                    fontSize: 20.0,
+                    fontSize: 15.0,
                     color: Color(0xFFA34747),
                   ),
                 ),
@@ -76,7 +77,7 @@ class Page1 extends StatelessWidget {
 
               SizedBox(
                 width: 350.0,
-                height: 350.0,
+                height: 200.0,
                 child: Image.asset('assets/images/ambulance.jpg'),
               ),
               const Spacer(flex: 56),
@@ -125,6 +126,7 @@ class Page1 extends StatelessWidget {
           ),
         ),
       ),
+    ])
     );
   }
 }

@@ -154,7 +154,7 @@ return address;
 
                         return Container(
                             width: 200.0,
-                            height: 50.0,
+                            height: 52.0,
                             margin: EdgeInsets.all(25),
                             child: Expanded(
                               child: OutlinedButton(
@@ -198,7 +198,7 @@ return address;
                                             '${snapshot.data}',
                                             style: const TextStyle(
                                               color: Color(0xFFA34747),
-                                              fontSize: 10.0,
+                                              fontSize: 8.0,
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
@@ -217,7 +217,70 @@ return address;
                                   )),
                             ));
                       });
-                  return const CircularProgressIndicator();
+                  return Container(
+                      width: 200.0,
+                      height: 52.0,
+                      margin: EdgeInsets.all(25),
+                      child: Expanded(
+                        child: OutlinedButton(
+                            onPressed: ()  {
+                              // Navigator.push(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //     builder: (context) => MapTest(),
+                              //   ),
+                              // );
+                              // Position position = await _getGeoLocationPosition();
+                              // location =
+                              // 'Lat: ${position.latitude} , Long: ${position
+                              //     .longitude}';
+                              // GetAddressFromLatLong(position);
+                            }
+
+
+                            ,
+                            child: Row(
+
+                              children: [
+                                Column(
+                                  children: const [
+                                    Icon(Icons.location_on,
+                                        size: 24, color: Color(0xFFA34747))
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    Text(
+                                      'Current Address',
+                                      style: TextStyle(
+                                        color: Color(0xFFA34747),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+
+                                    Text(
+                                      "Current Location",
+                                      style: TextStyle(
+                                        color: Color(0xFFA34747),
+                                        fontSize: 8.0,
+
+                                      ),
+                                    ),
+
+                                  ],
+                                ),
+                              ],
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              side: const BorderSide(
+                                width: 1.0,
+                                color: Color(0xFFA34747),
+                                style: BorderStyle.solid,
+                              ),
+                            )),
+                      ));
                 },
               ),
               Spacer(flex: 5),
@@ -296,7 +359,65 @@ return address;
                           )
                       );
                     }
-                    return CircularProgressIndicator();
+                    return Container(
+                        width:400,
+                        child:Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+
+                              onPressed: () {  },
+                              child: Column(
+                                children: [
+                                  Icon(Icons.receipt),
+                                  Text(
+                                      "TOTAL REQUESTS",style: TextStyle(
+                                    fontFamily: 'Helvetica',
+                                    fontSize: 8.0,
+
+                                    fontWeight: FontWeight.w500,
+
+                                  )
+
+                                  ),
+                                  Text(
+                                      "0"
+
+                                  )
+                                ],
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 40),
+                                  fixedSize: const Size(150, 140), primary: Color(0xFFA34747)),
+                            ),
+                            ElevatedButton(
+
+                              onPressed: () {  },
+                              child: Column(
+                                children: [
+                                  Icon(Icons.star),
+                                  Text(
+                                      "AVERAGE RATING",style: TextStyle(
+                                    fontFamily: 'Helvetica',
+                                    fontSize: 8.0,
+
+                                    fontWeight: FontWeight.w500,
+
+                                  )
+
+                                  ),
+                                  Text(
+                                      "0.0"
+                                  )
+                                ],
+                              ),style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 40),
+                                fixedSize: const Size(150, 140), primary: Color(0xFFA34747)),
+                            )
+
+                          ],
+                        )
+                    );
                   }),
 
 
@@ -305,7 +426,7 @@ return address;
               const Align(
                 alignment: Alignment(-0.59, 0.0),
                 child: Text(
-                  'New Request',
+                  'Assigned Request',
                   style: TextStyle(
                     fontFamily: 'Helvetica',
                     fontSize: 20.0,
@@ -369,11 +490,12 @@ return address;
                                   ),
                                   child:Column(
                                     children: [
-                                      Text("Assgined Request for #"+tot.toString(),style: TextStyle(
+                                      Text("Assigned Request for #"+tot.toString(),style: TextStyle(
                                         fontFamily: 'Helvetica',
-                                        fontSize: 15.0,
+                                        fontSize: 12.0,
                                         color: Color(0xFFA34747),
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.w300,
+
                                       )),
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -384,7 +506,7 @@ return address;
                                               Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                  builder: (context) => MapTrackPage(long: hosplong, lang:hosplang, tod:hosp[index]),
+                                                  builder: (context) => MapPage(long: hosplong, lang:hosplang, tod:hosp[index]),
                                                 ),
                                               );
 
@@ -420,7 +542,38 @@ return address;
                           )
                       );
                     }
-                    return CircularProgressIndicator();
+                    return Container(
+                        width: 300.0,
+                        height: 50.0,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        child:SizedBox(
+                            child:DecoratedBox(
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    border: Border.all(color: Color(0xFFA34747))
+                                ),
+                                child:Column(
+                                  children: [
+                                    Center(
+                                      child: Text("No Assigned Requests",style: TextStyle(
+                                        fontFamily: 'Helvetica',
+                                        fontSize: 15.0,
+                                        color: Color(0xFFA34747),
+                                        fontWeight: FontWeight.w300,
+
+                                      )),
+                                    )
+
+
+                                  ],
+                                )
+                            )
+
+                        )
+                    );
                   }),
 
 

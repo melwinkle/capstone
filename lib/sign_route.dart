@@ -44,14 +44,16 @@ class SignInpage extends State<SignIn> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Align(
+      body: ListView(
+        children:[Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
           width: 304.0,
-          height: 812.0,
+
           child: Column(
             children: <Widget>[
-              Spacer(flex: 30),
+              Padding(
+                  padding: const EdgeInsets.all(2.0)),
 // Group: Group 32
 
               SizedBox(
@@ -65,7 +67,7 @@ class SignInpage extends State<SignIn> {
                       child: Text(
                         'LAMBER EMS',
                         style: TextStyle(
-                          fontSize: 30.0,
+                          fontSize: 25.0,
                           color: Color(0xFF830C0C),
                           fontWeight: FontWeight.w700,
                         ),
@@ -81,7 +83,7 @@ class SignInpage extends State<SignIn> {
                   ],
                 ),
               ),
-              Spacer(flex: 30),
+
 
               const Align(
                 alignment: Alignment(-0.88, 0.0),
@@ -89,20 +91,22 @@ class SignInpage extends State<SignIn> {
                   'Welcome Back',
                   style: TextStyle(
                     fontFamily: 'Helvetica',
-                    fontSize: 30.0,
+                    fontSize: 15.0,
                     color: Color(0xFFA34747),
                   ),
                 ),
               ),
-              const Spacer(flex: 20),
+              Padding(
+                  padding: const EdgeInsets.all(5.0)),
 
               const Align(
                 child: MyCustomForm(),
               ),
-              const Spacer(flex: 100),
+              Padding(
+                  padding: const EdgeInsets.all(5.0)),
               Container(
                   width: 250.0,
-                  height: 50.0,
+                  height: 40.0,
                   margin: EdgeInsets.all(25),
                   child: Expanded(
                     child: OutlinedButton(
@@ -127,6 +131,7 @@ class SignInpage extends State<SignIn> {
           ),
         ),
       ),
+    ])
     );
   }
 }
@@ -176,9 +181,10 @@ class MyCustomFormState extends State<MyCustomForm> {
               decoration: InputDecoration(
                   prefixIcon: Icon(Icons.person),
                   hintText: 'Email',
-                  hintStyle: TextStyle(color: Colors.black87),
+                  hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
                   filled: true,
                   fillColor: Color(0xFFEFDCDC),
+                  contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide.none,
@@ -198,26 +204,34 @@ class MyCustomFormState extends State<MyCustomForm> {
               decoration: InputDecoration(
                   prefixIcon: Icon(Icons.lock),
                   hintText: 'Password',
-                  hintStyle: TextStyle(color: Colors.black87),
+                  hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
                   filled: true,
                   fillColor: Color(0xFFEFDCDC),
+                  contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide.none,
                   ))),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: Align(
-              alignment: Alignment(1.0, 0.0),
-              child: Text('Forgot Password?',
+            child: OutlinedButton(
+              onPressed: (){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>  ForgotPassword(),
+                  ),
+                );
+              } ,
+              child: const Text('Forgot Password?',
                   style: TextStyle(
-                    color: const Color(0xFFA34747),
-                    fontSize: 15.0,
+                    color: Color(0xFFA34747),
+                    fontSize: 10.0,
                   )),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            padding: const EdgeInsets.symmetric(vertical: 13.0),
             child: Center(
               child: Container(
                 width: 250,
@@ -304,6 +318,15 @@ Route _createRoute() {
   );
 }
 
+Route _createRoues() {
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) =>  const SignIn(),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return child;
+    },
+  );
+}
+
 class Page3 extends StatelessWidget {
   const Page3({Key? key}) : super(key: key);
 
@@ -315,6 +338,7 @@ class Page3 extends StatelessWidget {
   }
 }
 
+
 class Page4 extends StatelessWidget {
   const Page4({Key? key}) : super(key: key);
 
@@ -324,4 +348,120 @@ class Page4 extends StatelessWidget {
       home: MyHomePage(),
     );
   }
+}
+
+class ForgotPassword extends StatelessWidget {
+  ForgotPassword({Key? key}) : super(key: key);
+
+  final _formKey = GlobalKey<FormState>();
+  FirebaseAuth auth = FirebaseAuth.instance;
+
+  final email = TextEditingController();
+  final fb = FirebaseDatabase.instance;
+
+
+
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text("Forgot Password"),
+          backgroundColor: const Color(0xFFA34747),
+        ),
+
+        body: Align(
+            child: Column(
+              children: [
+
+                const Align(
+                  alignment: Alignment(-0.88, 0.0),
+                  child: Text(
+                    'Provide your email',
+                    style: TextStyle(
+                      fontFamily: 'Helvetica',
+                      fontSize: 20.0,
+                      color: Color(0xFFA34747),
+                    ),
+                  ),
+                ),
+
+                Align(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFormField(
+                            controller: email,
+                            // The validator receives the text that the user has entered.
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your email';
+                              }
+                              return null;
+                            },
+                            decoration: InputDecoration(
+                                prefixIcon: Icon(Icons.person),
+                                hintText: 'Email',
+                                hintStyle: TextStyle(color: Colors.black87),
+                                filled: true,
+                                fillColor: Color(0xFFEFDCDC),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                  borderSide: BorderSide.none,
+                                ))),
+                        Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 13.0)),
+
+
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 13.0),
+                          child: Center(
+                            child: Container(
+                              width: 250,
+                              height: 40,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  // Validate returns true if the form is valid, or false otherwise.
+                                  if (_formKey.currentState!.validate()) {
+                                    verify(email.text);
+                                    Navigator.of(context).push(_createRoues());
+                                    // If the form is valid, display a snackbar. In the real world,
+                                    // you'd often call a server or save the information in a database.
+
+
+                                  }
+                                },
+                                child: const Text('Reset Password'),
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                  MaterialStateProperty.all(Color(0xFFA34747)),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                  ,
+                ),
+
+              ],
+            )
+        )
+
+
+    );
+  }
+  void verify(mail) async{
+    auth.sendPasswordResetEmail(email: mail).then((value) =>
+        print("Email has been sent"));
+
+
+  }
+
 }
