@@ -34,7 +34,7 @@ class Registerpage extends State<Register> {
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
           width: 304.0,
-          height: 571.0,
+          height: 800.0,
           child: Column(
             children: <Widget>[
               Padding(
@@ -305,8 +305,6 @@ class MyCustomFormState extends State<MyCustomForm> {
 
   void reg(mail,pass) async{
     final ref = fb.reference();
-
-
     try {
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: mail,
@@ -326,7 +324,6 @@ class MyCustomFormState extends State<MyCustomForm> {
       if (users!= null && !users.emailVerified) {
         print(mail);
         await users.sendEmailVerification();
-
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {

@@ -24,7 +24,6 @@ import 'package:path/path.dart' as path;
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
-import 'package:lamber/pay_button.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -157,6 +156,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
     // monitor network fetch
     await Future.delayed(Duration(milliseconds: 1000));
     // if failed,use refreshFailed()
+    const MyAmbulancePage();
     _refreshController.refreshCompleted();
   }
 
@@ -222,7 +222,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
           width: 304.0,
-          height: 400.0,
+          height: 350.0,
           child: Column(
             children: <Widget>[
               Padding(padding: const EdgeInsets.all(15.0)),
@@ -256,7 +256,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
                         final hosplong=double.parse(hospl[1]);
 
                         double dis=calculateDistance(langf, longf, hosplang, hosplong);
-                        if(dis<=30.0){
+                        if(dis<=10.0){
                           lst.add(values);
                         }
                       });
@@ -836,14 +836,20 @@ class MyCustomFormState extends State<MyCustomForm> {
             child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
+              Text(
+              "Record Voice Note",
+              style: TextStyle(fontSize: 15, color: Color(0xFFA34247)),
+            ),
+
                       Container(
                       child: Center(
                       child: Text(
                              _timerText,
-                              style: TextStyle(fontSize: 40, color: Color(0xFFA34247)),
+                              style: TextStyle(fontSize: 15, color: Color(0xFFA34247)),
                               ),
                       ),
                       ),
+
              Container(
                child: Center(
                  child:  Row(
@@ -939,20 +945,12 @@ stopRecording();
   }
 
   Future<void> sendrequest(pick,notes,location,hosp,hospid,locs,acc) async {
-
     final userid=FirebaseAuth.instance.currentUser?.uid;
-
     DatabaseReference ref = FirebaseDatabase.instance.ref("users/clients");
     Query query = ref.orderByKey().equalTo(userid);
     DataSnapshot event = await query.get();
-    var username;
-    var phone;
-    var cid;
-    var cmail;
-
-
+    var username;var phone;var cmail;var cid;
     Map<dynamic, dynamic> values = event.value as Map<dynamic, dynamic>;
-
     values.forEach((key, value) {
       username=value['FullName'].toString();
       phone=value['Phone'].toString();
@@ -962,12 +960,9 @@ stopRecording();
     final time=DateFormat("EEEEE MMM dd yyyy HH:mm:ss a").format(DateTime.now());
     final times=DateFormat("MMddyyyyHHmm").format(DateTime.now());
     final requestid=username.toString().substring(0,3).trim()+hosp.toString().substring(0,3).trim()+times.toString();
-
     DatabaseReference request = FirebaseDatabase.instance.ref("requests/$requestid");
     firebase_storage.Reference audio =
     firebase_storage.FirebaseStorage.instance.ref('audio/$requestid');
-
-
     var charge = Charge()
       ..amount = 2*100  //the money should be in kobo hence the need to multiply the value by 100
       ..reference = _getReference()
@@ -976,20 +971,14 @@ stopRecording();
       ..email = cmail
       ..currency="GHS"
       ..subAccount=acc;
-
     CheckoutResponse response = await plugin.checkout(
       context,
       method: CheckoutMethod.card,
       charge: charge,
     );
-
-    //check if the response is true or not
-
-
-
     try {
+      //if payment was succesful
       if (response.status == true) {
-        //you can send some data from the response to an API or use webhook to record the payment on a database
         _showMessage('Payment was successful!!!');
         await request.set({
           "Customer_Name": username,
@@ -1007,7 +996,8 @@ stopRecording();
           "Request_id":requestid,
           "Payment_Status":"Paid",
           "Customer_Email":cmail,
-          "Hospital_Account":acc
+          "Hospital_Account":acc,
+          "Amount":charge
 
 
         });
@@ -1017,7 +1007,7 @@ stopRecording();
         Navigator.of(context).push(_requestsent());
       } else {
         //the payment wasn't successsful or the user cancelled the payment
-        _showMessage('Payment Failed!!!'+acc);
+        _showMessage('Payment Failed!!!');
       }
 
     } on Exception catch (e, s) {
@@ -1034,88 +1024,7 @@ stopRecording();
 
 
 }
-class PaystackCardMethod extends StatefulWidget {
-  @override
-  _PaystackCardMethodState createState() => _PaystackCardMethodState();
-}
 
-class _PaystackCardMethodState extends State<PaystackCardMethod> {
-  String publicKeyTest =
-      'pk_test_ee1a5a462b6bc7c438af874774e763febc528369'; //pass in the public test key obtained from paystack dashboard here
-
-  final plugin = PaystackPlugin();
-
-  @override
-  void initState() {
-    //initialize the publicKey
-    plugin.initialize(publicKey: publicKeyTest);
-    super.initState();
-  }
-
-  //a method to show the message
-  void _showMessage(String message) {
-    final snackBar = SnackBar(content: Text(message));
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
-  //used to generate a unique reference for payment
-  String _getReference() {
-    var platform = (Platform.isIOS) ? 'iOS' : 'Android';
-    final thisDate = DateTime.now().millisecondsSinceEpoch;
-    return 'ChargedFrom${platform}_$thisDate';
-  }
-
-  //async method to charge users card and return a response
-  chargeCard() async {
-    var charge = Charge()
-      ..amount = 2  //the money should be in kobo hence the need to multiply the value by 100
-      ..reference = _getReference()
-      ..putCustomField('user_id',
-          '846gey6w') //to pass extra parameters to be retrieved on the response from Paystack
-      ..email = 'tutorial@email.com';
-
-    CheckoutResponse response = await plugin.checkout(
-      context,
-      method: CheckoutMethod.card,
-      charge: charge,
-    );
-
-    //check if the response is true or not
-    if (response.status == true) {
-      //you can send some data from the response to an API or use webhook to record the payment on a database
-      _showMessage('Payment was successful!!!');
-    } else {
-      //the payment wasn't successsful or the user cancelled the payment
-      _showMessage('Payment Failed!!!');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Paystack Integration",
-        ),
-        centerTitle: true,
-        elevation: 0.0,
-      ),
-      body: Container(
-          padding: EdgeInsets.all(10),
-          child: Center(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              padding: const EdgeInsets.all(15),
-//PayButton widget is imported at the top of this file
-              child: PayButton(
-                //call the chargeCard method
-                callback: () => chargeCard(),
-              ),
-            ),
-          )),
-    );
-  }
-}
 
 Route _requestsent() {
   return PageRouteBuilder(

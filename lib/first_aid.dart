@@ -35,7 +35,7 @@ class MyAidPage extends StatefulWidget {
 
 class Aidpage extends State<MyAidPage> {
   int _currentIndex = 2;
-  FirebaseAuth auth = FirebaseAuth.instance;
+  // FirebaseAuth auth = FirebaseAuth.instance;
   final fb = FirebaseDatabase.instance.ref("first_aid").orderByKey();
   List<dynamic> lst = [];
 

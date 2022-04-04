@@ -21,7 +21,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_maps_widget/google_maps_widget.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
-import 'package:lamber/pay_button.dart';
 import 'map.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 void main() async {
@@ -183,11 +182,12 @@ class Requestpage extends State<MyRequestPage> {
       controller: _refreshController,
       onRefresh: _onRefresh,
       onLoading: _onLoading,
-      child: Align(
+      child: ListView(
+      children:[Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
 
-          height: 812.0,
+          height: 600.0,
           child: Column(
             children: <Widget>[
 
@@ -206,7 +206,7 @@ class Requestpage extends State<MyRequestPage> {
                 ),
               ),
               Container(
-
+height:450,
                   child:FutureBuilder(
                       future:showData(),
 
@@ -395,7 +395,9 @@ class Requestpage extends State<MyRequestPage> {
           ),
         ),
       ),
-    ));
+      ])
+    )
+    );
   }
 }
 
@@ -637,35 +639,20 @@ class ConfirmPage extends State<ConfirmP> {
 
   void _cancel(id,acc,username,email) async {
     DatabaseReference ref = FirebaseDatabase.instance.ref("requests/$id");
-    var charge = Charge()
-      ..amount = 2*100  //the money should be in kobo hence the need to multiply the value by 100
-      ..reference = _getReference()
-      ..putCustomField('username',
-          username) //to pass extra parameters to be retrieved on the response from Paystack
-      ..email = email
-      ..currency="GHS"
-      ..subAccount=acc;
 
-    CheckoutResponse response = await plugin.checkout(
-      context,
-      method: CheckoutMethod.card,
-      charge: charge,
-    );
 
     try{
-      if(response.status==true){
+
         await ref.update({
           "Status": "Cancel",
-        });
+          });
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) =>  MyRequestPage()
           ),
         );
-      }else{
-        _showMessage('Payment Failed!!!');
-      }
+
     }on Exception catch (e, s) {
       print(s);
     }
@@ -759,7 +746,7 @@ final locat;
               Container(
                   alignment: Alignment(-0.78, -0.04),
                   width: 300.0,
-                  height: 300.0,
+                  height: 350.0,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
                     color: Colors.white,
@@ -936,14 +923,7 @@ final locat;
   }
 
 
-  // Route _track() {
-  //   return PageRouteBuilder(
-  //     pageBuilder: (context, animation, secondaryAnimation) => const MapTrackPage(),
-  //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-  //       return child;
-  //     },
-  //   );
-  // }
+
 
   Route _call() {
     return PageRouteBuilder(
@@ -1286,7 +1266,8 @@ final tod;
         title: Text(tod["Hospital_name"].toString()),
         backgroundColor: const Color(0xFFA34747),
       ),
-      body:
+      body:ListView(
+      children:[
 
           Column(
             children: <Widget>[
@@ -1294,8 +1275,8 @@ final tod;
                 padding: const EdgeInsets.all(5.0),),
               Container(
                   alignment: Alignment(-0.78, -0.04),
-                  width: 450.0,
-                  height: 350.0,
+                  width: 400.0,
+                  height: 300.0,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
                     color: Colors.white,
@@ -1356,7 +1337,7 @@ final tod;
 
 
                   Text("EMS yet to leave hospital",style: TextStyle(
-                      fontSize: 15.0,
+                      fontSize: 12.0,
                       color: Color(0xFFA34747),
                       fontWeight: FontWeight.w500
                   ),),
@@ -1625,7 +1606,7 @@ final tod;
 
 
                   Text("EMS yet to leave hospital",style: TextStyle(
-                      fontSize: 15.0,
+                      fontSize: 12.0,
                       color: Color(0xFFA34747),
                       fontWeight: FontWeight.w500
                   ),),
@@ -1638,7 +1619,7 @@ final tod;
 
 
                   Text("EMS has left the hospital",style: TextStyle(
-                      fontSize: 15.0,
+                      fontSize: 12.0,
                       color: Color(0xFFA34747),
                       fontWeight: FontWeight.w500
                   ),),
@@ -1651,9 +1632,9 @@ final tod;
 
 
                   Text("EMS is arrving soon",style: TextStyle(
-                      fontSize: 15.0,
+                      fontSize: 12.0,
                       color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
+                      fontWeight: FontWeight.w500
                   ),),
 
 
@@ -1665,7 +1646,7 @@ final tod;
 
 
                   Text("EMS has arrived at your location",style: TextStyle(
-                      fontSize: 15.0,
+                      fontSize: 12.0,
                       color: Color(0xFFA34747),
                       fontWeight: FontWeight.w500
                   ),),
@@ -1679,7 +1660,7 @@ final tod;
 
 
                   Text("EMS has started trip to hospital",style: TextStyle(
-                      fontSize: 15.0,
+                      fontSize: 12.0,
                       color: Color(0xFFA34747),
                       fontWeight: FontWeight.w500
                   ),),
@@ -1693,7 +1674,7 @@ final tod;
 
 
                   Text("EMS has ended trip",style: TextStyle(
-                      fontSize: 15.0,
+                      fontSize: 12.0,
                       color: Color(0xFFA34747),
                       fontWeight: FontWeight.w500
                   ),),
@@ -1807,7 +1788,7 @@ final tod;
 
 
 
-
+])
 
 
 
