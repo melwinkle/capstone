@@ -27,6 +27,7 @@ class MyApp extends StatelessWidget {
     return const MaterialApp(
       title: 'Homepage',
       home: MyHomePage(),
+        debugShowCheckedModeBanner:false
     );
   }
 }
@@ -59,6 +60,7 @@ class Homepage extends State<MyHomePage> {
   String FullAddress='';
   String Street='';
   String locat='';
+  String FullName='';
 
   Future<Position> _getGeoLocationPosition() async {
     bool serviceEnabled;
@@ -95,69 +97,178 @@ class Homepage extends State<MyHomePage> {
         .longitude}';
     List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude, position.longitude);
-    print(placemarks);
     Placemark place = placemarks[0];
-    Address = '${place.street},${place.name},${place.subLocality}\n${place.thoroughfare},${place.country}';
-    FullAddress = '${place.street}, ${place.subLocality}, ${place.subLocality}, ${place
-        .thoroughfare}, ${place.country}';
-    Street='${place.street}';
+    setState(() {
+      Address = '${place.street},${place.name},${place.country}';
+      FullAddress='${place.street}, ${place.subLocality}, ${place.subLocality}, ${place
+    .thoroughfare}, ${place.country}';
+Street='${place.street}';
+
+    });
 
 String address='${place.street},${place.name},${place.subLocality}\n${place.thoroughfare},${place.country}';
-    print("Add"+Address);
 return address;
   }
 
+  Future<String>GetProfile() async {
+    final userid=FirebaseAuth.instance.currentUser?.uid;
+    final fb = FirebaseDatabase.instance.ref('users/clients/$userid');
+    final snapshot = await fb.get();
+    if (snapshot.exists) {
+      Map<dynamic,dynamic> values = snapshot.value as Map<dynamic, dynamic>;
+
+      values.forEach((key, value) {
+        if(key=="FullName"){
+          setState(() {
+            FullName = value;
+
+
+          });
+        }
+
+      });
+    } else {
+      setState(() {
+        FullName = "User";
+
+
+      });
+    }
+
+    return FullName;
+
+  }
+  @override
+  void initState() {
+    // TODO: implement initState
+    GetAddressFromLatLong();
+    GetProfile();
+    super.initState();
+  }
 
 
   @override
   Widget build(BuildContext context) {
 
-    GetAddressFromLatLong();
+
     return Scaffold(
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
+      bottomNavigationBar: Container(
+          margin: const EdgeInsets.only(top:42,left:0,right:0,bottom:0),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius:BorderRadius.only(
+                topRight: Radius.circular(20), topLeft: Radius.circular(20)),
+          ),
+          child:ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20.0),
+              topRight: Radius.circular(20.0),
+
+            ),
+
+            child:BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              currentIndex: _currentIndex,
+              backgroundColor: Color(0xFFDB5461),
+              selectedItemColor: Color(0xFFFFFFFF),
+              unselectedItemColor: const Color(0xFFFFFFFF).withOpacity(.60),
+              selectedFontSize: 14,
+              unselectedFontSize: 12,
+
+
+              onTap: (value) {
+                // Respond to item press.
+                setState(() => _currentIndex = value);
+                _onTap();
+              },
+              items: const [
+                BottomNavigationBarItem(
+                  label: 'Home',
+                  icon: Icon(Icons.home_filled),
+                ),
+                BottomNavigationBarItem(
+                  label: 'Requests',
+                  icon: Icon(Icons.receipt_outlined),
+                ),
+                BottomNavigationBarItem(
+                  label: 'First Aid',
+                  icon: Icon(Icons.health_and_safety_outlined),
+                ),
+                BottomNavigationBarItem(
+                  label: 'Account',
+                  icon: Icon(Icons.person_outlined),
+                ),
+              ],
+            ),
+
+          )
+      ),
       body: ListView(
         children: [
       Align(
         alignment: const Alignment(0.01, 0.09),
         child: SizedBox(
-          height: 575.0,
+          height: 570.0,
           child: Column(
             children: <Widget>[
               Padding(
-                  padding: const EdgeInsets.all(2.0)),
-// Group: Group 32
+                padding: const EdgeInsets.only(top:10.0, bottom:5, left:5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children:  [
+                    Text("Hi,"+FullName,style:const TextStyle(
+                      fontFamily:'Helvetica',
+                      color: Color(0xFFDB5461),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18.0
+                    )),
+                    const Icon(Icons.waving_hand_rounded,color:Colors.amber)
+                  ],
+                ),
+                ),
 
-              const Align(
-                alignment: Alignment(-0.88, 0.0),
-                child: Text(
-                  'Emergency',
-                  style: TextStyle(
-                    fontFamily: 'Helvetica',
-                    fontSize: 25.0,
-                    color: Color(0xFFA34747),
-                    fontWeight: FontWeight.w700,
+
+
+               const Padding(
+                 padding: EdgeInsets.only(left: 5.0, top: 2.0, bottom: 1.0),
+                 child: Align(
+                   alignment: Alignment.topLeft,
+                   child: Text(
+                     'Emergency Situation?',
+                     style: TextStyle(
+                       fontFamily: 'Helvetica',
+                       fontSize: 16.0,
+                       color: Color(0xFFDB5461),
+                       fontWeight: FontWeight.w500,
+                     ),
+                   ),
+                 ),
+               ),
+
+              const Padding(
+                padding: EdgeInsets.only(left: 5.0, top: 1.0, bottom: 1.0),
+                child:Align(
+                  alignment: Alignment.topLeft,
+                  child: Text(
+                    'Press the button below',
+                    style: TextStyle(
+                      fontFamily: 'Helvetica',
+                      fontSize: 12.0,
+                      color: Color(0xFFFFC3C7),
+                      fontWeight: FontWeight.normal,
+                    ),
                   ),
                 ),
               ),
 
-              const Align(
-                alignment: Alignment(-0.88, 0.0),
-                child: Text(
-                  'Press and hold to send a message',
-                  style: TextStyle(
-                    fontFamily: 'Helvetica',
-                    fontSize: 15.0,
-                    color: Color(0xFF807E7E),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const Spacer(flex: 5),
+
+
               Container(
                   width: 600.0,
                   height: 200.0,
-                  margin: const EdgeInsets.all(25),
-                  child: Expanded(
+                  margin: const EdgeInsets.only(top:20,left:25,right:25),
+
                     child: ElevatedButton(
                       onPressed: () {
                         sosrequest(Address,locat);
@@ -172,91 +283,80 @@ return address;
                       ),
                       style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all(
-                              const Color(0xFF8E2525)),
+                              const Color(0xFFDB5461)),
                           shape: MaterialStateProperty.all(const CircleBorder(
                               side: BorderSide(
-                                  width: 12, color: Color(0xFFCE9595))))),
-                    ),
+                                  width: 12, color: Color(0xFFFFC3C7))))),
+
                   )),
 
-              FutureBuilder(
-                future: GetAddressFromLatLong(),
-                builder: (context, AsyncSnapshot<String> snapshot) {
-                  if (snapshot.hasError) return Text('${snapshot.error}');
-                  if (snapshot.hasData) return  ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: 1,
-                      itemBuilder: (BuildContext context, int index)  {
+              Container(
 
+                margin: const EdgeInsets.all(25),
+                child: OutlinedButton(
+                    onPressed: ()  {
+                    }
+                    ,
+                    child: Row(
+                      children: [
+                        Column(
+                          children: const [
+                    Padding(padding:EdgeInsets.only (top:10),
+                  child:
+                            Icon(Icons.location_on,
+                                size: 24, color: Color(0xFFDB5461))
+                    )
+                          ],
+                        ),
 
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(padding:EdgeInsets.only (top:2,bottom:1),
+                              child:
+                            Text(
+                              'Current Address',
+                              style: TextStyle(
+                                color: Color(0xFFDB5461),
+                                fontWeight: FontWeight.w500,
+                                fontFamily: "Helvetica"
+                              ),
+                            ),
+                            ),
 
-
-                        return Container(
-                            width: 200.0,
-                            margin: EdgeInsets.all(25),
-                            child: Expanded(
-                              child: OutlinedButton(
-                                  onPressed: ()  {
-
-                                  }
-
-
-                                  ,
-                                  child: Row(
-
-                                    children: [
-                                      Column(
-                                        children: const [
-                                          Icon(Icons.location_on,
-                                              size: 24, color: Color(0xFFA34747))
-                                        ],
-                                      ),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            'Current Address',
-                                            style: TextStyle(
-                                              color: Color(0xFFA34747),
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-
-                                          Text(
-                                            '${snapshot.data}',
-                                            style: const TextStyle(
-                                              color: Color(0xFFA34747),
-                                              fontSize: 10.0,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-
-                                        ],
-                                      ),
-                                    ],
+                            Padding(padding:const EdgeInsets.only (top:2,bottom:2),
+                                child:Text(
+                                  Address,
+                                  style: const TextStyle(
+                                    color: Color(0xFFDB5461),
+                                    fontSize: 10.0,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  style: OutlinedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    side: const BorderSide(
-                                      width: 1.0,
-                                      color: Color(0xFFA34747),
-                                      style: BorderStyle.solid,
-                                    ),
-                                  )),
-                            ));
-                      });
-                  return const CircularProgressIndicator();
-                },
+                                ),
+                            )
+
+                          ],
+                        ),
+                      ],
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      fixedSize: const Size(300, 50),
+                      backgroundColor: Colors.white,
+                      side: const BorderSide(
+                        width: 1.0,
+                        color: Color(0xFFDB5461),
+                        style: BorderStyle.solid,
+                      ),
+                    )),
               ),
 
 
-              Padding(
-                  padding: const EdgeInsets.all(1.0)),
+
               Container(
-                  width: 250.0,
+                  width: 270.0,
                   height: 50.0,
-                  margin: const EdgeInsets.all(25),
-                  child: Expanded(
+                  margin: const EdgeInsets.only(top:5,bottom:8),
+
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.push(
@@ -276,53 +376,14 @@ return address;
                       ),
                       style: ButtonStyle(
                         backgroundColor:
-                        MaterialStateProperty.all(Color(0xFFA34747)),
+                        MaterialStateProperty.all(Color(0xFFDB5461)),
                       ),
                     ),
-                  )),
-              Spacer(flex: 20),
-
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius:BorderRadius.only(
-                  topRight: Radius.circular(30), topLeft: Radius.circular(30)),
-            ),
-              child:BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                currentIndex: _currentIndex,
-                // backgroundColor: Color(0xFFFFFFFF),
-                selectedItemColor: Color(0xFFA34747),
-                unselectedItemColor: const Color(0xFFA34747).withOpacity(.60),
-                selectedFontSize: 14,
-                unselectedFontSize: 14,
+                  ),
 
 
-                onTap: (value) {
-                  // Respond to item press.
-                  setState(() => _currentIndex = value);
-                  _onTap();
-                },
-                items: const [
-                  BottomNavigationBarItem(
-                    label: 'Home',
-                    icon: Icon(Icons.home_filled),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Requests',
-                    icon: Icon(Icons.receipt_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'First Aid',
-                    icon: Icon(Icons.health_and_safety_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Account',
-                    icon: Icon(Icons.person_outlined),
-                  ),
-                ],
-              ),
-            ),
+
+
 
             ],
           ),
@@ -379,7 +440,8 @@ return address;
         "Status": "Pending",
         "Request_id": requestid,
         "Customer_Email":cmail,
-        "Payment_Status":"Not Paid"
+        "Payment_Status":"Not Paid",
+        "Reason":"Emergency"
       });
       Navigator.push(
         context,
@@ -486,124 +548,7 @@ class Loader extends State<LoaderPage> with TickerProviderStateMixin {
 
   late AnimationController controller;
 
-
-
-  @override
-  void initState() {
-    controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 5),
-    )..addListener(() {
-      setState(() {});
-    });
-    controller.repeat(reverse: true);
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-  @override
-  Widget build(BuildContext context) {
-
-    // TODO: implement build
-    return Scaffold(
-      backgroundColor: const Color(0xFFA34747),
-      body: Align(
-        alignment: Alignment(0.01, 0.09),
-        child: SizedBox(
-          width: 304.0,
-          height: 812.0,
-          child: Column(
-            children: <Widget>[
-              const Spacer(flex: 30),
-// Group: Group 32
-
-              const Align(
-                alignment: Alignment(-0.88, 0.0),
-                child: Text(
-                  'Please wait as we connect you to a hospital',
-                  style: TextStyle(
-                    fontFamily: 'Helvetica',
-                    fontSize: 25.0,
-                    color: Color(0xFFFFFFFF),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              Spacer(flex: 15),
-              Container(
-                  width: 600.0,
-                  height: 250.0,
-                  margin: EdgeInsets.all(25),
-                  child: Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        approv(widget.todo.toString());
-                      },
-                      child: const Text(
-                        'SOS',
-                        style: TextStyle(
-                          fontFamily: 'Helvetica',
-                          fontSize: 30.0,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF810C0C),
-                        ),
-                      ),
-                      style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(
-                              const Color(0xFFFFFFFF)),
-                          shape: MaterialStateProperty.all(const CircleBorder(
-                              side: BorderSide(
-                                  width: 12, color: Color(0xFFEFDFDF))))),
-                    ),
-                  )),
-              Container(
-                child: Center(
-                  child: LinearProgressIndicator(
-                    value: controller.value,
-                    semanticsLabel: 'SOS request confirmation',
-                    minHeight: 10.0,
-                    color: Color(0xFF064457),
-                  ),
-                ),
-              ),
-              Container(
-                  width: 250.0,
-                  height: 50.0,
-                  margin: EdgeInsets.all(25),
-                  child: Expanded(
-                    child: OutlinedButton(
-                        onPressed: () {
-                          cancel(widget.todo.toString());
-                        },
-                        child: const Text(
-                          'CANCEL REQUEST',
-                          style: TextStyle(
-                            color: Color(0xFFA34747),
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          side: const BorderSide(
-                            width: 2.0,
-                            color: Color(0xFFA34747),
-                            style: BorderStyle.solid,
-                          ),
-                        )),
-                  )),
-
-              Spacer(flex: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
+  String status='';
 
   Future<void> approv(id) async {
     DatabaseReference ref = FirebaseDatabase.instance.ref("requests");
@@ -615,14 +560,150 @@ class Loader extends State<LoaderPage> with TickerProviderStateMixin {
     Map<dynamic, dynamic> values = event.value as Map<dynamic, dynamic>;
 
     values.forEach((key, value) {
-      if(value['Status']=="Ongoing"){
-
+      setState(() {
+        status=value['Status'];
+      });
+      if(status=="Ongoing"){
         Navigator.of(context).push(_createRouter());
-
       }
+
     });
 
   }
+  @override
+  void initState() {
+    controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..addListener(() {
+      setState(() {
+        status="Pending";
+      });
+    });
+    controller.repeat(reverse: true);
+
+    super.initState();
+
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return Scaffold(
+      backgroundColor: const Color(0xFFD87D8C),
+      body: Align(
+        alignment: Alignment(0.01, 0.09),
+        child: SizedBox(
+          width: 304.0,
+          height: 812.0,
+          child: Column(
+            children: <Widget>[
+              const Spacer(flex: 30),
+// Group: Group 32
+
+              const Align(
+                alignment: Alignment.topLeft,
+                child: Text(
+                  'Please wait as a hospital approves',
+                  style: TextStyle(
+                    fontFamily: 'Helvetica',
+                    fontSize: 15.0,
+                    color: Color(0xFFFFFFFF),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const Align(
+                alignment: Alignment.topLeft,
+                child: Text(
+                  'Click on the button below',
+                  style: TextStyle(
+                    fontFamily: 'Helvetica',
+                    fontSize: 10.0,
+                    color: Color(0xFFFFFFFF),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              Spacer(flex: 15),
+              Container(
+                  width: 600.0,
+                  height: 250.0,
+                  margin: EdgeInsets.all(25),
+
+                    child: ElevatedButton(
+                      onPressed: () {
+                        approv(widget.todo.toString());
+
+                      },
+                      child: const Text(
+                        'SOS',
+                        style: TextStyle(
+                          fontFamily: 'Helvetica',
+                          fontSize: 30.0,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFFDB5461),
+                        ),
+                      ),
+                      style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(
+                              const Color(0xFFFFFFFF)),
+                          shape: MaterialStateProperty.all(const CircleBorder(
+                              side: BorderSide(
+                                  width: 12, color: Color(0xFFEFDFDF))))),
+                    ),
+                  ),
+              Container(
+                child: Center(
+                  child: LinearProgressIndicator(
+                    value: controller.value,
+                    semanticsLabel: 'SOS request confirmation',
+                    minHeight: 10.0,
+                    color: Color(0xFFDB5461),
+                  ),
+                ),
+              ),
+              Container(
+                  width: 250.0,
+                  height: 50.0,
+                  margin: EdgeInsets.all(25),
+
+                    child: OutlinedButton(
+                        onPressed: () {
+                          cancel(widget.todo.toString());
+                        },
+                        child: const Text(
+                          'CANCEL REQUEST',
+                          style: TextStyle(
+                            color: Color(0xFFDB5461),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          side: const BorderSide(
+                            width: 2.0,
+                            color: Color(0xFFDB5461),
+                            style: BorderStyle.solid,
+                          ),
+                        )),
+                  ),
+
+              Spacer(flex: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
+
 
 
   Future<void> cancel(id) async {

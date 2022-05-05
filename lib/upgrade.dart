@@ -52,10 +52,13 @@ class Upgradepage extends State<MyUpgradePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Account Upgrade"),
-        backgroundColor: const Color(0xFFA34747),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(
+            color: Color(0xFFDB5461)
+        ),
       ),
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
       body: ListView(
     children:[Align(
         alignment: Alignment(0.01, 0.09),
@@ -67,7 +70,14 @@ class Upgradepage extends State<MyUpgradePage> {
 // Group: Group 32
 
               const Spacer(flex: 2),
-
+              const Align(
+                alignment: Alignment.center,
+                child:  Text("Account Upgrade", style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 20.0,
+                    color:Color( 0xFFDB5461)
+                ),),
+              ),
               Container(
                 alignment: Alignment(-0.78, -0.04),
                 width: 300.0,

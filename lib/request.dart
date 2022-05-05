@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'dart:io';
 
+
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lamber/request_confirm.dart';
@@ -102,19 +104,18 @@ class Requestpage extends State<MyRequestPage> {
   Future<void> GetAddressFromLatLong(Position position) async {
     List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude, position.longitude);
-    print(placemarks);
     Placemark place = placemarks[0];
-    Address = '${place.street},${place.name},${place.subLocality}\n${place.thoroughfare},${place.country}';
-    FullAddress = '${place.street}, ${place.subLocality}, ${place.subLocality}, ${place
+    Address = '${place.street},${place.name},${place.country}';
+    FullAddress='${place.street}, ${place.subLocality}, ${place.subLocality}, ${place
         .thoroughfare}, ${place.country}';
     Street='${place.street}';
 
 
-    print("Add"+Address);
   }
 
   Future<void> backloc() async {
     Position position = await _getGeoLocationPosition();
+
     location =
     'Lat: ${position.latitude} , Long: ${position
         .longitude}';
@@ -132,9 +133,52 @@ class Requestpage extends State<MyRequestPage> {
 
     DataSnapshot event = await query.get();
 
-    print(event.value.toString());
     return event.value;
   }
+
+
+  Future<bool> payb(username,cmail,acc) async {
+    var bool=false;
+    var charge = Charge()
+      ..amount = 2*100  //the money should be in kobo hence the need to multiply the value by 100
+      ..reference = _getReference()
+      ..putCustomField('username',
+          username) //to pass extra parameters to be retrieved on the response from Paystack
+      ..email = cmail
+      ..currency="GHS"
+      ..subAccount=acc;
+
+    CheckoutResponse response = await plugin.checkout(
+      context,
+      method: CheckoutMethod.card,
+      charge: charge,
+    );
+
+
+    if (response.status == true) {
+      bool=true;
+      //you can send some data from the response to an API or use webhook to record the payment on a database
+      _showMessage('Payment was successful!!!');
+    }
+    else {
+      //the payment wasn't successsful or the user cancelled the payment
+      _showMessage('Payment Failed!!!');
+    }
+
+    return bool;
+  }
+  void _showMessage(String message) {
+    final snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  //used to generate a unique reference for payment
+  String _getReference() {
+    var platform = (Platform.isIOS) ? 'iOS' : 'Android';
+    final thisDate = DateTime.now().millisecondsSinceEpoch;
+    return 'ChargedFrom${platform}_$thisDate';
+  }
+  final plugin = PaystackPlugin();
 
   _onTap() {
     Navigator.of(context).push(MaterialPageRoute(
@@ -165,48 +209,99 @@ class Requestpage extends State<MyRequestPage> {
 
     const MyRequestPage();
     if(mounted)
-      setState(() {
 
-      });
     _refreshController.loadComplete();
   }
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
+      bottomNavigationBar:  Container(
+          margin: const EdgeInsets.only(top:59,left:0,right:0,bottom:0),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius:BorderRadius.only(
+                topRight: Radius.circular(20), topLeft: Radius.circular(20)),
+          ),
+          child:ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20.0),
+              topRight: Radius.circular(20.0),
+
+            ),
+
+            child:BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              currentIndex: _currentIndex,
+              backgroundColor: Color(0xFFDB5461),
+              selectedItemColor: Color(0xFFFFFFFF),
+              unselectedItemColor: const Color(0xFFFFFFFF).withOpacity(.60),
+              selectedFontSize: 14,
+              unselectedFontSize: 12,
+
+
+              onTap: (value) {
+                // Respond to item press.
+                setState(() => _currentIndex = value);
+                _onTap();
+              },
+              items: const [
+                BottomNavigationBarItem(
+                  label: 'Home',
+                  icon: Icon(Icons.home_filled),
+                ),
+                BottomNavigationBarItem(
+                  label: 'Requests',
+                  icon: Icon(Icons.receipt_outlined),
+                ),
+                BottomNavigationBarItem(
+                  label: 'First Aid',
+                  icon: Icon(Icons.health_and_safety_outlined),
+                ),
+                BottomNavigationBarItem(
+                  label: 'Account',
+                  icon: Icon(Icons.person_outlined),
+                ),
+              ],
+            ),
+
+          )
+      ),
       body:SmartRefresher(
-      enablePullDown: true,
-      enablePullUp: true,
+      enablePullDown: false,
+      enablePullUp: false,
       header: WaterDropHeader(),
       controller: _refreshController,
       onRefresh: _onRefresh,
       onLoading: _onLoading,
       child: ListView(
-      children:[Align(
+      children:[
+        Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
 
-          height: 600.0,
+          height: 594.0,
           child: Column(
             children: <Widget>[
 
 // Group: Group 32
-              Padding(padding: const EdgeInsets.all(10.0)),
+              const Padding(padding: EdgeInsets.only(top:60.0)),
               const Align(
-                alignment: Alignment(-0.88, 0.0),
+
+                alignment: Alignment.topLeft,
                 child: Text(
                   'All Requests',
                   style: TextStyle(
                     fontFamily: 'Helvetica',
-                    fontSize: 25.0,
-                    color: Color(0xFFA34747),
+                    fontSize: 20.0,
+                    color: Color(0xFFDB5461),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
               Container(
-height:450,
+
                   child:FutureBuilder(
                       future:showData(),
 
@@ -223,6 +318,8 @@ height:450,
 
                           });
 
+                          lst.sort((a, b) => b["Request_DateTime"].compareTo(a["Request_DateTime"]));
+
 
                           return ListView.builder(
                               shrinkWrap: true,
@@ -232,6 +329,7 @@ height:450,
                                 var ems;
                                 backloc();
                                 if(lst[index]['Status']=="Pending"){
+
                                   stat=Container(
                                     alignment: const Alignment(1.0, -0.4),
                                     child:
@@ -269,8 +367,6 @@ height:450,
                                 };
                                 return Container(
 
-                                    child: Flexible(
-
 
 
                                     child: Column(
@@ -286,7 +382,7 @@ height:450,
                                     ),
                                     child: SizedBox(
                                       child: OutlinedButton(
-                                          onPressed: () {
+                                          onPressed: ()  {
 
                                             Navigator.push(
                                               context,
@@ -294,6 +390,10 @@ height:450,
                                                 builder: (context) =>  ems,
                                               ),
                                             );
+
+
+
+
                                           },
                                           child: Row(
                                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -301,7 +401,7 @@ height:450,
                                             SizedBox(
                                             width: 50.0,
                                             height: 50.0,
-                                            child: Image.asset('assets/images/ambulance.jpg'),
+                                            child: Image.asset('assets/images/midlogos.png'),
                                           ),
                                               Column(
                                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -310,7 +410,7 @@ height:450,
                                                   Text(
                                                     lst[index]["Hospital_name"],
                                                     style: const TextStyle(
-                                                      color: Color(0xFFA34747),
+                                                      color: Color(0xFFDB5461),
                                                       fontWeight: FontWeight.w700,
                                                     ),
                                                   ),
@@ -331,8 +431,8 @@ height:450,
                                                   ),
                                                   Text(
                                                     lst[index]["Request_DateTime"],
-                                                    style: TextStyle(
-                                                      color: Color(0xFFA34747),
+                                                    style: const TextStyle(
+                                                      color: Color(0xFFDB5461),
                                                       fontSize: 8.0,
                                                       overflow: TextOverflow.ellipsis
                                                     ),
@@ -344,12 +444,17 @@ height:450,
                                             ],
                                           ),
                                           style: OutlinedButton.styleFrom(
-                                            backgroundColor: Colors.white,
-                                            fixedSize: const Size(350, 80),
+                                            backgroundColor: Color(0xFFFFF1F4),
+                                            fixedSize: const Size(350, 75),
+                                              side: const BorderSide(
+                                                width: 1.0,
+                                                color: Color(0xFFDB5461),
+                                                style: BorderStyle.solid,
+                                              ),
                                           )),
                                     )),
                                         ])
-                                )
+
                                 );
 
                               });
@@ -358,39 +463,8 @@ height:450,
                       })
               ),
 
-              Spacer(flex: 20),
-              BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                currentIndex: _currentIndex,
-                backgroundColor: Color(0xFFFFFFFF),
-                selectedItemColor: Color(0xFFA34747),
-                unselectedItemColor: const Color(0xFFA34747).withOpacity(.60),
-                selectedFontSize: 14,
-                unselectedFontSize: 14,
-                onTap: (value) {
-                  // Respond to item press.
-                  setState(() => _currentIndex = value);
-                  _onTap();
-                },
-                items: const [
-                  BottomNavigationBarItem(
-                    label: 'Home',
-                    icon: Icon(Icons.home_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Requests',
-                    icon: Icon(Icons.receipt_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'First Aid',
-                    icon: Icon(Icons.health_and_safety_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Account',
-                    icon: Icon(Icons.person_outlined),
-                  ),
-                ],
-              ),
+
+
             ],
           ),
         ),
@@ -399,6 +473,7 @@ height:450,
     )
     );
   }
+
 }
 
 
@@ -474,9 +549,15 @@ class ConfirmPage extends State<ConfirmP> {
   final userid=FirebaseAuth.instance.currentUser?.uid;
   final Account='';
   final mail='';
+
+
+
+
+
   @override
   void initState() {
     plugin.initialize(publicKey: publicKeyTest);
+
     super.initState();
 
   }
@@ -495,47 +576,56 @@ class ConfirmPage extends State<ConfirmP> {
   Widget build(BuildContext context) {
     // Use the Todo to create the UI.
 
-    _onTap() {
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (BuildContext context) =>
-          _children[_currentIndex])); // this has changed
-    }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.todo["Hospital_name"].toString()),
-        backgroundColor: const Color(0xFFA34747),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(
+            color: Color(0xFFDB5461)
+        ),
       ),
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
       body: ListView(
-    children:[Align(
+    children:[
+      Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
 
           height: 580.0,
           child: Column(
             children: <Widget>[
-              const Spacer(flex: 5),
-// Group: Group 32
+
 
               Align(
-                alignment: Alignment(-0.88, 0.0),
-                child: Text(
-                  'Hospital will approve soon!',
-                  style: TextStyle(
+                alignment: Alignment.center,
+                child: Text( widget.todo["Hospital_name"],
+                  style: const TextStyle(
                     fontFamily: 'Helvetica',
-                    fontSize: 25.0,
-                    color: const Color(0xFFA34747),
+                    fontSize: 20.0,
+                    color: Color(0xFFDB5461),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
+              const Align(
+                alignment: Alignment.center,
+                child: Text(
+                  'Hospital will approve soon!',
+                  style: TextStyle(
+                    fontFamily: 'Helvetica',
+                    fontSize: 15.0,
+                    color: Color(0xFFDB5461),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
 
-              Spacer(flex: 2),
+
               Container(
                   alignment: Alignment(-0.78, -0.04),
                   width: 350.0,
-                  height: 300.0,
+
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
                     color: Colors.white,
@@ -544,62 +634,82 @@ class ConfirmPage extends State<ConfirmP> {
                     child: Padding(
                       padding: const EdgeInsets.all(5.0),
                       child: Column(children: [
-                        Text(
-                          widget.todo["Hospital_name"].toString(),
-                          style: TextStyle(
-                            fontFamily: 'Helvetica',
-                            fontSize: 20.0,
-                            color: const Color(0xFFA34747),
-                          ),
-                        ),
-
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.star, size: 12, color: Colors.yellow),
-                            Icon(Icons.star, size: 12, color: Colors.yellow),
-                            Icon(Icons.star, size: 12, color: Colors.yellow),
-                            Icon(Icons.star, size: 12, color: Colors.yellow),
-                            Icon(Icons.star, size: 12, color: Colors.yellow)
-                          ],
-                        ),
-                        Padding(padding: const EdgeInsets.all(20.0)),
-
-                        Text(
-                          "Pick Up Time:"+widget.todo["Pick_Up_Time"].toString(),
-                          style: TextStyle(
-                            fontFamily: 'Helvetica',
-                            fontSize: 15.0,
-                            color: const Color(0xFFA34747),
-                          ),
-                        ),
-                        Text(
-                          "Request:"+widget.todo["Request_DateTime"].toString(),
-                          style: TextStyle(
-                            fontFamily: 'Helvetica',
-                            fontSize: 15.0,
-                            color: const Color(0xFFA34747),
-                          ),
-                        ),
-                        Text(
-                          widget.todo["Reason"].toString(),
-                          style: TextStyle(
-                            fontFamily: 'Helvetica',
-                            fontSize: 15.0,
-                            color: const Color(0xFFA34747),
-                          ),
-                        ),
-                        const Spacer(flex: 3),
                         Container(
-                          child: Center(
-                            child: LinearProgressIndicator(
-                              value: 50,
-                              semanticsLabel: 'Request confirmation',
-                              minHeight: 10.0,
-                              color: Color(0xFF064457),
-                            ),
-                          ),
+                          alignment: Alignment.topLeft,
+                          padding: EdgeInsets.only(bottom: 5.0,left:5.0,right:5.0,top:5.0),
+                          child:  const Text("Pick Up Time", style: TextStyle(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 12.0,
+                              color:Color( 0xFFDB5461)
+                          ),),
                         ),
+                        TextFormField(
+                            initialValue: widget.todo["Pick_Up_Time"].toString(),
+                            style: TextStyle(
+                                fontSize: 10.0
+                            ),
+                            readOnly: true,
+                            decoration: InputDecoration(
+                                prefixIcon: const Icon(Icons.lock),
+                                filled: true,
+                                fillColor: const Color(0xFFFFF1F4),
+                                contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                  borderSide: BorderSide.none,
+                                ))),
+                        Container(
+                          alignment: Alignment.topLeft,
+                          padding: EdgeInsets.only(bottom: 5.0,left:5.0,right:5.0,top:5.0),
+                          child:  const Text("Request DateTime", style: TextStyle(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 12.0,
+                              color:Color( 0xFFDB5461)
+                          ),),
+                        ),
+                        TextFormField(
+                            initialValue: widget.todo["Request_DateTime"].toString(),
+                            style: TextStyle(
+                                fontSize: 10.0
+                            ),
+                            readOnly: true,
+                            decoration: InputDecoration(
+                                prefixIcon: const Icon(Icons.lock),
+                                filled: true,
+                                fillColor: const Color(0xFFFFF1F4),
+                                contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                  borderSide: BorderSide.none,
+                                ))),
+
+                        Container(
+                          alignment: Alignment.topLeft,
+                          padding: EdgeInsets.only(bottom: 5.0,left:5.0,right:5.0,top:5.0),
+                          child:  const Text("Reason", style: TextStyle(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 12.0,
+                              color:Color( 0xFFDB5461)
+                          ),),
+                        ),
+                        TextFormField(
+                            initialValue: widget.todo["Reason"].toString(),
+                            style: TextStyle(
+                                fontSize: 10.0
+                            ),
+                            readOnly: true,
+                            decoration: InputDecoration(
+                                prefixIcon: const Icon(Icons.lock),
+                                filled: true,
+                                fillColor: const Color(0xFFFFF1F4),
+                                contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                  borderSide: BorderSide.none,
+                                ))),
+
+
+
                         Container(
                           width: 100.0,
                           height: 50.0,
@@ -618,7 +728,7 @@ class ConfirmPage extends State<ConfirmP> {
                                 ),
                                 style: ButtonStyle(
                                   backgroundColor:
-                                  MaterialStateProperty.all(Color(0xFFB53A24)),
+                                  MaterialStateProperty.all(Color(0xFFDB5461)),
                                 ),
                               )),
                         )
@@ -626,7 +736,7 @@ class ConfirmPage extends State<ConfirmP> {
                     ),
                   )),
 
-              Spacer(flex: 20),
+
 
             ],
           ),
@@ -660,27 +770,107 @@ class ConfirmPage extends State<ConfirmP> {
   }
 
 }
-class ConfirmAPage extends StatelessWidget {
+
+class ConfirmAPage extends StatefulWidget {
 
 
-  // In the constructor, require a Todo.
   ConfirmAPage({Key? key, required this.todo, required this.locat}) : super(key: key);
 
-  // Declare a field that holds the Todo.
   final todo;
 
-final locat;
+  final locat;
+  @override
+  ConfirmA createState() {
+    return  ConfirmA();
+  }
+}
+class ConfirmA extends State<ConfirmAPage> {
 
 
 
-  final List<Widget> _children = [
-    const MyHomePage(),
-    const MyRequestPage(),
-    const MyAidPage(),
-    const MyProfilePage(),
-  ];
 
-  int _currentIndex = 1;
+
+  var gl;
+
+  String publicKeyTest =
+      'pk_test_ee1a5a462b6bc7c438af874774e763febc528369';
+  final plugin = PaystackPlugin();
+  String paym='';
+
+  //used to generate a unique reference for payment
+  String _getReference() {
+    var platform = (Platform.isIOS) ? 'iOS' : 'Android';
+    final thisDate = DateTime.now().millisecondsSinceEpoch;
+    return 'ChargedFrom${platform}_$thisDate';
+  }
+  pay(username,acc,cmail) async {
+    final requestid=widget.todo["Request_id"].toString();
+    DatabaseReference request = FirebaseDatabase.instance.ref("requests/$requestid");
+    var charge = Charge()
+      ..amount = 2*100  //the money should be in kobo hence the need to multiply the value by 100
+      ..reference = _getReference()
+      ..putCustomField('username',
+          username) //to pass extra parameters to be retrieved on the response from Paystack
+      ..email = cmail
+      ..currency="GHS"
+      ..subAccount=acc;
+    CheckoutResponse response = await plugin.checkout(
+      context,
+      method: CheckoutMethod.card,
+      charge: charge,
+    );
+    if (response.status == true) {
+      try {
+        await request.update({
+          "Payment_Status":"Paid"
+        }
+
+        );
+        setState(() {
+          paym="Paid";
+        });
+
+      }on Exception catch (e, s) {
+        print(s);
+      }
+
+    }
+
+  }
+
+getpay(){
+  final rid=widget.todo["Payment_Status"];
+  final user=widget.todo["Customer_Name"];
+  final mail=widget.todo["Customer_Email"];
+  final acc=widget.todo["Account"];
+
+  if(rid=="Paid"){
+    setState(() {
+      paym="Paid";
+    });
+    gl=Text(paym,style: TextStyle(
+        color:Color(0xFFDB5461),
+    ),);
+  }else{
+    setState(() {
+      paym="Pay";
+    });
+    gl=ElevatedButton(
+        onPressed: (){
+          pay(user,acc,mail);
+        },
+        child:Text(paym,style: TextStyle(color:Color(0xFFFFFFFF)),)
+        ,
+        style:ElevatedButton.styleFrom(
+            padding:const EdgeInsets.all(10) ,
+            primary: const Color(0xFFDB5461),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)))
+    );
+  }
+
+}
+
 
 
 
@@ -693,148 +883,237 @@ final locat;
   }
 
   @override
+  void initState() {
+    plugin.initialize(publicKey: publicKeyTest);
+    getpay();
+    // TODO: implement initState
+    super.initState();
+  }
+
+
+  @override
   Widget build(BuildContext context) {
-    final long=locat[0];
+    final long=widget.locat[0];
     final longf=long;
-    final lang=locat[1];
+    final lang=widget.locat[1];
     final langf=lang;
 
 
-    final hospl=todo["Hospital_location"].toString().split(",");
+    final hospl=widget.todo["Hospital_location"].toString().split(",");
     final hosplang=double.parse(hospl[0]);
     final hosplong=double.parse(hospl[1]);
     double dis=calculateDistance(longf, langf, hosplang, hosplong);
 
-    // Use the Todo to create the UI.
 
-    _onTap() {
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (BuildContext context) =>
-          _children[_currentIndex])); // this has changed
-    }
     return Scaffold(
       appBar: AppBar(
-        title: Text(todo["Hospital_name"].toString()),
-        backgroundColor: const Color(0xFFA34747),
+        backgroundColor: Colors.white,
+        title:Align(
+            alignment: Alignment.topRight,
+            child: gl
+        ),
+        elevation: 0,
+        toolbarHeight: 50,
+        iconTheme: const IconThemeData(
+            color: Color(0xFFDB5461)
+        ),
       ),
-      backgroundColor: const Color(0xFFEFDCDC),
-      body:ListView(
-    children:[Align(
+
+        backgroundColor: const Color(0xFFFFFFFF),
+      body:
+      ListView(
+    children:[
+      Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
 
-          height: 812.0,
+          height: 520.0,
           child: Column(
             children: <Widget>[
-              const Spacer(flex: 5),
-// Group: Group 32
 
               Align(
-                alignment: Alignment(-0.88, 0.0),
+                alignment: Alignment.center,
+                child:  Text(widget.todo["Hospital_name"], style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 20.0,
+                    color:Color( 0xFFDB5461)
+                ),),
+              ),
+
+              const Align(
+                alignment: Alignment.center,
                 child: Text(
                   'EMS are on their way!',
                   style: TextStyle(
                     fontFamily: 'Helvetica',
-                    fontSize: 25.0,
-                    color: const Color(0xFFA34747),
-                    fontWeight: FontWeight.w700,
+                    fontSize: 15.0,
+                    color: Color(0xFFDB5461),
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
 
-              Spacer(flex: 2),
+
               Container(
                   alignment: Alignment(-0.78, -0.04),
                   width: 300.0,
-                  height: 350.0,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: Colors.white,
-                  ),
+
                   child: SizedBox(
                     child: Padding(
                       padding: const EdgeInsets.all(5.0),
                       child: Center(
-                          child: Column(children: [
-                            Text(
-                              todo["Hospital_name"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 20.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
+                          child: Column(
+                              children: [
 
-                            Text(
-                              todo["Vehicle_Registration"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(Icons.star, size: 12, color: Colors.yellow),
-                                Icon(Icons.star, size: 12, color: Colors.yellow),
-                                Icon(Icons.star, size: 12, color: Colors.yellow),
-                                Icon(Icons.star, size: 12, color: Colors.yellow),
-                                Icon(Icons.star, size: 12, color: Colors.yellow)
-                              ],
-                            ),
-                            Padding(padding: const EdgeInsets.all(3.0)),
-                            Text(
-                              todo["Destination"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              todo["Pick_Up_Time"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              todo["Request_DateTime"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              todo["Reason"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              dis.toStringAsFixed(2) + " km away",
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                                fontWeight: FontWeight.w500
-                              ),
-                            ),
+                                Container(
+                                  alignment: Alignment.topLeft,
+                                  padding: EdgeInsets.only(bottom: 5.0,left:5.0,right:5.0,top:5.0),
+                                  child:  const Text("Pick Up Time", style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 12.0,
+                                      color:Color( 0xFFDB5461)
+                                  ),),
+                                ),
+                                TextFormField(
+                                    initialValue: widget.todo["Pick_Up_Time"].toString(),
+                                    style: TextStyle(
+                                        fontSize: 10.0
+                                    ),
+                                    readOnly: true,
+                                    decoration: InputDecoration(
+                                        prefixIcon: const Icon(Icons.lock),
+                                        filled: true,
+                                        fillColor: const Color(0xFFFFF1F4),
+                                        contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(5),
+                                          borderSide: BorderSide.none,
+                                        ))),
+                                Container(
+                                  alignment: Alignment.topLeft,
+                                  padding: EdgeInsets.only(bottom: 5.0,left:5.0,right:5.0,top:5.0),
+                                  child:  const Text("Request DateTime", style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 12.0,
+                                      color:Color( 0xFFDB5461)
+                                  ),),
+                                ),
+                                TextFormField(
+                                    initialValue: widget.todo["Request_DateTime"].toString(),
+                                    style: TextStyle(
+                                        fontSize: 10.0
+                                    ),
+                                    readOnly: true,
+                                    decoration: InputDecoration(
+                                        prefixIcon: const Icon(Icons.lock),
+                                        filled: true,
+                                        fillColor: const Color(0xFFFFF1F4),
+                                        contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(5),
+                                          borderSide: BorderSide.none,
+                                        ))),
+
+                                Container(
+                                  alignment: Alignment.topLeft,
+                                  padding: EdgeInsets.only(bottom: 5.0,left:5.0,right:5.0,top:5.0),
+                                  child:  const Text("Reason", style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 12.0,
+                                      color:Color( 0xFFDB5461)
+                                  ),),
+                                ),
+                                TextFormField(
+                                    initialValue: widget.todo["Reason"].toString(),
+                                    style: TextStyle(
+                                        fontSize: 10.0
+                                    ),
+                                    readOnly: true,
+                                    decoration: InputDecoration(
+                                        prefixIcon: const Icon(Icons.lock),
+                                        filled: true,
+                                        fillColor: const Color(0xFFFFF1F4),
+                                        contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(5),
+                                          borderSide: BorderSide.none,
+                                        ))),
+                                Container(
+                                  alignment: Alignment.topLeft,
+                                  padding: EdgeInsets.only(bottom: 5.0,left:5.0,right:5.0,top:5.0),
+                                  child:  const Text("Distance", style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 12.0,
+                                      color:Color( 0xFFDB5461)
+                                  ),),
+                                ),
+                                TextFormField(
+                                    initialValue: dis.toStringAsFixed(2) + " km away".toString(),
+                                    style: const TextStyle(
+                                        fontSize: 10.0
+                                    ),
+                                    readOnly: true,
+                                    decoration: InputDecoration(
+                                        prefixIcon: const Icon(Icons.lock),
+                                        filled: true,
+                                        fillColor: const Color(0xFFFFF1F4),
+                                        contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(5),
+                                          borderSide: BorderSide.none,
+                                        ))),
+
+                                Padding(padding: EdgeInsets.only(top:20),),
+                                Container(
+                                    width: 300,
+                                    height: 60,
+                                    
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(5.0),
+                                        color: Color(0xFFFFFFFF),
+                                        border:Border.all(
+                                            color: Color(0xFFDB5461),
+                                            width: 1.0,
+                                            style: BorderStyle.solid
+
+                                        )
+
+                                    ),
+                                    child: Padding(
+                                        padding: const EdgeInsets.only(top:5.0,bottom:10.0,left:10.0,right:10.0),
+                                        child: ElevatedButton(
+                                          onPressed: () async {
+                                            FlutterPhoneDirectCaller.callNumber(widget.todo["Personnel_number"].toString());
+                                          },
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                            children: [
+
+                                              Text(
+                                                widget.todo["Personnel"].toString(),
+                                                style: const TextStyle(
+                                                  color: Color(0xFFDB5461),
+                                                  fontSize: 15.0,
+                                                ),
+                                              ),
+                                              Icon(Icons.phone,color:Color(0xFFDB5461),size: 32.0,)
+                                            ],
+                                          ),style: ElevatedButton.styleFrom(
+                                            primary: Colors.white,
+                                          elevation: 0
+                                        ),
+
+                                        ), )),
                             Container(
                               width: 200.0,
                               height: 50.0,
-                              margin: EdgeInsets.all(20),
+                              margin: EdgeInsets.only(top:15,bottom:8.0),
                               child: ElevatedButton(
                                 onPressed: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>  MapTrackPage(long: longf, lang:langf, tod:todo),
+                                      builder: (context) =>  MapTrackPage(long: longf, lang:langf, tod:widget.todo),
                                     ),
                                   );
                                 },
@@ -842,11 +1121,12 @@ final locat;
                                   'TRACK AMBULANCE',
                                   style: TextStyle(
                                     color: Colors.white,
+                                    fontSize: 10.0
                                   ),
                                 ),
                                 style: ButtonStyle(
                                   backgroundColor:
-                                  MaterialStateProperty.all(Color(0xFFA43247)),
+                                  MaterialStateProperty.all(Color(0xFFDB5461)),
                                 ),
                               ),
                             )
@@ -854,65 +1134,10 @@ final locat;
                     ),
                   )),
 
-              Spacer(flex: 10),
-              Container(
-                  width: 300,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: Color(0xFFA43247),
-                  ),
-                  child: Padding(
-                      padding: const EdgeInsets.all(25.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Column(
-                            children: [
-                              Container(
-                                width: 50.0,
-                                height: 50.0,
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                        'assets/images/ambulance.jpg'),
-                                    fit: BoxFit.fill,
-                                  ),
-                                  borderRadius:
-                                  BorderRadius.all(Radius.circular(50.0)),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              Text(
-                                todo["Personnel"].toString(),
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20.0,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.of(context).push(_call());
-                                },
-                                child: Icon(Icons.phone),
-                                style: ButtonStyle(
-                                  backgroundColor: MaterialStateProperty.all(
-                                      Color(0xFF064457)),
-                                ),
-                              )
-                            ],
-                          )
-                        ],
-                      ))),
 
-              Spacer(flex: 20),
+
+
+
 
             ],
           ),
@@ -1011,10 +1236,13 @@ class ConfirmFPage extends State<ConfirmFP> {
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.todo["Hospital_name"].toString()),
-        backgroundColor: const Color(0xFFA34747),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(
+            color: Color(0xFFDB5461)
+        ),
       ),
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
       body: Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
@@ -1022,156 +1250,219 @@ class ConfirmFPage extends State<ConfirmFP> {
           height: 812.0,
           child: Column(
             children: <Widget>[
-              const Spacer(flex: 5),
-// Group: Group 32
 
 
 
-              Spacer(flex: 2),
+              Text(
+                widget.todo["Hospital_name"].toString(),
+                style: TextStyle(
+                  fontFamily: 'Helvetica',
+                  fontSize: 20.0,
+                  color: const Color(0xFFDB5461),
+                ),
+              ),
+
+
+
+
               Container(
                   alignment: Alignment(-0.78, -0.04),
                   width: 300.0,
-                  height: 300.0,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: Colors.white,
-                  ),
+
                   child: SizedBox(
                     child: Padding(
                         padding: const EdgeInsets.all(5.0),
                         child: Center(
-                          child: Column(children: [
-                            Text(
-                              widget.todo["Hospital_name"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 20.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              widget.todo["Vehicle_Registration"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(Icons.star,
-                                    size: 12, color: Colors.yellow),
-                                Icon(Icons.star,
-                                    size: 12, color: Colors.yellow),
-                                Icon(Icons.star,
-                                    size: 12, color: Colors.yellow),
-                                Icon(Icons.star,
-                                    size: 12, color: Colors.yellow),
-                                Icon(Icons.star, size: 12, color: Colors.yellow)
-                              ],
-                            ),
-                            Padding(padding: const EdgeInsets.all(3.0)),
-                            Text(
-                              widget.todo["Destination"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              widget.todo["Pick_Up_Time"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              widget.todo["Request_DateTime"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              widget.todo["Reason"].toString(),
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                            Text(
-                              "Total Trip time:20 minutes",
-                              style: TextStyle(
-                                fontFamily: 'Helvetica',
-                                fontSize: 15.0,
-                                color: const Color(0xFFA34747),
-                              ),
-                            ),
-                      Text(
-                          "Personnel:"+widget.todo["Personnel"].toString(),
-                          style: TextStyle(
-                            fontFamily: 'Helvetica',
-                            fontSize: 15.0,
-                            color: const Color(0xFFA34747),
-                          ),),
+                          child: Column(
+                              children: [
+                                Container(
+                                  alignment: Alignment.topLeft,
+                                  padding: EdgeInsets.only(bottom: 5.0,left:5.0,right:5.0,top:5.0),
+                                  child:  const Text("Pick Up Time", style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 12.0,
+                                      color:Color( 0xFFDB5461)
+                                  ),),
+                                ),
+                                TextFormField(
+                                    initialValue: widget.todo["Pick_Up_Time"].toString(),
+                                    style: TextStyle(
+                                        fontSize: 10.0
+                                    ),
+                                    readOnly: true,
+                                    decoration: InputDecoration(
+                                        prefixIcon: const Icon(Icons.lock),
+                                        filled: true,
+                                        fillColor: const Color(0xFFFFF1F4),
+                                        contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(5),
+                                          borderSide: BorderSide.none,
+                                        ))),
+                                Container(
+                                  alignment: Alignment.topLeft,
+                                  padding: EdgeInsets.only(bottom: 5.0,left:5.0,right:5.0,top:5.0),
+                                  child:  const Text("Personnel", style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 12.0,
+                                      color:Color( 0xFFDB5461)
+                                  ),),
+                                ),
+                                TextFormField(
+                                    initialValue: widget.todo["Personnel"].toString(),
+                                    style: TextStyle(
+                                        fontSize: 10.0
+                                    ),
+                                    readOnly: true,
+                                    decoration: InputDecoration(
+                                        prefixIcon: const Icon(Icons.lock),
+                                        filled: true,
+                                        fillColor: const Color(0xFFFFF1F4),
+                                        contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(5),
+                                          borderSide: BorderSide.none,
+                                        ))),
+                                Container(
+                                  alignment: Alignment.topLeft,
+                                  padding: EdgeInsets.only(bottom: 5.0,left:5.0,right:5.0,top:5.0),
+                                  child:  const Text("Request DateTime", style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 12.0,
+                                      color:Color( 0xFFDB5461)
+                                  ),),
+                                ),
+                                TextFormField(
+                                    initialValue: widget.todo["Request_DateTime"].toString(),
+                                    style: TextStyle(
+                                        fontSize: 10.0
+                                    ),
+                                    readOnly: true,
+                                    decoration: InputDecoration(
+                                        prefixIcon: const Icon(Icons.lock),
+                                        filled: true,
+                                        fillColor: const Color(0xFFFFF1F4),
+                                        contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(5),
+                                          borderSide: BorderSide.none,
+                                        ))),
+                                Container(
+                                  alignment: Alignment.topLeft,
+                                  padding: EdgeInsets.only(bottom: 5.0,left:5.0,right:5.0,top:5.0),
+                                  child:  const Text("Reason", style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 12.0,
+                                      color:Color( 0xFFDB5461)
+                                  ),),
+                                ),
+                                TextFormField(
+                                    initialValue: widget.todo["Reason"].toString(),
+                                    style: TextStyle(
+                                        fontSize: 10.0
+                                    ),
+                                    readOnly: true,
+                                    decoration: InputDecoration(
+                                        prefixIcon: const Icon(Icons.lock),
+                                        filled: true,
+                                        fillColor: const Color(0xFFFFF1F4),
+                                        contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(5),
+                                          borderSide: BorderSide.none,
+                                        ))),
+                                Container(
+                                  alignment: Alignment.topLeft,
+                                  padding: EdgeInsets.only(bottom: 5.0,left:5.0,right:5.0,top:5.0),
+                                  child:  const Text("Total Trip Time", style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 12.0,
+                                      color:Color( 0xFFDB5461)
+                                  ),),
+                                ),
+                                TextFormField(
+                                    initialValue: "20 minutes",
+                                    style: TextStyle(
+                                        fontSize: 10.0
+                                    ),
+                                    readOnly: true,
+                                    decoration: InputDecoration(
+                                        prefixIcon: const Icon(Icons.lock),
+                                        filled: true,
+                                        fillColor: const Color(0xFFFFF1F4),
+                                        contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(5),
+                                          borderSide: BorderSide.none,
+                                        ))),
+                                Padding(padding: EdgeInsets.only( top: 10.0)),
+                                const Align(
+                                  alignment: Alignment.topLeft,
+                                  child:Text(
+                                    "Rate the trip",
+                                    style: TextStyle(
+                                      fontFamily: 'Helvetica',
+                                      fontSize: 12.0,
+                                      color: Color(0xFFDB5461),
+                                    ),),
+                                ),
+                                Container(
+                                    width: 300,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(5.0),
+                                      color: Color(0xFFFFFFFF),
+                                      border: Border.all(
+                                          color: Color(0xFFDB5461),
+                                          width: 1.0,
+                                          style: BorderStyle.solid
+
+                                      )
+
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: RatingBar.builder(
+                                        initialRating: 3,
+                                        minRating: 1,
+                                        direction: Axis.horizontal,
+                                        allowHalfRating: true,
+                                        itemCount: 5,
+                                        itemPadding: EdgeInsets.symmetric(horizontal: 5.0),
+                                        itemBuilder: (context, _) => Icon(
+                                          Icons.star,
+                                          color: Colors.amber,
+                                        ),
+                                        onRatingUpdate: (rating) {
+                                          rate(widget.todo["Request_id"],rating);
+                                          print(rating);
+                                        },
+                                      ),
+
+
+                                    )),
+
                           ]),
-                        )),
+                        ),
+                    ),
                   )),
 
-              Spacer(flex: 10),
-              Text(
-                "RATE THE TRIP",
-                style: TextStyle(
-                  fontFamily: 'Helvetica',
-                  fontSize: 20.0,
-                  color: const Color(0xFFA34747),
-                ),),
-              Container(
-                  width: 300,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: Color(0xFFA43247),
-                  ),
-                  child: Padding(
-                      padding: const EdgeInsets.all(25.0),
-                      child: RatingBar.builder(
-                        initialRating: 3,
-                        minRating: 1,
-                        direction: Axis.horizontal,
-                        allowHalfRating: true,
-                        itemCount: 5,
-                        itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                        itemBuilder: (context, _) => Icon(
-                          Icons.star,
-                          color: Colors.amber,
-                        ),
-                        onRatingUpdate: (rating) {
-                          rate(widget.todo["Request_id"],rating);
-                          print(rating);
-                        },
-                      ),
 
 
-                      )),
-              Container(
-                child: ElevatedButton(
-                  onPressed: () {
-                      payb(widget.todo['Username'], widget.todo['Email'],widget.todo["Account"]);
-                  },
-                  child: Text('Pay'),
-                  style: ButtonStyle(
-                    backgroundColor:
-                    MaterialStateProperty.all(Color(0xFFA34747)),
-                  ),
-                ),
-              ),
-              Spacer(flex: 20),
+
+              // Container(
+              //   child: ElevatedButton(
+              //     onPressed: () {
+              //         payb(widget.todo['Username'], widget.todo['Email'],widget.todo["Account"]);
+              //     },
+              //     child: Text('Pay'),
+              //     style: ButtonStyle(
+              //       backgroundColor:
+              //       MaterialStateProperty.all(Color(0xFFA34747)),
+              //     ),
+              //   ),
+              // ),
+
 
             ],
           ),
@@ -1231,11 +1522,23 @@ class Page5 extends StatelessWidget {
     );
   }
 }
-class MapTrackPage extends StatelessWidget {
-  MapTrackPage({Key? key, required this.lang, required this.long, this.tod}) : super(key: key);
-final lang;
-final long;
-final tod;
+class MapTrackPage extends StatefulWidget {
+
+
+  const MapTrackPage({Key? key,required this.lang, required this.long, this.tod}) : super(key: key);
+
+  final lang;
+  final long;
+  final tod;
+
+
+  @override
+  MapTrack createState() {
+    return MapTrack();
+  }
+}
+
+class MapTrack extends State<MapTrackPage>{
 
   late GoogleMapController mapController;
 
@@ -1246,40 +1549,150 @@ final tod;
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
   }
+  var status;
+  String stat='';
+
+@override
+  void initState() {
+    // TODO: implement initState
+  setState(() {
+    stat=widget.tod["Status"].toString();
+    status=Column(
+      children: [
+        Row(
+          children: const [
+            Icon(Icons.car_repair,
+                size: 24, color: Colors.blueGrey),
 
 
+            Text("EMS yet to leave hospital",style: TextStyle(
+                fontSize: 10.0,
+                color:Color( 0xFFDB5461),
+                fontWeight: FontWeight.w500
+            ),),
+
+          ],),
+        Row(
+          children: const [
+            Icon(Icons.car_repair,
+                size: 24, color: Colors.blueGrey),
+
+
+            Text("EMS has left the hospital",style: TextStyle(
+                fontSize: 10.0,
+                color:Color( 0xFFDB5461),
+                fontWeight: FontWeight.w500
+            ),),
+
+          ],),
+        Row(
+          children: const [
+            Icon(Icons.car_repair,
+                size: 24, color: Colors.blueGrey),
+
+
+            Text("EMS is arrving soon",style: TextStyle(
+                fontSize: 10.0,
+                color:Color( 0xFFDB5461),
+                fontWeight: FontWeight.w500
+            ),),
+
+
+          ],),
+        Row(
+          children: const [
+            Icon(Icons.car_repair,
+                size: 24, color: Colors.blueGrey),
+
+
+            Text("EMS has arrived at your location",style: TextStyle(
+                fontSize: 10.0,
+                color:Color( 0xFFDB5461),
+                fontWeight: FontWeight.w500
+            ),),
+
+
+          ],),
+        Row(
+          children: const [
+            Icon(Icons.car_repair,
+                size: 24, color: Colors.blueGrey),
+
+
+            Text("EMS has started trip to hospital",style: TextStyle(
+                fontSize: 10.0,
+                color:Color( 0xFFDB5461),
+                fontWeight: FontWeight.w500
+            ),),
+
+
+          ],),
+        Row(
+          children: const [
+            Icon(Icons.car_repair,
+                size: 24, color: Colors.blueGrey),
+
+
+            Text("EMS has ended trip",style: TextStyle(
+                fontSize: 10.0,
+                color:Color( 0xFFDB5461),
+                fontWeight: FontWeight.w500
+            ),),
+
+
+          ],),
+
+      ],
+    );
+  });
+
+super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final longf=long;
-    final langf=lang;
+    final longf=widget.long;
+    final langf=widget.lang;
     final LatLng _center = LatLng(longf,langf);
 
 
-    final hospl=tod["Hospital_location"].toString().split(",");
+    final hospl=widget.tod["Hospital_location"].toString().split(",");
     final hosplang=double.parse(hospl[0]);
     final hosplong=double.parse(hospl[1]);
 
     return  Scaffold(
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFFF),
       appBar: AppBar(
-        title: Text(tod["Hospital_name"].toString()),
-        backgroundColor: const Color(0xFFA34747),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(
+            color: Color(0xFFDB5461)
+        ),
       ),
       body:ListView(
       children:[
 
           Column(
             children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(5.0),),
+              Align(
+                alignment: Alignment.center,
+                child:  Text(widget.tod["Hospital_name"].toString(), style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 20.0,
+                    color:Color( 0xFFDB5461)
+                ),),
+              ),
+              const Padding(
+                padding: EdgeInsets.all(5.0),),
               Container(
-                  alignment: Alignment(-0.78, -0.04),
-                  width: 400.0,
-                  height: 300.0,
+                  alignment: Alignment.topLeft,
+                  width: 300.0,
+                  height: 250.0,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.0),
+                    color:  Color(0xFFDB5461),
+
+
                   ),
                   child: SizedBox(
                       child: Padding(
@@ -1310,8 +1723,8 @@ final tod;
                               hosplong - i / 20000,
                             ),
                             ),
-                            sourceName: tod["Hospital_name"].toString(),
-                            driverName: tod["Personnel"].toString(),
+                            sourceName: widget.tod["Hospital_name"].toString(),
+                            driverName: widget.tod["Personnel"].toString(),
                             onTapDriverMarker: (currentLocation) {
                             print("Driver is currently at $currentLocation");
                             },
@@ -1320,182 +1733,81 @@ final tod;
                             ),
                         ),
                       ))),
-                      Padding(
-                      padding: const EdgeInsets.all(5.0),),
+                      const Padding(
+                      padding: EdgeInsets.all(5.0),),
     ListView.builder(
     shrinkWrap: true,
     itemCount: 1,
     itemBuilder: (BuildContext context, int index) {
-      var ongoing;
-      if(tod["Status"]=="Ongoing"){
-        ongoing= Column(
+
+      if(stat=="Ongoing"){
+
+          status=Column(
             children: [
               Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
-
-
-                  Text("EMS yet to leave hospital",style: TextStyle(
-                      fontSize: 12.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS has left the hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS is arrving soon",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS has arrived at your location",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS has started trip to hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS has ended trip",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w300
-                  ),),
-
-
-                ],),
-
-            ],
-          );
-      }
-      else if(tod["Status"]=="Started"){
-        ongoing=Column(
-            children: [
-              Row(
-                children: [
+                children: const [
                   Icon(Icons.car_repair,
                       size: 32, color: Colors.green),
 
 
                   Text("EMS yet to leave hospital",style: TextStyle(
                       fontSize: 15.0,
-                      color: Color(0xFFA34747),
+                      color:Color( 0xFFDB5461),
                       fontWeight: FontWeight.w500
                   ),),
 
                 ],),
               Row(
-                children: [
+                children: const [
                   Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+                      size: 24, color: Colors.blueGrey),
 
 
                   Text("EMS has left the hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS is arrving soon",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
+                      fontSize: 10.0,
+                      color:Color( 0xFFDB5461),
                       fontWeight: FontWeight.w300
                   ),),
 
-
                 ],),
+
               Row(
-                children: [
+                children: const [
                   Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
+                      size: 24, color: Colors.blueGrey),
 
 
                   Text("EMS has arrived at your location",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
+                       fontSize: 10.0,
+                      color:Color( 0xFFDB5461),
                       fontWeight: FontWeight.w300
                   ),),
 
 
                 ],),
               Row(
-                children: [
+                children: const [
                   Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
+                      size: 24, color: Colors.blueGrey),
 
 
                   Text("EMS has started trip to hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
+                       fontSize: 10.0,
+                      color:Color( 0xFFDB5461),
                       fontWeight: FontWeight.w300
                   ),),
 
 
                 ],),
               Row(
-                children: [
+                children: const [
                   Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
+                      size: 24, color: Colors.blueGrey),
 
 
                   Text("EMS has ended trip",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
+                       fontSize: 10.0,
+                      color:Color( 0xFFDB5461),
                       fontWeight: FontWeight.w300
                   ),),
 
@@ -1506,86 +1818,75 @@ final tod;
           );
 
       }
-      else if(tod["Status"]=="Arrived"){
-        ongoing=Column(
+      else if(stat=="Started"){
+
+
+          status=Column(
             children: [
               Row(
-                children: [
+                children: const [
                   Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+                      size: 24, color: Colors.green),
 
 
                   Text("EMS yet to leave hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
+                       fontSize: 10.0,
+                      color:Color( 0xFFDB5461),
                       fontWeight: FontWeight.w500
                   ),),
 
                 ],),
               Row(
-                children: [
+                children: const [
                   Icon(Icons.car_repair,
                       size: 32, color: Colors.green),
 
 
                   Text("EMS has left the hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
+                       fontSize: 15.0,
+                      color:Color( 0xFFDB5461),
                       fontWeight: FontWeight.w500
                   ),),
 
                 ],),
+
               Row(
-                children: [
+                children: const [
                   Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
-
-
-                  Text("EMS is arrving soon",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+                      size: 24, color: Colors.blueGrey),
 
 
                   Text("EMS has arrived at your location",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
-
-
-                  Text("EMS has started trip to hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
+                       fontSize: 10.0,
+                      color:Color( 0xFFDB5461),
                       fontWeight: FontWeight.w300
                   ),),
 
 
                 ],),
               Row(
-                children: [
+                children: const [
                   Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
+                      size: 24, color: Colors.blueGrey),
+
+
+                  Text("EMS has started trip to hospital",style: TextStyle(
+                       fontSize: 10.0,
+                      color:Color( 0xFFDB5461),
+                      fontWeight: FontWeight.w300
+                  ),),
+
+
+                ],),
+              Row(
+                children: const [
+                  Icon(Icons.car_repair,
+                      size: 24, color: Colors.blueGrey),
 
 
                   Text("EMS has ended trip",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
+                       fontSize: 10.0,
+                      color:Color( 0xFFDB5461),
                       fontWeight: FontWeight.w300
                   ),),
 
@@ -1596,87 +1897,76 @@ final tod;
           );
 
       }
-      else if(tod["Status"]=="Trip"){
-        ongoing=Column(
+      else if(stat=="Arrived"){
+
+
+          status=Column(
             children: [
               Row(
-                children: [
+                children: const [
                   Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+                      size: 24, color: Colors.green),
 
 
                   Text("EMS yet to leave hospital",style: TextStyle(
-                      fontSize: 12.0,
-                      color: Color(0xFFA34747),
+                       fontSize: 10.0,
+                      color:Color( 0xFFDB5461),
                       fontWeight: FontWeight.w500
                   ),),
 
                 ],),
               Row(
-                children: [
+                children: const [
                   Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+                      size: 24, color: Colors.green),
 
 
                   Text("EMS has left the hospital",style: TextStyle(
-                      fontSize: 12.0,
-                      color: Color(0xFFA34747),
+                       fontSize: 10.0,
+                      color:Color( 0xFFDB5461),
                       fontWeight: FontWeight.w500
                   ),),
 
                 ],),
+
               Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
-
-
-                  Text("EMS is arrving soon",style: TextStyle(
-                      fontSize: 12.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-
-                ],),
-              Row(
-                children: [
+                children: const [
                   Icon(Icons.car_repair,
                       size: 32, color: Colors.green),
 
 
                   Text("EMS has arrived at your location",style: TextStyle(
-                      fontSize: 12.0,
-                      color: Color(0xFFA34747),
+                       fontSize: 15.0,
+                      color:Color( 0xFFDB5461),
                       fontWeight: FontWeight.w500
                   ),),
 
 
                 ],),
               Row(
-                children: [
+                children: const [
                   Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+                      size: 24, color: Colors.blueGrey),
 
 
                   Text("EMS has started trip to hospital",style: TextStyle(
-                      fontSize: 12.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
+                       fontSize: 10.0,
+                      color:Color( 0xFFDB5461),
+                      fontWeight: FontWeight.w300
                   ),),
 
 
                 ],),
               Row(
-                children: [
+                children: const [
                   Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
+                      size: 24, color: Colors.blueGrey),
 
 
                   Text("EMS has ended trip",style: TextStyle(
-                      fontSize: 12.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
+                       fontSize: 10.0,
+                      color:Color( 0xFFDB5461),
+                      fontWeight: FontWeight.w300
                   ),),
 
 
@@ -1684,102 +1974,197 @@ final tod;
 
             ],
           );
+
 
       }
-      else if(tod["Status"]=="Completed"){
-        ongoing=Column(
-            children: [
-              Row(
+      else if(stat=="Trip"){
+
+
+            status=Column(
+              children: [
+                Row(
+                  children: const [
+                    Icon(Icons.car_repair,
+                        size: 24, color: Colors.green),
+
+
+                    Text("EMS yet to leave hospital",style: TextStyle(
+                        fontSize: 10.0,
+                        color:Color( 0xFFDB5461),
+                        fontWeight: FontWeight.w500
+                    ),),
+
+                  ],),
+                Row(
+                  children: const [
+                    Icon(Icons.car_repair,
+                        size: 24, color: Colors.green),
+
+
+                    Text("EMS has left the hospital",style: TextStyle(
+                        fontSize: 10.0,
+                        color:Color( 0xFFDB5461),
+                        fontWeight: FontWeight.w500
+                    ),),
+
+                  ],),
+                Row(
+                  children: const [
+                    Icon(Icons.car_repair,
+                        size: 24, color: Colors.green),
+
+
+                    Text("EMS is arrving soon",style: TextStyle(
+                        fontSize: 10.0,
+                        color:Color( 0xFFDB5461),
+                        fontWeight: FontWeight.w500
+                    ),),
+
+
+                  ],),
+                Row(
+                  children: const [
+                    Icon(Icons.car_repair,
+                        size: 24, color: Colors.green),
+
+
+                    Text("EMS has arrived at your location",style: TextStyle(
+                         fontSize: 10.0,
+                        color:Color( 0xFFDB5461),
+                        fontWeight: FontWeight.w500
+                    ),),
+
+
+                  ],),
+                Row(
+                  children: const [
+                    Icon(Icons.car_repair,
+                        size: 32, color: Colors.green),
+
+
+                    Text("EMS has started trip to hospital",style: TextStyle(
+                        fontSize: 15.0,
+                        color:Color( 0xFFDB5461),
+                        fontWeight: FontWeight.w500
+                    ),),
+
+
+                  ],),
+                Row(
+                  children: const [
+                    Icon(Icons.car_repair,
+                        size: 24, color: Colors.blueGrey),
+
+
+                    Text("EMS has ended trip",style: TextStyle(
+                        fontSize: 10.0,
+                        color:Color( 0xFFDB5461),
+                        fontWeight: FontWeight.w500
+                    ),),
+
+
+                  ],),
+
+              ],
+            );
+      }
+      else if(stat=="Completed"){
+
+
+              status=Column(
                 children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+                  Row(
+                    children: const [
+                      Icon(Icons.car_repair,
+                          size: 24, color: Colors.green),
 
 
-                  Text("EMS yet to leave hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
+                      Text("EMS yet to leave hospital",style: TextStyle(
+                          fontSize: 10.0,
+                          color:Color( 0xFFDB5461),
+                          fontWeight: FontWeight.w500
+                      ),),
 
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
-
-
-                  Text("EMS has left the hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
-
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.blueGrey),
+                    ],),
+                  Row(
+                    children: const [
+                      Icon(Icons.car_repair,
+                          size: 24, color: Colors.green),
 
 
-                  Text("EMS is arrving soon",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
+                      Text("EMS has left the hospital",style: TextStyle(
+                          fontSize: 10.0,
+                          color:Color( 0xFFDB5461),
+                          fontWeight: FontWeight.w500
+                      ),),
+
+                    ],),
+                  Row(
+                    children: const [
+                      Icon(Icons.car_repair,
+                          size: 24, color: Colors.blueGrey),
 
 
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+                      Text("EMS is arrving soon",style: TextStyle(
+                          fontSize: 10.0,
+                          color:Color( 0xFFDB5461),
+                          fontWeight: FontWeight.w500
+                      ),),
 
 
-                  Text("EMS has arrived at your location",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
+                    ],),
+                  Row(
+                    children: const [
+                      Icon(Icons.car_repair,
+                          size: 24, color: Colors.green),
 
 
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+                      Text("EMS has arrived at your location",style: TextStyle(
+                          fontSize: 10.0,
+                          color:Color( 0xFFDB5461),
+                          fontWeight: FontWeight.w500
+                      ),),
 
 
-                  Text("EMS has started trip to hospital",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
+                    ],),
+                  Row(
+                    children: const [
+                      Icon(Icons.car_repair,
+                          size: 24, color: Colors.green),
 
 
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.car_repair,
-                      size: 32, color: Colors.green),
+                      Text("EMS has started trip to hospital",style: TextStyle(
+                          fontSize: 10.0,
+                          color:Color( 0xFFDB5461),
+                          fontWeight: FontWeight.w500
+                      ),),
 
 
-                  Text("EMS has ended trip",style: TextStyle(
-                      fontSize: 15.0,
-                      color: Color(0xFFA34747),
-                      fontWeight: FontWeight.w500
-                  ),),
+                    ],),
+                  Row(
+                    children: const [
+                      Icon(Icons.car_repair,
+                          size: 32, color: Colors.green),
 
 
-                ],),
+                      Text("EMS has ended trip",style: TextStyle(
+                           fontSize: 15.0,
+                          color:Color( 0xFFDB5461),
+                          fontWeight: FontWeight.w500
+                      ),),
 
-            ],
-          );
+
+                    ],),
+
+                ],
+              );
 
       }
 
 
       return Container(
-        child:ongoing
+        child:
+        status
       );
     })
 
@@ -1836,100 +2221,108 @@ class CancelPage extends StatelessWidget {
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text(todo["Hospital_name"].toString()),
-        backgroundColor: const Color(0xFFA34747),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(
+            color: Color(0xFFDB5461)
+        ),
       ),
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
       body: Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
-
+width: 310,
           height: 812.0,
           child: Column(
             children: <Widget>[
-              const Spacer(flex: 5),
-// Group: Group 32
-
-              Align(
-                alignment: Alignment(-0.88, 0.0),
+              const Align(
+                alignment: Alignment.topLeft,
                 child: Text(
                   'Request Cancelled',
                   style: TextStyle(
                     fontFamily: 'Helvetica',
-                    fontSize: 25.0,
-                    color: const Color(0xFFA34747),
+                    fontSize: 20.0,
+                    color: Color(0xFFDB5461),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
 
-              Spacer(flex: 2),
               Container(
-                  alignment: Alignment(-0.78, -0.04),
-                  width: 350.0,
-                  height: 300.0,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: Colors.white,
+                alignment: Alignment.topLeft,
+                padding: EdgeInsets.only(bottom: 5.0,left:5.0,right:5.0,top:10.0),
+                child:  const Text("Pick Up Time", style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 15.0,
+                    color:Color( 0xFFDB5461)
+                ),),
+              ),
+              TextFormField(
+                initialValue: todo["Pick_Up_Time"].toString(),
+                  style: TextStyle(
+                      fontSize: 12.0
                   ),
-                  child: SizedBox(
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Column(children: [
-                        Text(
-                          todo["Hospital_name"].toString(),
-                          style: TextStyle(
-                            fontFamily: 'Helvetica',
-                            fontSize: 20.0,
-                            color: const Color(0xFFA34747),
-                          ),
-                        ),
+                  readOnly: true,
+                  decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.lock),
+                      filled: true,
+                      fillColor: const Color(0xFFFFF1F4),
+                      contentPadding: const EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                        borderSide: BorderSide.none,
+                      ))),
+              Container(
+                alignment: Alignment.topLeft,
+                padding: EdgeInsets.only(bottom: 5.0,left:5.0,right:5.0,top:10.0),
+                child:  const Text("Request DateTime", style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 15.0,
+                    color:Color( 0xFFDB5461)
+                ),),
+              ),
+              TextFormField(
+                  initialValue: todo["Request_DateTime"].toString(),
+                  style: TextStyle(
+                      fontSize: 12.0
+                  ),
+                  readOnly: true,
+                  decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.lock),
+                      filled: true,
+                      fillColor: const Color(0xFFFFF1F4),
+                      contentPadding: const EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                        borderSide: BorderSide.none,
+                      ))),
+              Container(
+                alignment: Alignment.topLeft,
+                padding: EdgeInsets.only(bottom: 5.0,left:5.0,right:5.0,top:10.0),
+                child:  const Text("Notes", style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 15.0,
+                    color:Color( 0xFFDB5461)
+                ),),
+              ),
+              TextFormField(
+                  initialValue: todo["Reason"].toString(),
+                  style: TextStyle(
+                    fontSize: 12.0
+                  ),
+                  readOnly: true,
+                  decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.lock),
+                      filled: true,
+                      fillColor: const Color(0xFFFFF1F4),
+                      contentPadding: const EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                        borderSide: BorderSide.none,
+                      ))),
 
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.star, size: 12, color: Colors.yellow),
-                            Icon(Icons.star, size: 12, color: Colors.yellow),
-                            Icon(Icons.star, size: 12, color: Colors.yellow),
-                            Icon(Icons.star, size: 12, color: Colors.yellow),
-                            Icon(Icons.star, size: 12, color: Colors.yellow)
-                          ],
-                        ),
-                        Padding(padding: const EdgeInsets.all(20.0)),
-
-                        Text(
-                          "Pick Up Time:"+todo["Pick_Up_Time"].toString(),
-                          style: TextStyle(
-                            fontFamily: 'Helvetica',
-                            fontSize: 15.0,
-                            color: const Color(0xFFA34747),
-                          ),
-                        ),
-                        Text(
-                          "Request:"+todo["Request_DateTime"].toString(),
-                          style: TextStyle(
-                            fontFamily: 'Helvetica',
-                            fontSize: 15.0,
-                            color: const Color(0xFFA34747),
-                          ),
-                        ),
-                        Text(
-                          "No notes",
-                          style: TextStyle(
-                            fontFamily: 'Helvetica',
-                            fontSize: 15.0,
-                            color: const Color(0xFFA34747),
-                          ),
-                        ),
-                        const Spacer(flex: 3),
 
 
-
-                      ]),
-                    ),
-                  )),
-
-              Spacer(flex: 20),
 
             ],
           ),

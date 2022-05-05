@@ -3,9 +3,9 @@
 
 
    <application
-        android:label="lamber"
+        android:label="Lamber"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/lamber"
        android:requestLegacyExternalStorage="true">
 
        <meta-data android:name="com.google.android.geo.API_KEY"

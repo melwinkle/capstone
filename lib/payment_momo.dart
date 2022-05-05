@@ -49,10 +49,13 @@ class PaymentMpage extends State<MyPaymentMPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Add Momo"),
-        backgroundColor: const Color(0xFFA34747),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(
+            color: Color(0xFFDB5461)
+        ),
       ),
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
       body: Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
@@ -80,7 +83,7 @@ class PaymentMpage extends State<MyPaymentMPage> {
                       child: const Text(
                         'Add Mobile Money',
                         style: TextStyle(
-                          color: Color(0xFFA43247),
+                          color: Color( 0xFFDB5461),
                           fontWeight: FontWeight.w700,
                           fontSize: 20.0,
                         ),
@@ -165,7 +168,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                   hintText: 'NickName',
                   hintStyle: TextStyle(color: Colors.black87),
                   filled: true,
-                  fillColor: Color(0xFFEFDCDC),
+                  fillColor: Color(0xFFFFF1F4),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide.none,
@@ -186,7 +189,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                   hintText: 'MTN',
                   hintStyle: TextStyle(color: Colors.black87),
                   filled: true,
-                  fillColor: Color(0xFFEFDCDC),
+                  fillColor: Color(0xFFFFF1F4),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide.none,
@@ -207,7 +210,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                   hintText: 'Phone Number',
                   hintStyle: TextStyle(color: Colors.black87),
                   filled: true,
-                  fillColor: Color(0xFFEFDCDC),
+                  fillColor:Color(0xFFFFF1F4),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide.none,
@@ -233,7 +236,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                   child: const Text('SAVE'),
                   style: ButtonStyle(
                     backgroundColor:
-                        MaterialStateProperty.all(Color(0xFFA34747)),
+                        MaterialStateProperty.all(Color( 0xFFDB5461)),
                   ),
                 ),
               ),

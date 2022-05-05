@@ -49,11 +49,14 @@ class PaymentOpage extends State<MyPaymentOPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Payment Options"),
-        backgroundColor: const Color(0xFFA34747),
+      appBar:  AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(
+            color: Color(0xFFDB5461)
+        ),
       ),
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
       body: Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
@@ -63,8 +66,15 @@ class PaymentOpage extends State<MyPaymentOPage> {
             children: <Widget>[
 // Group: Group 32
 
-              const Spacer(flex: 10),
 
+              const Align(
+                alignment: Alignment.center,
+                child:  Text("Edit Payment Options", style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 20.0,
+                    color:Color( 0xFFDB5461)
+                ),),
+              ),
               Container(
                 alignment: Alignment(-0.78, -0.04),
                 width: 300.0,
@@ -76,20 +86,10 @@ class PaymentOpage extends State<MyPaymentOPage> {
                 child: Padding(
                   padding: const EdgeInsets.all(5.0),
                   child: Column(children: [
-                    Container(
-                      alignment: Alignment.topLeft,
-                      child: const Text(
-                        'Add a Payment Method',
-                        style: TextStyle(
-                          color: Color(0xFFA43247),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 20.0,
-                        ),
-                      ),
-                    ),
+
                     const Text('Select a Payment method',
                         style: TextStyle(
-                          color: Color(0xFFA43247),
+                          color: Color(0xFFDB5461),
                           fontWeight: FontWeight.w300,
                           fontSize: 12.0,
                         )),
@@ -117,7 +117,7 @@ class PaymentOpage extends State<MyPaymentOPage> {
                                 child: const Text('Pay Via Card'),
                                 style: ButtonStyle(
                                   backgroundColor: MaterialStateProperty.all(
-                                      Color(0xFFA34747)),
+                                      Color(0xFFDB5461)),
                                 ),
                               )),
                           Padding(
@@ -140,7 +140,7 @@ class PaymentOpage extends State<MyPaymentOPage> {
                                 child: const Text('Pay Via Mobile Money'),
                                 style: ButtonStyle(
                                   backgroundColor: MaterialStateProperty.all(
-                                      Color(0xFFA34747)),
+                                      Color(0xFFDB5461)),
                                 ),
                               )),
                           Padding(

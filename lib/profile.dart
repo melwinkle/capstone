@@ -51,7 +51,58 @@ class Profilepage extends State<MyProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
+      bottomNavigationBar:   Container(
+          margin: const EdgeInsets.only(top:37,left:0,right:0,bottom:0),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius:BorderRadius.only(
+                topRight: Radius.circular(20), topLeft: Radius.circular(20)),
+          ),
+          child:ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20.0),
+              topRight: Radius.circular(20.0),
+
+            ),
+
+            child:BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              currentIndex: _currentIndex,
+              backgroundColor: Color(0xFFDB5461),
+              selectedItemColor: Color(0xFFFFFFFF),
+              unselectedItemColor: const Color(0xFFFFFFFF).withOpacity(.60),
+              selectedFontSize: 14,
+              unselectedFontSize: 12,
+
+
+              onTap: (value) {
+                // Respond to item press.
+                setState(() => _currentIndex = value);
+                _onTap();
+              },
+              items: const [
+                BottomNavigationBarItem(
+                  label: 'Home',
+                  icon: Icon(Icons.home_outlined),
+                ),
+                BottomNavigationBarItem(
+                  label: 'Requests',
+                  icon: Icon(Icons.receipt_outlined),
+                ),
+                BottomNavigationBarItem(
+                  label: 'First Aid',
+                  icon: Icon(Icons.health_and_safety_outlined),
+                ),
+                BottomNavigationBarItem(
+                  label: 'Account',
+                  icon: Icon(Icons.person),
+                ),
+              ],
+            ),
+
+          )
+      ),
       body: ListView(
       children:[Align(
         alignment: Alignment(0.01, 0.09),
@@ -70,7 +121,7 @@ class Profilepage extends State<MyProfilePage> {
                   style: TextStyle(
                     fontFamily: 'Helvetica',
                     fontSize: 25.0,
-                    color: Color(0xFFA34747),
+                    color: Color(0xFFDB5461),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -93,13 +144,13 @@ class Profilepage extends State<MyProfilePage> {
                             const Align(
                                 alignment: Alignment.centerLeft,
                                 child: Icon(Icons.account_circle,
-                                    size: 32, color: Color(0xFFA34747))),
+                                    size: 32, color: Color(0xFFDB5461))),
                             Container(
                               margin: const EdgeInsets.only(left: 10.0),
                               child: Text(
                                 "Profile",
                                 style: const TextStyle(
-                                  color: Color(0xFFA34747),
+                                  color: Color(0xFFDB5461),
                                   fontWeight: FontWeight.w300,
                                   fontSize: 20.0,
                                 ),
@@ -113,42 +164,7 @@ class Profilepage extends State<MyProfilePage> {
                         )),
                   )),
 
-              Container(
-                  alignment: Alignment(-0.78, -0.04),
-                  width: 300.0,
-                  height: 90.0,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: SizedBox(
-                    child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.of(context).push(_createRoutes());
-                        },
-                        child: Row(
-                          children: [
-                            Align(
-                                alignment: Alignment.centerLeft,
-                                child: Icon(Icons.verified_user,
-                                    size: 32, color: Color(0xFFA34747))),
-                            Container(
-                              margin: const EdgeInsets.only(left: 10.0),
-                              child: const Text(
-                                'Account Upgrade',
-                                style: TextStyle(
-                                  color: Color(0xFFA34747),
-                                  fontWeight: FontWeight.w300,
-                                  fontSize: 20.0,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          fixedSize: const Size(350, 80),
-                        )),
-                  )),
+
 
               Container(
                   alignment: Alignment(-0.78, -0.04),
@@ -167,13 +183,13 @@ class Profilepage extends State<MyProfilePage> {
                             Align(
                                 alignment: Alignment.centerLeft,
                                 child: Icon(Icons.credit_card,
-                                    size: 32, color: Color(0xFFA34747))),
+                                    size: 32, color: Color(0xFFDB5461))),
                             Container(
                               margin: const EdgeInsets.only(left: 10.0),
                               child: const Text(
                                 'Payment Options',
                                 style: TextStyle(
-                                  color: Color(0xFFA34747),
+                                  color: Color(0xFFDB5461),
                                   fontWeight: FontWeight.w300,
                                   fontSize: 20.0,
                                 ),
@@ -204,13 +220,13 @@ class Profilepage extends State<MyProfilePage> {
                             Align(
                                 alignment: Alignment.centerLeft,
                                 child: Icon(Icons.help_center_rounded,
-                                    size: 32, color: Color(0xFFA34747))),
+                                    size: 32, color: Color(0xFFDB5461))),
                             Container(
                               margin: const EdgeInsets.only(left: 10.0),
                               child: const Text(
                                 'Help Center',
                                 style: TextStyle(
-                                  color: Color(0xFFA34747),
+                                  color: Color(0xFFDB5461),
                                   fontWeight: FontWeight.w300,
                                   fontSize: 20.0,
                                 ),
@@ -257,43 +273,12 @@ class Profilepage extends State<MyProfilePage> {
                           ],
                         ),
                         style: OutlinedButton.styleFrom(
-                          backgroundColor: Color(0xFFA34747),
+                          backgroundColor: Color(0xFFDB5461),
                           fixedSize: const Size(350, 80),
                         )),
                   )),
               Spacer(flex: 15),
-              BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                currentIndex: _currentIndex,
-                backgroundColor: Color(0xFFFFFFFF),
-                selectedItemColor: Color(0xFFA34747),
-                unselectedItemColor: const Color(0xFFA34747).withOpacity(.60),
-                selectedFontSize: 14,
-                unselectedFontSize: 14,
-                onTap: (value) {
-                  // Respond to item press.
-                  setState(() => _currentIndex = value);
-                  _onTap();
-                },
-                items: const [
-                  BottomNavigationBarItem(
-                    label: 'Home',
-                    icon: Icon(Icons.home_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Requests',
-                    icon: Icon(Icons.receipt_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'First Aid',
-                    icon: Icon(Icons.health_and_safety_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Account',
-                    icon: Icon(Icons.person),
-                  ),
-                ],
-              ),
+
             ],
           ),
         ),

@@ -54,10 +54,13 @@ class Paymentpage extends State<MyPaymentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Payment Options"),
-        backgroundColor: const Color(0xFFA34747),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(
+            color: Color(0xFFDB5461)
+        ),
       ),
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
       body: Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
@@ -67,8 +70,15 @@ class Paymentpage extends State<MyPaymentPage> {
             children: <Widget>[
 // Group: Group 32
 
-              const Spacer(flex: 10),
-
+              const Spacer(flex: 5),
+              const Align(
+                alignment: Alignment.center,
+                child:  Text("Current Payment Option", style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 20.0,
+                    color:Color( 0xFFDB5461)
+                ),),
+              ),
               Container(
                 alignment: Alignment(-0.78, -0.04),
                 width: 300.0,
@@ -81,12 +91,7 @@ class Paymentpage extends State<MyPaymentPage> {
                   padding: const EdgeInsets.all(5.0),
                   child: Column(children: [
 
-                    const Text('Current payment option',
-                        style: TextStyle(
-                          color: Color(0xFFA43247),
-                          fontWeight: FontWeight.w300,
-                          fontSize: 12.0,
-                        )),
+
                     Padding(padding: const EdgeInsets.all(10.0)),
                     Container(
                       child: Column(
@@ -106,7 +111,7 @@ class Paymentpage extends State<MyPaymentPage> {
 
                                       values.forEach((key, values) {
                                         lst.add(values);
-                                        print(values);
+
 
                                       });
 
@@ -118,9 +123,9 @@ class Paymentpage extends State<MyPaymentPage> {
 
                                                 child:  Container(
                                                 decoration: BoxDecoration(
-                                                border: Border.all(color: Color(0xFFA43247)),
+                                                border: Border.all(color: Color( 0xFFDB5461)),
                                             borderRadius: BorderRadius.circular(10),
-                                            color: Color(0xFFA43247),
+                                            color: Color( 0xFFDB5461),
                                             ),
                                             child: CheckboxListTile(
                                             secondary: const Icon(Icons.money),
@@ -131,6 +136,7 @@ class Paymentpage extends State<MyPaymentPage> {
                                             color: Colors.white,
                                             fontWeight: FontWeight.w500,
                                             fontSize: 12.0,
+
                                             )),
                                             subtitle: Text('Expires '+lst[index]["Card_date"],
                                             style: TextStyle(
@@ -168,10 +174,10 @@ class Paymentpage extends State<MyPaymentPage> {
                               //   const SnackBar(content: Text('Processing Data')),
                               // );
                             },
-                            child: const Text('Add Payment'),
+                            child: const Text('Edit Payment'),
                             style: ButtonStyle(
                               backgroundColor:
-                                  MaterialStateProperty.all(Color(0xFFA34747)),
+                                  MaterialStateProperty.all(Color( 0xFFDB5461)),
                             ),
                           ))
                         ],

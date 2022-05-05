@@ -77,10 +77,13 @@ class Accountpage extends State<MyAccountPage> {
   Widget build(BuildContext context) {
     
     return Scaffold(
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
       appBar: AppBar(
-        title: Text("My Details"),
-        backgroundColor: const Color(0xFFA34747),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(
+            color: Color(0xFFDB5461)
+        ),
       ),
       body: Align(
         alignment: Alignment(0.01, 0.09),
@@ -90,7 +93,14 @@ class Accountpage extends State<MyAccountPage> {
           child: Column(
             children: <Widget>[
 // Group: Group 32
-
+              const Align(
+                alignment: Alignment.center,
+                child:  Text("My Details", style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 20.0,
+                    color:Color( 0xFFDB5461)
+                ),),
+              ),
 
               Container(
                   child:FutureBuilder(
@@ -122,43 +132,45 @@ class Accountpage extends State<MyAccountPage> {
                                           Padding(padding: const EdgeInsets.all(5.0)),
                                           Container(
                                             child: const Text(
-                                              "Full Name",
+                                              "First Name",
                                               style: TextStyle(
-                                                color: Color(0xFFA43247),
-                                                fontWeight: FontWeight.w300,
+                                                color: Color(0xFFDB5461),
+                                                fontWeight: FontWeight.w500,
                                                 fontSize: 10.0,
                                               ),
                                             ),
                                             alignment: Alignment.topLeft,
                                           ),
                                           Padding(
-                                              padding: const EdgeInsets.all(5.0)),
+                                              padding: const EdgeInsets.all(2.0)),
 
-                                          Container(
-                                              width: 300.0,
-                                              height: 40.0,
-                                              decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(8.0),
-                                                color: Colors.white,
+
+                                          TextFormField(
+                                              initialValue: lst[index]["FullName"].toString(),
+                                              validator: (value) {
+                                                if (value == null || value.isEmpty) {
+                                                  return 'Please enter full name';
+                                                }
+                                                return  lst[index]["FullName"];
+                                              },
+                                              style: TextStyle(
+                                                  fontSize: 10.0,
+                                                color: Color(0xFFDB5461)
                                               ),
-                                              child: TextFormField(
-                                controller: fullname,
-                                // The validator receives the text that the user has entered.
-                                validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                return 'Please enter full name';
-                                }
-                                return  lst[index]["FullName"];
-                                }, decoration: InputDecoration(
-                                hintText: lst[index]["FullName"],
-                                hintStyle: TextStyle(color: Color(0xFFA43247), fontWeight: FontWeight.w400,
-                                  fontSize:20.0,),
-                                filled: true,
-                                fillColor: Colors.white,
-                                border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide.none,
-                                )),)),
+
+                                              decoration: InputDecoration(
+                                                  prefixIcon: const Icon(Icons.lock),
+                                                  filled: true,
+                                                  fillColor: const Color(0xFFFFF1F4),
+                                                  contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(5),
+                                                    borderSide: BorderSide.none,
+                                                  ))),
+
+
+
+
 
                                           Padding(
                                               padding: const EdgeInsets.all(5.0)),
@@ -166,56 +178,69 @@ class Accountpage extends State<MyAccountPage> {
                                             child: const Text(
                                               "Email",
                                               style: TextStyle(
-                                                color: Color(0xFFA43247),
-                                                fontWeight: FontWeight.w300,
+                                                color: Color(0xFFDB5461),
+                                                fontWeight: FontWeight.w500,
                                                 fontSize: 10.0,
-
                                               ),
                                             ),
                                             alignment: Alignment.topLeft,
                                           ),
-                                          Container(
-                                              width: 300.0,
-                                              height: 40.0,
-                                              decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(8.0),
-                                                color: Colors.white,
+                                          Padding(
+                                              padding: const EdgeInsets.all(2.0)),
+
+
+                                          TextFormField(
+                                              initialValue: lst[index]["Email"].toString(),
+                                              style: TextStyle(
+                                                  fontSize: 10.0,
+                                                color: Color(0xFFDB5461)
                                               ),
-                                              child: Text(
-                                                lst[index]["Email"],
-                                                style: TextStyle(
-                                                  color: Color(0xFFA43247),
-                                                  fontSize: 20.0,
-                                                ),
-                                              )),
+                                            readOnly: true,
+                                              decoration: InputDecoration(
+                                                  prefixIcon: const Icon(Icons.email),
+                                                  filled: true,
+                                                  fillColor: const Color(0xFFFFF1F4),
+                                                  contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(5),
+                                                    borderSide: BorderSide.none,
+                                                  ))),
+
+
                                           Padding(
                                               padding: const EdgeInsets.all(5.0)),
                                           Container(
                                             child: const Text(
                                               "Phone Number",
                                               style: TextStyle(
-                                                color: Color(0xFFA43247),
-                                                fontWeight: FontWeight.w300,
+                                                color: Color(0xFFDB5461),
+                                                fontWeight: FontWeight.w500,
                                                 fontSize: 10.0,
                                               ),
                                             ),
                                             alignment: Alignment.topLeft,
                                           ),
-                                          Container(
-                                              width: 300.0,
-                                              height: 40.0,
-                                              decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(8.0),
-                                                color: Colors.white,
-                                              ),
-                                              child: Text(
-                                                lst[index]["Phone"],
-                                                style: TextStyle(
-                                                  color: Color(0xFFA43247),
-                                                  fontSize: 20.0,
+                                          Padding(
+                                              padding: const EdgeInsets.all(2.0)),
 
-                                                ),
-                                              )),
+
+                                          TextFormField(
+                                              initialValue: lst[index]["Phone"].toString(),
+
+                                              style: TextStyle(
+                                                  fontSize: 10.0,
+                                                color: Color(0xFFDB5461)
+                                              ),
+                                              readOnly: true,
+                                              decoration: InputDecoration(
+                                                  prefixIcon: const Icon(Icons.phone),
+                                                  filled: true,
+                                                  fillColor: const Color(0xFFFFF1F4),
+                                                  contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(5),
+                                                    borderSide: BorderSide.none,
+                                                  ))),
                                           Padding(
                                               padding: const EdgeInsets.all(20.0)),
                                           Container(
@@ -241,7 +266,7 @@ class Accountpage extends State<MyAccountPage> {
                                               child: const Text('Edit'),
                                               style: ButtonStyle(
                                                 backgroundColor:
-                                                MaterialStateProperty.all(Color(0xFFA34747)),
+                                                MaterialStateProperty.all(Color(0xFFDB5461)),
                                               ),
                                             ),
                                           ),

@@ -40,6 +40,7 @@ class MyApp extends StatelessWidget {
     return const MaterialApp(
       title: 'Requests',
       home: MyAmbulancePage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -114,30 +115,26 @@ class Ambulancepage extends State<MyAmbulancePage> {
 
 
   Future<void> GetAddressFromLatLong(Position position) async {
-
-
-
     List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude, position.longitude);
-    print(placemarks);
-
     Placemark place = placemarks[0];
-    Address = '${place.street},${place.name},${place.subLocality}\n${place.thoroughfare},${place.country}';
-    FullAddress = '${place.street}, ${place.name}, ${place.subLocality}, ${place
+    Address = '${place.street},${place.name},${place.country}';
+    FullAddress='${place.street}, ${place.subLocality}, ${place.subLocality}, ${place
         .thoroughfare}, ${place.country}';
     Street='${place.street}';
 
 
-    print("Add"+Address);
 
   }
 
   Future<void> backloc() async {
     Position position = await _getGeoLocationPosition();
+
+
+
     location =
     'Lat: ${position.latitude} , Long: ${position
         .longitude}';
-
     locat='${position.latitude} , ${position
         .longitude}';
     longff=position.longitude;
@@ -145,11 +142,10 @@ class Ambulancepage extends State<MyAmbulancePage> {
     locati.add(position.latitude);
     locati.add(position.longitude);
     GetAddressFromLatLong(position);
-
   }
 
 
-  RefreshController _refreshController =
+  final RefreshController _refreshController =
   RefreshController(initialRefresh: false);
 
   void _onRefresh() async{
@@ -177,7 +173,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
       if(dis<=10.0){
         lst.add(values);
       }
-      print(lst);
+
     });
 
   }
@@ -189,9 +185,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
 
    const MyAmbulancePage();
     if(mounted)
-      setState(() {
 
-      });
     _refreshController.loadComplete();
   }
 
@@ -205,13 +199,17 @@ class Ambulancepage extends State<MyAmbulancePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Available Ambulances'),
-        backgroundColor: Color(0xFFA34747),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(
+            color: Color(0xFFDB5461)
+        ),
+
       ),
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
       body:SmartRefresher(
-    enablePullDown: true,
-    enablePullUp: true,
+    enablePullDown: false,
+    enablePullUp: false,
     header: WaterDropHeader(),
     controller: _refreshController,
     onRefresh: _onRefresh,
@@ -222,34 +220,38 @@ class Ambulancepage extends State<MyAmbulancePage> {
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
           width: 304.0,
-          height: 350.0,
+          height: 300.0,
           child: Column(
             children: <Widget>[
-              Padding(padding: const EdgeInsets.all(15.0)),
 
+          const Align(
+            alignment: Alignment.topLeft,
+            child:  Text("Available Ambulances", style: TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 15.0,
+                color:Color( 0xFFDB5461)
+            ),),
+          ),
 
 
               Container(
-
+                padding: const EdgeInsets.only(top: 10.0),
                 child:FutureBuilder(
                   future: fb.get(),
 
                   builder: (context, AsyncSnapshot snapshot) {
-                    // backloc();
 
                     if (snapshot.hasData) {
 
                       lst.clear();
                       Map<dynamic, dynamic> values = snapshot.data.value;
-                      // onoading(values);
                       values.forEach((key, values) {
 
                         final loct=locat.split(",");
                         final langf=langff;
 
                         final longf=longff;
-                        print(langf);
-                        print(longf);
+
 
                         final hospl=values["Hospital_location"].toString().split(",");
                         final hosplang=double.parse(hospl[0]);
@@ -297,12 +299,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
                                               content: Text('Unavailable'),
                                             );
                                             ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                            // Navigator.push(
-                                            //   context,
-                                            //   MaterialPageRoute(
-                                            //     builder: (context) =>  BookPage(todo: lst[index],add:Address,loca:locati),
-                                            //   ),
-                                            // );
+
 
 
                                           },
@@ -312,7 +309,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
                                               SizedBox(
                                                 width: 50.0,
                                                 height: 50.0,
-                                                child: Image.asset('assets/images/ambulance.jpg'),
+                                                child: Image.asset('assets/images/midlogos.png'),
                                               ),
                                               Column(
                                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,7 +318,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
                                                   Text(
                                                     lst[index]["Hospital_name"],
                                                     style: const TextStyle(
-                                                      color: Color(0xFFA34747),
+                                                      color: Color(0xFFDB5461),
                                                       fontWeight: FontWeight.w700,
                                                     ),
                                                   ),
@@ -343,7 +340,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
                                                   Text(
                                                     dis.toStringAsFixed(2)+"km away" ,
                                                     style: const TextStyle(
-                                                      color: Color(0xFFA34747),
+                                                      color: Color(0xFFDB5461),
                                                       fontSize: 10.0,
                                                     ),
                                                   ),
@@ -393,7 +390,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
                                             SizedBox(
                                               width: 50.0,
                                               height: 50.0,
-                                              child: Image.asset('assets/images/ambulance.jpg'),
+                                              child: Image.asset('assets/images/midlogos.png'),
                                             ),
                                             Column(
                                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -402,7 +399,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
                                                 Text(
                                                   lst[index]["Hospital_name"],
                                                   style: const TextStyle(
-                                                    color: Color(0xFFA34747),
+                                                    color: Color(0xFFDB5461),
                                                     fontWeight: FontWeight.w700,
                                                   ),
                                                 ),
@@ -424,7 +421,7 @@ class Ambulancepage extends State<MyAmbulancePage> {
                                                 Text(
                                                   dis.toStringAsFixed(2)+"km away" ,
                                                   style: const TextStyle(
-                                                    color: Color(0xFFA34747),
+                                                    color: Color(0xFFDB5461),
                                                     fontSize: 10.0,
                                                   ),
                                                 ),
@@ -440,9 +437,14 @@ class Ambulancepage extends State<MyAmbulancePage> {
                                           ],
                                         ),
                                         style: OutlinedButton.styleFrom(
-                                          backgroundColor: Colors.white,
+                                          backgroundColor: const Color(0xFFFFF1F4),
                                           fixedSize: const Size(350, 80),
-                                        )),
+                                          side: const BorderSide(
+                                            width: 1.0,
+                                            color: Color(0xFFDB5461),
+                                            style: BorderStyle.solid,
+                                          ),
+                                        ),),
                                   ),
                                   const Padding(padding: EdgeInsets.only(top: 10.0)),
 
@@ -451,17 +453,21 @@ class Ambulancepage extends State<MyAmbulancePage> {
                           }
 
                             return Container(
-
-                              child:Flexible(
-
                                 child:
                                     amp,
-                            )
                             );
 
                           });
                     }
-                    return CircularProgressIndicator();
+                    return Container(
+                      child: Text(
+                        "No ambulances available",
+                        style: TextStyle(
+                          color: Color(0xFFDB5461),
+                          fontSize: 12.0
+                        ),
+                      ),
+                    );
                   }),
 
               ),
@@ -532,45 +538,47 @@ class BookPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Use the Todo to create the UI.
-
-    _onTap() {
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (BuildContext context) =>
-          _children[_currentIndex])); // this has changed
-    }
     return Scaffold(
       appBar: AppBar(
-        title: Text(todo["Hospital_name"].toString()),
-        backgroundColor: const Color(0xFFA34747),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(
+            color: Color(0xFFDB5461)
+        ),
+
       ),
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
       body: ListView(
-    children:[Align(
+    children:[
+
+      Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
           width: 304.0,
           height: 575.0,
           child: Column(
             children: <Widget>[
+             Align(
+                alignment: Alignment.center,
+                child:  Text(todo["Hospital_name"], style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 15.0,
+                    color:Color( 0xFFDB5461)
+                ),),
+              ),
 
-              Padding(padding: const EdgeInsets.all(5.0)),
 
 
-              Padding(padding: const EdgeInsets.all(5.0)),
+              const Padding(padding: EdgeInsets.all(5.0)),
               Container(
-                  alignment: Alignment(-0.78, -0.04),
-                  width: 300.0,
 
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: Colors.white,
-                  ),
                   child: SizedBox(
                     child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Column(children:  [
+                      padding: const EdgeInsets.only(left:5.0,right: 5.0),
+                      child: Column(
+                          children:  [
 
-                        Padding(padding: EdgeInsets.all(8.0)),
+                        const Padding(padding: EdgeInsets.all(8.0)),
                          MyCustomForm(todo: todo,add:add,loca:loca),
                     
                       ]),
@@ -618,7 +626,8 @@ class MyCustomFormState extends State<MyCustomForm> {
   final FlutterSoundRecorder _recordingSession= FlutterSoundRecorder();
   final recordingPlayer = AssetsAudioPlayer();
   late String pathToAudio;
-  String _timerText = '00:00:00';
+  String notes='';
+  String _timerText = 'Press the mic to record';
   String publicKeyTest =
       'pk_test_ee1a5a462b6bc7c438af874774e763febc528369'; //pass in the public test key obtained from paystack dashboard here
 
@@ -696,7 +705,8 @@ class MyCustomFormState extends State<MyCustomForm> {
           isUtc: true);
       var timeText = DateFormat('mm:ss:SS', 'en_GB').format(date);
       setState(() {
-       _timerText = timeText.substring(0, 8);
+
+       _timerText = "Recording...";
       });
     }) as StreamSubscription;
     _recorderSubscription.cancel();
@@ -712,6 +722,7 @@ class MyCustomFormState extends State<MyCustomForm> {
       autoStart: true,
       showNotification: true,
     );
+
   }
 
   Future<void> stopPlayFunc() async {
@@ -734,9 +745,15 @@ class MyCustomFormState extends State<MyCustomForm> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            alignment: Alignment(-0.88, 0.00),
-            width: 300,
-            child: TextFormField(
+            alignment: Alignment.topLeft,
+            padding: EdgeInsets.only(bottom: 5.0),
+            child:  const Text("Pick Up Time", style: TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 15.0,
+                color:Color( 0xFFDB5461)
+            ),),
+          ),
+            TextFormField(
               controller: timeinput,
               // The validator receives the text that the user has entered.
                 validator: (value) {
@@ -746,16 +763,15 @@ class MyCustomFormState extends State<MyCustomForm> {
                   return null;
                 },
                 decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.lock_clock),
-                    hintText: 'Pick Up Time',
-                    hintStyle: TextStyle(color: Color(0xFFA34247)),
+                    prefixIcon: const Icon(Icons.lock_clock),
+                    hintText: 'Time',
+                    hintStyle: TextStyle(color: const Color(0xFFD87D8C),fontSize: 10.0),
                     filled: true,
-                    fillColor: Color(0xFFFFFFFF),
-                    prefixIconColor: Color(0xFFA34247),
-                    isDense: true, // Added this
-                    contentPadding: EdgeInsets.all(8),
+                    fillColor: const Color(0xFFFFF1F4),
+                    contentPadding: const EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5),
+                      borderSide: BorderSide.none,
                     )),readOnly: true,  //set it true, so that user will not able to edit text
               onTap: () async {
                 final TimeOfDay? result =
@@ -765,142 +781,132 @@ class MyCustomFormState extends State<MyCustomForm> {
                     timeinput.text = result.format(context);
                   });
                 }
-                // final TimeOfDay? _timePicked = await showTimePicker(
-                //   context: context,
-                //   initialTime: TimeOfDay.now(),
-                // );
-                // var _dt;
-                // if (_timePicked != null) {
-                //   _dt = DateTime(
-                //
-                //     _timePicked.hour,
-                //     _timePicked.minute,
-                //   );
-                //   setState(() {
-                //     timeinput.text = DateFormat('h:mm a')
-                //         .format(_dt); //_timePicked.format(context);
-                //
-                //   });
-                // }
 
-               // final TimeOfDay? pickedTime =  await showTimePicker(
-               //    initialTime: TimeOfDay.now(),
-               //    context: context,
-               //  );
-               //  //
-               //  if(pickedTime != null ){
-               //    print(pickedTime.format(context));   //output 10:51 PM
-               //    DateTime parsedTime = DateFormat.jm().parse(pickedTime.format(context).toString());
-               //    //converting to DateTime so that we can further format on different pattern.
-               //    print(parsedTime); //output 1970-01-01 22:53:00.000
-               //    String formattedTime = DateFormat('HH:mm:ss').format(parsedTime);
-               //    print(formattedTime); //output 14:59:00
-               //    //DateFormat() is from intl package, you can format the time on any pattern you need.
-               //
-               //    setState(() {
-               //      timeinput.text = formattedTime; //set the value of text field.
-               //    });
-               //  }else{
-               //    print("Time is not selected");
-               //  }
+
+
               },),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10.0),
+
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 5.0),
           ),
 
 
+          Container(
+            alignment: Alignment.topLeft,
+            padding: EdgeInsets.only(bottom: 5.0),
+            child:  const Text("Special Notes", style: TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 15.0,
+                color:Color( 0xFFDB5461)
+            ),),
+          ),
           TextFormField(
               controller: snotes,
             // The validator receives the text that the user has entered.
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter notes';
+                  setState(() {
+                    value="None";
+                    notes="none";
+                  });
                 }
                 return null;
               },
               decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.lock),
+                  prefixIcon: const Icon(Icons.lock),
                   hintText: 'Special Notes eg emergency type',
-                  hintStyle: TextStyle(color: Color(0xFFA34247)),
+                  hintStyle: TextStyle(color: const Color(0xFFD87D8C),fontSize: 10.0),
                   filled: true,
-                  fillColor: Color(0xFFFFFFFF),
-                  prefixIconColor: Color(0xFFA34247),
-                  isDense: true, // Added this
-                  contentPadding: EdgeInsets.all(8),
+                  fillColor: const Color(0xFFFFF1F4),
+                  contentPadding: const EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
+                    borderSide: BorderSide.none,
                   ))),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 5.0),
+          ),
 
+          Container(
+            alignment: Alignment.topLeft,
+            padding: EdgeInsets.only(bottom: 5.0),
+            child:  const Text("Record Voice Note", style: TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 15.0,
+                color:Color( 0xFFDB5461)
+            ),),
+          ),
             Center(
             child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              Text(
-              "Record Voice Note",
-              style: TextStyle(fontSize: 15, color: Color(0xFFA34247)),
-            ),
 
                       Container(
-                      child: Center(
+                      alignment:Alignment.topLeft,
                       child: Text(
                              _timerText,
-                              style: TextStyle(fontSize: 15, color: Color(0xFFA34247)),
+                              style: TextStyle(fontSize: 10, color: Color(0xFFDB5461)),
                               ),
-                      ),
+
                       ),
 
-             Container(
-               child: Center(
-                 child:  Row(
-                   mainAxisAlignment: MainAxisAlignment.center,
-                   children: [
-                     ElevatedButton(
-                       onPressed: () {
-                         setState(() {
-                           _playAudio = !_playAudio;
-                         });
-                         if (_playAudio) playFunc();
-                         if (!_playAudio) stopPlayFunc();
-                         // Validate returns true if the form is valid, or false otherwise.
+             Center(
+               child:  Row(
+                 mainAxisAlignment: MainAxisAlignment.center,
+                 children: [
+                   ElevatedButton(
+                     onPressed: () {
+                       setState(() {
+                         _playAudio = !_playAudio;
+                         _timerText="Playing audio....";
+                       });
+                       if (_playAudio) playFunc();
+                       if (!_playAudio) stopPlayFunc();
+                       // Validate returns true if the form is valid, or false otherwise.
 
-                       },
-                       child: Icon(Icons.play_circle_fill),
-                       style: ButtonStyle(
-                         backgroundColor:
-                         MaterialStateProperty.all(Color(0xFFA34747)),
-                       ),
+                     },
+                     child: Icon(Icons.play_circle_fill),
+                     style: ButtonStyle(
+                       backgroundColor:
+                       MaterialStateProperty.all(Color(0xFFDB5461)),
                      ),
-                     Padding(
-                       padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                   ),
+                   const Padding(
+                     padding: EdgeInsets.symmetric(horizontal: 10.0),
+                   ),
+                   ElevatedButton(
+                     onPressed: () {
+                       // Validate returns true if the form is valid, or false otherwise.
+                       setState(() {
+                         _timerText="Recording....";
+                       });
+                            startRecording();
+                     },
+                     child: Icon(Icons.mic),
+                     style: ButtonStyle(
+                       backgroundColor:
+                       MaterialStateProperty.all(Color(0xFFDB5461)),
                      ),
-                     ElevatedButton(
-                       onPressed: () {
-                         // Validate returns true if the form is valid, or false otherwise.
-startRecording();
-                       },
-                       child: Icon(Icons.mic),
-                       style: ButtonStyle(
-                         backgroundColor:
-                         MaterialStateProperty.all(Color(0xFFA34747)),
-                       ),
-                     ), Padding(
-                       padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                   ), const Padding(
+                     padding: EdgeInsets.symmetric(horizontal: 10.0),
+                   ),
+                   ElevatedButton(
+                     onPressed: () {
+                       // Validate returns true if the form is valid, or false otherwise.
+                       setState(() {
+                         _timerText="Press mic to re-record";
+                       });
+                       stopRecording();
+                     },
+                     child: Icon(Icons.stop_circle),
+                     style: ButtonStyle(
+                       backgroundColor:
+                       MaterialStateProperty.all(Color(0xFFDB5461)),
                      ),
-                     ElevatedButton(
-                       onPressed: () {
-                         // Validate returns true if the form is valid, or false otherwise.
-stopRecording();
-                       },
-                       child: Icon(Icons.stop_circle),
-                       style: ButtonStyle(
-                         backgroundColor:
-                         MaterialStateProperty.all(Color(0xFFA34747)),
-                       ),
-                     ),
-                   ],
-                 ),
-               )
+                   )
+
+                 ],
+               ),
              )
 
             ]
@@ -911,7 +917,7 @@ stopRecording();
 
 
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            padding: const EdgeInsets.only(top: 16.0),
             child: Center(
               child: Container(
                 width: 250,
@@ -932,7 +938,7 @@ stopRecording();
                   child: Text('Book'),
                   style: ButtonStyle(
                     backgroundColor:
-                    MaterialStateProperty.all(Color(0xFFA34747)),
+                    MaterialStateProperty.all(Color(0xFFDB5461)),
                   ),
                 ),
               ),

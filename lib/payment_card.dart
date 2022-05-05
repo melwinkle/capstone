@@ -50,11 +50,14 @@ class PaymentCpage extends State<MyPaymentCPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Add Card"),
-        backgroundColor: const Color(0xFFA34747),
+      appBar:AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(
+            color: Color(0xFFDB5461)
+        ),
       ),
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
       body: ListView(
     children:[Align(
         alignment: Alignment(0.01, 0.09),
@@ -83,7 +86,7 @@ class PaymentCpage extends State<MyPaymentCPage> {
                       child: const Text(
                         'Add Card',
                         style: TextStyle(
-                          color: Color(0xFFA43247),
+                          color:Color( 0xFFDB5461),
                           fontWeight: FontWeight.w700,
                           fontSize: 20.0,
                         ),
@@ -173,10 +176,10 @@ class MyCustomFormState extends State<MyCustomForm> {
                   hintText: 'Card Name',
                   hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
                   filled: true,
-                  fillColor: Color(0xFFEFDCDC),
+                  fillColor: Color(0xFFFFF1F4),
                   contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
                   ))),
           Padding(
@@ -196,10 +199,10 @@ class MyCustomFormState extends State<MyCustomForm> {
                   hintText: 'Card number',
                   hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
                   filled: true,
-                  fillColor: Color(0xFFEFDCDC),
+                  fillColor: Color(0xFFFFF1F4),
                   contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
                   ))),
           Padding(
@@ -219,10 +222,10 @@ class MyCustomFormState extends State<MyCustomForm> {
                   hintText: 'Expiry Date',
                   hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
                   filled: true,
-                  fillColor: Color(0xFFEFDCDC),
+                  fillColor: Color(0xFFFFF1F4),
                   contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
                   ))),
           Padding(
@@ -242,10 +245,10 @@ class MyCustomFormState extends State<MyCustomForm> {
                   hintText: 'CVV',
                   hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
                   filled: true,
-                  fillColor: Color(0xFFEFDCDC),
+                  fillColor: Color(0xFFFFF1F4),
                   contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
                   ))),
           Padding(
@@ -269,7 +272,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                   child: const Text('SAVE'),
                   style: ButtonStyle(
                     backgroundColor:
-                        MaterialStateProperty.all(Color(0xFFA34747)),
+                        MaterialStateProperty.all(Color( 0xFFDB5461)),
                   ),
                 ),
               ),
