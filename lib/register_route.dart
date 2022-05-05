@@ -29,88 +29,90 @@ class Registerpage extends State<Register> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: ListView(
-        children:[Align(
-        alignment: Alignment(0.01, 0.09),
-        child: SizedBox(
-          width: 304.0,
-          height: 580.0,
-          child: Column(
-            children: <Widget>[
-
-          Padding(
-          padding: const EdgeInsets.symmetric(vertical: 13.0)),
+          children:[
+            Align(
+              alignment: Alignment(0.01, 0.09),
+              child: SizedBox(
+                width: 304.0,
+                height: 800.0,
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                        padding: const EdgeInsets.all(2.0)),
 // Group: Group 32
 
-              SizedBox(
-                width: 200.0,
-                height: 85.76,
-                child: Stack(
-                  alignment: Alignment.topCenter,
-                  children: <Widget>[
-                    Positioned(
-                      bottom: 0,
+                    Container(
+                      height: 120.0,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      child: Image.asset('assets/images/midlogo.png'),
+                    ),
+
+
+
+                    const Align(
+                      alignment: Alignment.center,
                       child: Text(
-                        'LAMBER EMS',
+                        'Verfiy your Email',
                         style: TextStyle(
-                          fontSize: 25.0,
-                          color: const Color(0xFF830C0C),
-                          fontWeight: FontWeight.w700,
+                            fontFamily: 'Helvetica',
+                            fontSize: 15.0,
+                            color: Color(0xFFDB5461),
+                            fontWeight: FontWeight.w500
                         ),
                       ),
                     ),
 
 
+                    const Padding(
+                        padding: EdgeInsets.all(5.0)),
+                    const Align(
+                      child: MyCustomForm(),
+                    ),
+                    const Padding(
+                        padding: EdgeInsets.all(2.0)),
+                    Container(
+                      width: 200.0,
+                      height: 30.0,
+                      margin: EdgeInsets.all(25),
+
+                      child: OutlinedButton(
+                          onPressed: () {
+                            Navigator.of(context).push(_createRoutes());
+                          },
+                          child:  Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Text('Have an account?', style: TextStyle(
+                                color: Color(0xFFDB5461),
+                                fontSize: 10,
+                                fontWeight: FontWeight.normal,
+
+                              ),),
+                              Text(
+                                ' Sign In',
+                                style: TextStyle(
+                                    color: Color(0xFFDB5461),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold
+                                ),
+                              ),
+                            ],
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(
+                              width: 1.0,
+                              color: Color(0xFFA34747),
+                              style: BorderStyle.none,
+                            ),
+                          )),
+                    )
                   ],
                 ),
               ),
-              Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 13.0)),
-              Align(
-                alignment: Alignment(-0.88, 0.0),
-                child: Text(
-                  'Verify your email',
-                  style: TextStyle(
-                    fontFamily: 'Helvetica',
-                    fontSize: 15.0,
-                    color: const Color(0xFFA34747),
-                  ),
-                ),
-              ),
-              Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 13.0)),
-              Align(
-                child: const MyCustomForm(),
-              ),
-              Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 13.0)),
-              Container(
-                  width: 200.0,
-                  height: 40.0,
-                  margin: EdgeInsets.all(25),
-                  child: Expanded(
-                    child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.of(context).push(_createRoutes());
-                        },
-                        child: const Text(
-                          'Sign In',
-                          style: TextStyle(
-                            color: const Color(0xFFA34747),
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                            width: 1.0,
-                            color: Color(0xFFA34747),
-                            style: BorderStyle.solid,
-                          ),
-                        )),
-                  ))
-            ],
-          ),
-        ),
-      ),
-    ])
+            ),
+          ])
     );
   }
 }
@@ -139,7 +141,7 @@ class MyCustomFormState extends State<MyCustomForm> {
   final password = TextEditingController();
   final name = "users/ems/";
   final fb = FirebaseDatabase.instance;
-
+String emailText="";
   @override
   Widget build(BuildContext context) {
 
@@ -156,15 +158,18 @@ class MyCustomFormState extends State<MyCustomForm> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter your email';
                 }
+                if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value)) {
+                  return 'Please enter a valid email address';
+                }
                 return null;
               },
               decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.person),
+                  prefixIcon: const Icon(Icons.email),
                   hintText: 'Email',
-                  hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
+                  hintStyle: TextStyle(color: const Color(0xFFD87D8C),fontSize: 12.0),
                   filled: true,
-                  fillColor: Color(0xFFEFDCDC),
-                  contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
+                  fillColor: const Color(0xFFFFF1F4),
+                  contentPadding: const EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide.none,
@@ -178,15 +183,18 @@ class MyCustomFormState extends State<MyCustomForm> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter your password';
                 }
+                if (value.trim().length < 6) {
+                  return 'Password must be at least 6 characters in length';
+                }
                 return null;
               },
               decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.person),
+                  prefixIcon: const Icon(Icons.lock),
                   hintText: 'Password',
-                  hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
+                  hintStyle: TextStyle(color: const Color(0xFFD87D8C),fontSize: 12.0),
                   filled: true,
-                  fillColor: Color(0xFFEFDCDC),
-                  contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
+                  fillColor: const Color(0xFFFFF1F4),
+                  contentPadding: const EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide.none,
@@ -210,9 +218,9 @@ class MyCustomFormState extends State<MyCustomForm> {
                     }
                   },
                   child: const Text('Verify'),
-                  style: ButtonStyle(
+                  style:  ButtonStyle(
                     backgroundColor:
-                        MaterialStateProperty.all(Color(0xFFA34747)),
+                    MaterialStateProperty.all(Color(0xFFDB5461)),
                   ),
                 ),
               ),
@@ -274,19 +282,31 @@ class MyCustomFormState extends State<MyCustomForm> {
           await users.sendEmailVerification();
         }
         fb.ref('users/ems_temp/$fl').remove();
-        print(mail);
+        setState(() {
+          emailText="Email exists";
+        });
+
         Navigator.of(context).push(_createRoutes());
 
       }else{
-        print("Email does not exist");
+        setState(() {
+          emailText="Email does not exist";
+        });
+
       }
 
 
 
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
+        setState(() {
+          emailText="Password too weak";
+        });
         print('The password provided is too weak.');
       } else if (e.code == 'email-already-in-use') {
+        setState(() {
+          emailText="Account already exists";
+        });
         print('The account already exists for that email.');
       }
     } catch (e) {

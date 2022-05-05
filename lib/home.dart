@@ -1,11 +1,11 @@
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
-import 'package:lamber/ambulances.dart';
+import 'package:lamber/users/ambulances.dart';
 import 'package:flutter/material.dart';
 import 'package:lamber/sign_route.dart';
 import 'package:lamber/request.dart';
-import 'package:lamber/first_aid.dart';
+
 import 'package:lamber/profile.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,10 +14,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+
 void main() {
   if (defaultTargetPlatform == TargetPlatform.android) {
     AndroidGoogleMapsFlutter.useAndroidViewSurface = true;
   }
+
   runApp(MyApp());
 }
 class MyApp extends StatelessWidget {
@@ -27,6 +29,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       title: 'Homepage',
+      debugShowCheckedModeBanner: false,
       home: MyHomePage(),
     );
   }
@@ -59,6 +62,7 @@ class Homepage extends State<MyHomePage> {
   String FullAddress='';
   String Street='';
   String locat='';
+  String FullName='';
   List<dynamic> lst = [];
   List<dynamic> hosp = [];
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -98,15 +102,19 @@ class Homepage extends State<MyHomePage> {
         .longitude}';
     List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude, position.longitude);
-    print(placemarks);
+
     Placemark place = placemarks[0];
-    Address = '${place.street},${place.name},${place.subLocality}\n${place.thoroughfare},${place.country}';
-    FullAddress = '${place.street}, ${place.subLocality}, ${place.subLocality}, ${place
-        .thoroughfare}, ${place.country}';
-    Street='${place.street}';
+
+      Address = '${place.street},${place.name},${place.country}';
+      FullAddress='${place.street}, ${place.subLocality}, ${place.subLocality}, ${place
+          .thoroughfare}, ${place.country}';
+      Street='${place.street}';
+
+
+
 
 String address='${place.street},${place.name},${place.subLocality}\n${place.thoroughfare},${place.country}';
-    print("Add"+Address);
+
 return address;
   }
 
@@ -121,30 +129,127 @@ return address;
     DataSnapshot event = await query.get();
 
 
-    print(event.value.toString());
+
     return event.value;
   }
 
+  Future<String>GetProfile() async {
+    final userid=FirebaseAuth.instance.currentUser?.uid;
+    final fb = FirebaseDatabase.instance.ref('users/ems/$userid');
+    final snapshot = await fb.get();
+    if (snapshot.exists) {
+      Map<dynamic,dynamic> values = snapshot.value as Map<dynamic, dynamic>;
 
+      values.forEach((key, value) {
+        if(key=="First_name"){
+          setState(() {
+            FullName = value;
+
+
+          });
+        }
+
+      });
+    } else {
+      setState(() {
+        FullName = "User";
+
+
+      });
+    }
+
+    return FullName;
+
+  }
+  @override
+  void initState() {
+    // TODO: implement initState
+
+    GetProfile();
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
 
     GetAddressFromLatLong();
     return Scaffold(
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
+      bottomNavigationBar:  Container(
+
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius:BorderRadius.only(
+                topRight: Radius.circular(20), topLeft: Radius.circular(20)),
+          ),
+          child:ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20.0),
+              topRight: Radius.circular(20.0),
+
+            ),
+
+            child:BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              currentIndex: _currentIndex,
+              backgroundColor: Color(0xFFDB5461),
+              selectedItemColor: Color(0xFFFFFFFF),
+              unselectedItemColor: const Color(0xFFFFFFFF).withOpacity(.60),
+              selectedFontSize: 14,
+              unselectedFontSize: 12,
+
+
+              onTap: (value) {
+                // Respond to item press.
+                setState(() => _currentIndex = value);
+                _onTap();
+              },
+              items: const [
+                BottomNavigationBarItem(
+                  label: 'Home',
+                  icon: Icon(Icons.home_filled),
+                ),
+                BottomNavigationBarItem(
+                  label: 'Requests',
+                  icon: Icon(Icons.receipt_outlined),
+                ),
+
+                BottomNavigationBarItem(
+                  label: 'Account',
+                  icon: Icon(Icons.person_outlined),
+                ),
+              ],
+            ),
+
+          )
+      ) ,
       body: Align(
         alignment: const Alignment(0.01, 0.09),
         child: SizedBox(
           height: 812.0,
           child: Column(
             children: <Widget>[
+              Padding(padding: const EdgeInsets.only(top:30.0,bottom:30.0)),
+          Align(
 
-// Group: Group 32
+          child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children:  [
+                  Text("Hi,"+FullName,style:const TextStyle(
+                      fontFamily:'Helvetica',
+                      color: Color(0xFFDB5461),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18.0
+                  )),
+                  const Icon(Icons.waving_hand_rounded,color:Colors.amber)
+                ],
+              )),
+
               FutureBuilder(
                 future: GetAddressFromLatLong(),
                 builder: (context, AsyncSnapshot<String> snapshot) {
                   if (snapshot.hasError) return Text('${snapshot.error}');
-                  if (snapshot.hasData) return  ListView.builder(
+                  if (snapshot.hasData) {
+                    return  ListView.builder(
                       shrinkWrap: true,
                       itemCount: 1,
                       itemBuilder: (BuildContext context, int index)  {
@@ -153,23 +258,12 @@ return address;
 
 
                         return Container(
-                            width: 200.0,
-                            height: 52.0,
-                            margin: EdgeInsets.all(25),
-                            child: Expanded(
+
+                            margin:EdgeInsets.only(left: 5.0, top: 0.0, bottom: 5.0,right: 5.0,),
+
                               child: OutlinedButton(
                                   onPressed: ()  {
-                                    // Navigator.push(
-                                    //   context,
-                                    //   MaterialPageRoute(
-                                    //     builder: (context) => MapTest(),
-                                    //   ),
-                                    // );
-                                    // Position position = await _getGeoLocationPosition();
-                                    // location =
-                                    // 'Lat: ${position.latitude} , Long: ${position
-                                    //     .longitude}';
-                                    // GetAddressFromLatLong(position);
+
                                   }
 
 
@@ -177,64 +271,60 @@ return address;
                                   child: Row(
 
                                     children: [
-                                      Column(
-                                        children: const [
-                                          Icon(Icons.location_on,
-                                              size: 24, color: Color(0xFFA34747))
-                                        ],
-                                      ),
+                                  Column(
+                                  children: const [
+                                  Padding(padding:EdgeInsets.only (top:5),
+                                  child:
+                                  Icon(Icons.location_on,
+                                      size: 24, color: Color(0xFFFFFFFF))
+                              )
+                          ],
+                        ),
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          const Text(
-                                            'Current Address',
-                                            style: TextStyle(
-                                              color: Color(0xFFA34747),
-                                              fontWeight: FontWeight.w700,
+                                          const Padding(padding:EdgeInsets.only (top:2,bottom:1),
+                                            child:
+                                            Text(
+                                              'Current Address',
+                                              style: TextStyle(
+                                                  color: Color(0xFFFFFFFF),
+                                                  fontWeight: FontWeight.w500,
+                                                  fontFamily: "Helvetica"
+                                              ),
                                             ),
                                           ),
 
-                                          Text(
-                                            '${snapshot.data}',
-                                            style: const TextStyle(
-                                              color: Color(0xFFA34747),
-                                              fontSize: 8.0,
-                                              overflow: TextOverflow.ellipsis,
+                                          Padding(padding:const EdgeInsets.only (top:2,bottom:2),
+                                            child:Text(
+                                              Address,
+                                              style: const TextStyle(
+                                                color: Color(0xFFFFFFFF),
+                                                fontSize: 10.0,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             ),
-                                          ),
+                                          )
 
                                         ],
                                       ),
                                     ],
                                   ),
                                   style: OutlinedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    side: const BorderSide(
-                                      width: 1.0,
-                                      color: Color(0xFFA34747),
-                                      style: BorderStyle.solid,
-                                    ),
+                                    fixedSize: const Size(250, 50),
+                                    backgroundColor: Color(0xFFDB5461),
+
                                   )),
-                            ));
+                            );
                       });
+                  }
                   return Container(
-                      width: 200.0,
-                      height: 52.0,
-                      margin: EdgeInsets.all(25),
-                      child: Expanded(
+
+                      margin:EdgeInsets.only(left: 5.0, top: 2.0, bottom: 5.0,right: 5.0,),
+
                         child: OutlinedButton(
                             onPressed: ()  {
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //     builder: (context) => MapTest(),
-                              //   ),
-                              // );
-                              // Position position = await _getGeoLocationPosition();
-                              // location =
-                              // 'Lat: ${position.latitude} , Long: ${position
-                              //     .longitude}';
-                              // GetAddressFromLatLong(position);
+
                             }
 
 
@@ -244,46 +334,56 @@ return address;
                               children: [
                                 Column(
                                   children: const [
-                                    Icon(Icons.location_on,
-                                        size: 24, color: Color(0xFFA34747))
+                                    Padding(padding:EdgeInsets.only (top:5),
+                                        child:
+                                        Icon(Icons.location_on,
+                                            size: 24, color: Color(0xFFDB5461))
+                                    )
                                   ],
                                 ),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: const [
-                                    Text(
-                                      'Current Address',
-                                      style: TextStyle(
-                                        color: Color(0xFFA34747),
-                                        fontWeight: FontWeight.w700,
+                                    Padding(padding:EdgeInsets.only (top:2,bottom:1),
+                                      child:
+                                      Text(
+                                        'Current Address',
+                                        style: TextStyle(
+                                            color: Color(0xFFDB5461),
+                                            fontWeight: FontWeight.w500,
+                                            fontFamily: "Helvetica"
+                                        ),
                                       ),
                                     ),
 
-                                    Text(
-                                      "Current Location",
-                                      style: TextStyle(
-                                        color: Color(0xFFA34747),
-                                        fontSize: 8.0,
-
+                                    Padding(padding:EdgeInsets.only (top:2,bottom:2),
+                                      child:Text(
+                                        "No Location",
+                                        style: TextStyle(
+                                          color: Color(0xFFDB5461),
+                                          fontSize: 10.0,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
-                                    ),
+                                    )
 
                                   ],
                                 ),
                               ],
                             ),
-                            style: OutlinedButton.styleFrom(
+                            style:OutlinedButton.styleFrom(
+                              fixedSize: const Size(250, 55),
                               backgroundColor: Colors.white,
                               side: const BorderSide(
                                 width: 1.0,
-                                color: Color(0xFFA34747),
+                                color: Color(0xFFDB5461),
                                 style: BorderStyle.solid,
                               ),
                             )),
-                      ));
+                      );
                 },
               ),
-              Spacer(flex: 5),
+              const Padding(padding: EdgeInsets.all(10.0),),
               FutureBuilder(
                   future:showData(),
 
@@ -308,11 +408,12 @@ return address;
                           tot=int.parse(element["Rating"].toString());
                         }
                         rat+=tot;
-                        print("tot"+rat.toString());
+
                       });
 
                       return Container(
                           width:400,
+                          margin:EdgeInsets.only(top: 5.0, bottom: 1.0),
                           child:Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
@@ -321,38 +422,62 @@ return address;
                                 onPressed: () {  },
                                 child: Column(
                                   children: [
-                                    Icon(Icons.receipt),
+                                    Icon(Icons.receipt,color: Color(0xFFDB5461),),
                                     Text(
-                                        "TOTAL REQUESTS"
+                                        "TOTAL REQUESTS",style: TextStyle(
+                                      fontSize: 12.0,
+                                      color: Color(0xFFDB5461)
+                                    ),
 
                                     ),
                                     Text(
-                                        lst.length.toString()
+                                        lst.length.toString(),style: TextStyle(
+                                       color: Color(0xFFDB5461)
+                                    ),
 
                                     )
                                   ],
                                 ),
                                 style: ElevatedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(vertical: 40),
-                                    fixedSize: const Size(150, 150), primary: Color(0xFFA34747)),
+                                    fixedSize: const Size(150, 145), primary: Color(0xFFFFFFFF),
+                                  side: const BorderSide(
+                                    width: 1.0,
+                                    color: Color(0xFFDB5461),
+                                    style: BorderStyle.solid,
+
+                                  ),),
+
+
                               ),
                               ElevatedButton(
 
                                 onPressed: () {  },
                                 child: Column(
                                   children: [
-                                    Icon(Icons.star),
-                                    Text(
-                                        "AVERAGE RATING"
+                                    Icon(Icons.star,color: Color(0xFFDB5461),),
+                                    const Text(
+                                        "AVERAGE RATING",style:TextStyle(
+                                        fontSize: 12.0,
+                                      color: Color(0xFFDB5461),
+                                    )
 
                                     ),
                                     Text(
-                                        rat.toString()
+                                        rat.toString(),style: const TextStyle(
+                                      color: Color(0xFFDB5461),
+                                    ),
                                     )
                                   ],
                                 ),style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(vertical: 40),
-                                  fixedSize: const Size(150, 150), primary: Color(0xFFA34747)),
+                                  fixedSize: const Size(150, 145), primary: Color(0xFFFFFFFF),
+                                side: const BorderSide(
+                                  width: 1.0,
+                                  color: Color(0xFFDB5461),
+                                  style: BorderStyle.solid,
+                                ),
+                              ),
                               )
 
                             ],
@@ -388,7 +513,7 @@ return address;
                               ),
                               style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(vertical: 40),
-                                  fixedSize: const Size(150, 140), primary: Color(0xFFA34747)),
+                                  fixedSize: const Size(150, 140), primary: Color(0xFFDB5461)),
                             ),
                             ElevatedButton(
 
@@ -412,7 +537,7 @@ return address;
                                 ],
                               ),style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 40),
-                                fixedSize: const Size(150, 140), primary: Color(0xFFA34747)),
+                                fixedSize: const Size(150, 140), primary: Color(0xFFDB5461)),
                             )
 
                           ],
@@ -420,17 +545,17 @@ return address;
                     );
                   }),
 
+Padding(padding: EdgeInsets.only(bottom:15.0),),
 
 
-              Spacer(flex: 10),
               const Align(
-                alignment: Alignment(-0.59, 0.0),
+                alignment: Alignment.topLeft,
                 child: Text(
                   'Assigned Request',
                   style: TextStyle(
                     fontFamily: 'Helvetica',
-                    fontSize: 20.0,
-                    color: Color(0xFFA34747),
+                    fontSize: 15.0,
+                    color: Color(0xFFDB5461),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -447,7 +572,11 @@ return address;
 
                       values.forEach((key, values) {
                         // lst.add(values);
-                        lst.add(values);
+                        if(values["Status"]=="Ongoing"){
+                          lst.add(values);
+                        }
+
+
 
 
                       });
@@ -456,91 +585,132 @@ return address;
                       var hosplong;
                       var hosplang;
                       var index;
+var com;
+                      if(lst.isNotEmpty){
+                        lst.forEach((element) {
+                          if(element["Status"]=="Ongoing"){
+                            tot=element["Request_id"].toString();
+                            final hospl=element["Hospital_location"].toString().split(",");
+                            hosplang=double.parse(hospl[0]);
+                            hosplong=double.parse(hospl[1]);
+                            // hosp.add(element);
+                            index=0;
+                            hosp.insert(index, element);
 
 
-                      lst.forEach((element) {
-                        if(element["Status"]=="Ongoing"){
-                          tot=element["Request_id"].toString();
-                          final hospl=element["Hospital_location"].toString().split(",");
-                          hosplang=double.parse(hospl[0]);
-                          hosplong=double.parse(hospl[1]);
-                          // hosp.add(element);
-                          index=0;
-                          hosp.insert(index, element);
+
+                          }
 
 
-                        }
+                        });
+                        return Container(
+                            width: 320.0,
+                            height: 92.0,
+                           margin: EdgeInsets.only(top:10.0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child:SizedBox(
+                                child:DecoratedBox(
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(10.0),
+                                        border: Border.all(color: Color(0xFFDB5461))
+                                    ),
+                                    child:Column(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Text("Assigned Request for #"+tot.toString(),style: const TextStyle(
+                                          fontFamily: 'Helvetica',
+                                          fontSize: 12.0,
+                                          color: Color(0xFFDB5461),
+                                          fontWeight: FontWeight.w300,
 
+                                        )),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            OutlinedButton(
 
-                      });
-                      print(hosp);
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) => MapPage(long: hosplong, lang:hosplang, tod:hosp[index]),
+                                                  ),
+                                                );
 
-                      return   Container(
-                          width: 320.0,
-                          height: 90.0,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          child:SizedBox(
-                              child:DecoratedBox(
-                                  decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      border: Border.all(color: Color(0xFFA34747))
-                                  ),
-                                  child:Column(
-                                    children: [
-                                      Text("Assigned Request for #"+tot.toString(),style: TextStyle(
-                                        fontFamily: 'Helvetica',
-                                        fontSize: 12.0,
-                                        color: Color(0xFFA34747),
-                                        fontWeight: FontWeight.w300,
+                                              },
+                                              child: const Text(
+                                                  "VIEW REQUEST",
+                                                  style: TextStyle(
+                                                    fontFamily: 'Helvetica',
+                                                    fontSize: 12.0,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w500,
+                                                  )
 
-                                      )),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          OutlinedButton(
-
-                                            onPressed: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) => MapPage(long: hosplong, lang:hosplang, tod:hosp[index]),
+                                              ),
+                                              style: OutlinedButton.styleFrom(
+                                                backgroundColor: Color(0xFFDB5461),
+                                                side: BorderSide(
+                                                  width: 1.0,
+                                                  color: Color(0xFFDB5461),
+                                                  style: BorderStyle.solid,
                                                 ),
-                                              );
-
-                                            },
-                                            child: Text(
-                                                "VIEW REQUEST",
-                                                style: TextStyle(
-                                                  fontFamily: 'Helvetica',
-                                                  fontSize: 12.0,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.w500,
-                                                )
-
-                                            ),
-                                            style: OutlinedButton.styleFrom(
-                                              backgroundColor: Color(0xFFA34747),
-                                              side: BorderSide(
-                                                width: 1.0,
-                                                color: Color(0xFFA34747),
-                                                style: BorderStyle.solid,
                                               ),
                                             ),
-                                          ),
 
 
-                                        ],
+                                          ],
 
-                                      )
-                                    ],
-                                  )
-                              )
+                                        )
+                                      ],
+                                    )
+                                )
 
-                          )
-                      );
+                            )
+                        );
+                      }else{
+                        return Container(
+                            width: 300.0,
+                            height: 55.0,
+                            margin: EdgeInsets.only(top:22.0,bottom: 25.0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child:SizedBox(
+                                child:DecoratedBox(
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(10.0),
+                                        border: Border.all(color: Color(0xFFDB5461))
+                                    ),
+                                    child:Column(
+
+                                      children: const [
+                                        Center(
+                                          child: Text("No Assigned Requests",style: TextStyle(
+                                            fontFamily: 'Helvetica',
+                                            fontSize: 15.0,
+                                            color: Color(0xFFDB5461),
+                                            fontWeight: FontWeight.w300,
+
+                                          )),
+                                        )
+
+
+                                      ],
+                                    )
+                                )
+
+                            )
+                        );
+                      }
+
+
+
+
                     }
                     return Container(
                         width: 300.0,
@@ -580,49 +750,12 @@ return address;
 
 
 
-              Spacer(flex: 20),
+
+
+              Padding(padding: EdgeInsets.all(20.0),),
 
 
 
-
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius:BorderRadius.only(
-                  topRight: Radius.circular(30), topLeft: Radius.circular(30)),
-            ),
-              child:BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                currentIndex: _currentIndex,
-                // backgroundColor: Color(0xFFFFFFFF),
-                selectedItemColor: Color(0xFFA34747),
-                unselectedItemColor: const Color(0xFFA34747).withOpacity(.60),
-                selectedFontSize: 14,
-                unselectedFontSize: 14,
-
-
-                onTap: (value) {
-                  // Respond to item press.
-                  setState(() => _currentIndex = value);
-                  _onTap();
-                },
-                items: const [
-                  BottomNavigationBarItem(
-                    label: 'Home',
-                    icon: Icon(Icons.home_filled),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Requests',
-                    icon: Icon(Icons.receipt_outlined),
-                  ),
-
-                  BottomNavigationBarItem(
-                    label: 'Account',
-                    icon: Icon(Icons.person_outlined),
-                  ),
-                ],
-              ),
-            ),
 
             ],
           ),
@@ -686,8 +819,6 @@ return address;
       print(s);
     }
 
-    print(
-        requestid + "," + userid! + "," + username + "," + phone + "," + time);
   }
 }
 
@@ -833,7 +964,7 @@ class Loader extends State<LoaderPage> with TickerProviderStateMixin {
                   width: 600.0,
                   height: 250.0,
                   margin: EdgeInsets.all(25),
-                  child: Expanded(
+
                     child: ElevatedButton(
                       onPressed: () {
                         approv(widget.todo.toString());
@@ -854,7 +985,7 @@ class Loader extends State<LoaderPage> with TickerProviderStateMixin {
                               side: BorderSide(
                                   width: 12, color: Color(0xFFEFDFDF))))),
                     ),
-                  )),
+                  ),
               Container(
                 child: Center(
                   child: LinearProgressIndicator(
@@ -869,7 +1000,7 @@ class Loader extends State<LoaderPage> with TickerProviderStateMixin {
                   width: 250.0,
                   height: 50.0,
                   margin: EdgeInsets.all(25),
-                  child: Expanded(
+
                     child: OutlinedButton(
                         onPressed: () {
                           cancel(widget.todo.toString());
@@ -889,7 +1020,7 @@ class Loader extends State<LoaderPage> with TickerProviderStateMixin {
                             style: BorderStyle.solid,
                           ),
                         )),
-                  )),
+                  ),
 
               Spacer(flex: 20),
             ],

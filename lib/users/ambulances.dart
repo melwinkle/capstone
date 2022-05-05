@@ -9,7 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:lamber/users/book.dart';
 import 'package:flutter/material.dart';
 import 'package:lamber/home.dart';
-import 'package:lamber/first_aid.dart';
+import 'package:lamber/users/first_aid.dart';
 import 'package:lamber/profile.dart';
 import 'package:lamber/request.dart';
 import 'package:firebase_database/firebase_database.dart';

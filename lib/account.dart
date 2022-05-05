@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lamber/sign_route.dart';
 import 'package:lamber/home.dart';
 import 'package:lamber/request.dart';
-import 'package:lamber/first_aid.dart';
+import 'package:lamber/users/first_aid.dart';
 import 'package:lamber/profile.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -52,33 +52,26 @@ class Accountpage extends State<MyAccountPage> {
 
   }
 
- 
 
 
 
 
 
 
-  _onTap() {
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (BuildContext context) =>
-            _children[_currentIndex])); // this has changed
-  }
 
-  final List<Widget> _children = [
-    const MyHomePage(),
-    const MyRequestPage(),
-    const MyProfilePage(),
-  ];
+
 
   @override
   Widget build(BuildContext context) {
     
     return Scaffold(
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
       appBar: AppBar(
-        title: Text("My Details"),
-        backgroundColor: const Color(0xFFA34747),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(
+            color: Color(0xFFDB5461)
+        ),
       ),
       body: Align(
         alignment: Alignment(0.01, 0.09),
@@ -89,7 +82,14 @@ class Accountpage extends State<MyAccountPage> {
             children: <Widget>[
 // Group: Group 32
 
-
+              const Align(
+                alignment: Alignment.center,
+                child:  Text("My Details", style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 20.0,
+                    color:Color( 0xFFDB5461)
+                ),),
+              ),
               Container(
                   child:FutureBuilder(
                       future: fb.equalTo(userid!).get(),
@@ -102,7 +102,7 @@ class Accountpage extends State<MyAccountPage> {
 
                           values.forEach((key, values) {
                             lst.add(values);
-                             print(values);
+
 
                           });
 
@@ -120,33 +120,34 @@ class Accountpage extends State<MyAccountPage> {
                                           Padding(padding: const EdgeInsets.all(5.0)),
                                           Container(
                                             child: const Text(
-                                              "Full Name",
+                                              "First Name",
                                               style: TextStyle(
-                                                color: Color(0xFFA43247),
-                                                fontWeight: FontWeight.w300,
+                                                color: Color(0xFFDB5461),
+                                                fontWeight: FontWeight.w500,
                                                 fontSize: 10.0,
                                               ),
                                             ),
                                             alignment: Alignment.topLeft,
                                           ),
                                           Padding(
-                                              padding: const EdgeInsets.all(5.0)),
+                                              padding: const EdgeInsets.all(2.0)),
 
-                                          Container(
-                                              width: 300.0,
-                                              height: 40.0,
-                                              decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(8.0),
-                                                color: Colors.white,
+
+                                          TextFormField(
+                                              initialValue: lst[index]["First_name"].toString(),
+                                              style: TextStyle(
+                                                  fontSize: 10.0
                                               ),
-                                              child: Text(
-                                                lst[index]["First_name"],
-                                                style: TextStyle(
-                                                  color: Color(0xFFA43247),
-                                                  fontSize: 20.0,
-
-                                                ),
-                                              )),
+                                              readOnly: true,
+                                              decoration: InputDecoration(
+                                                  prefixIcon: const Icon(Icons.lock),
+                                                  filled: true,
+                                                  fillColor: const Color(0xFFFFF1F4),
+                                                  contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(5),
+                                                    borderSide: BorderSide.none,
+                                                  ))),
 
                                           Padding(
                                               padding: const EdgeInsets.all(5.0)),
@@ -154,8 +155,8 @@ class Accountpage extends State<MyAccountPage> {
                                             child: const Text(
                                               "Last Name",
                                               style: TextStyle(
-                                                color: Color(0xFFA43247),
-                                                fontWeight: FontWeight.w300,
+                                                color: Color(0xFFDB5461),
+                                                fontWeight: FontWeight.w500,
                                                 fontSize: 10.0,
                                               ),
                                             ),
@@ -165,103 +166,106 @@ class Accountpage extends State<MyAccountPage> {
                                               padding: const EdgeInsets.all(5.0)),
 
 
-                                          Container(
-                                              width: 300.0,
-                                              height: 40.0,
-                                              decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(8.0),
-                                                color: Colors.white,
+                                          TextFormField(
+                                              initialValue: lst[index]["Last_name"].toString(),
+                                              style: TextStyle(
+                                                  fontSize: 10.0
                                               ),
-                                              child: Text(
-                                                lst[index]["Last_name"],
-                                                style: TextStyle(
-                                                  color: Color(0xFFA43247),
-                                                  fontSize: 20.0,
-
-                                                ),
-                                              )),
+                                              readOnly: true,
+                                              decoration: InputDecoration(
+                                                  prefixIcon: const Icon(Icons.lock),
+                                                  filled: true,
+                                                  fillColor: const Color(0xFFFFF1F4),
+                                                  contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(5),
+                                                    borderSide: BorderSide.none,
+                                                  ))),
+                                          Padding(
+                                              padding: const EdgeInsets.all(5.0)),
                                           Container(
                                             child: const Text(
                                               "Email",
                                               style: TextStyle(
-                                                color: Color(0xFFA43247),
-                                                fontWeight: FontWeight.w300,
+                                                color: Color(0xFFDB5461),
+                                                fontWeight: FontWeight.w500,
                                                 fontSize: 10.0,
 
                                               ),
                                             ),
                                             alignment: Alignment.topLeft,
                                           ),
-                                          Container(
-                                              width: 300.0,
-                                              height: 40.0,
-                                              decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(8.0),
-                                                color: Colors.white,
+                                          TextFormField(
+                                              initialValue: lst[index]["Email"].toString(),
+                                              style: TextStyle(
+                                                  fontSize: 10.0
                                               ),
-                                              child: Text(
-                                                lst[index]["Email"],
-                                                style: TextStyle(
-                                                  color: Color(0xFFA43247),
-                                                  fontSize: 20.0,
-                                                ),
-                                              )),
+                                              readOnly: true,
+                                              decoration: InputDecoration(
+                                                  prefixIcon: const Icon(Icons.lock),
+                                                  filled: true,
+                                                  fillColor: const Color(0xFFFFF1F4),
+                                                  contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(5),
+                                                    borderSide: BorderSide.none,
+                                                  ))),
                                           Padding(
                                               padding: const EdgeInsets.all(5.0)),
                                           Container(
                                             child: const Text(
                                               "Phone Number",
                                               style: TextStyle(
-                                                color: Color(0xFFA43247),
-                                                fontWeight: FontWeight.w300,
+                                                color: Color(0xFFDB5461),
+                                                fontWeight: FontWeight.w500,
                                                 fontSize: 10.0,
                                               ),
                                             ),
                                             alignment: Alignment.topLeft,
                                           ),
-                                          Container(
-                                              width: 300.0,
-                                              height: 40.0,
-                                              decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(8.0),
-                                                color: Colors.white,
+                                          TextFormField(
+                                              initialValue: lst[index]["Number"].toString(),
+                                              style: TextStyle(
+                                                  fontSize: 10.0
                                               ),
-                                              child: Text(
-                                                lst[index]["Number"],
-                                                style: TextStyle(
-                                                  color: Color(0xFFA43247),
-                                                  fontSize: 20.0,
-
-                                                ),
-                                              )),
+                                              readOnly: true,
+                                              decoration: InputDecoration(
+                                                  prefixIcon: const Icon(Icons.lock),
+                                                  filled: true,
+                                                  fillColor: const Color(0xFFFFF1F4),
+                                                  contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(5),
+                                                    borderSide: BorderSide.none,
+                                                  ))),
                                           Padding(
                                               padding: const EdgeInsets.all(5.0)),
                                           Container(
                                             child: const Text(
                                               "Role",
                                               style: TextStyle(
-                                                color: Color(0xFFA43247),
-                                                fontWeight: FontWeight.w300,
+                                                color: Color(0xFFDB5461),
+                                                fontWeight: FontWeight.w500,
                                                 fontSize: 10.0,
                                               ),
                                             ),
                                             alignment: Alignment.topLeft,
                                           ),
-                                          Container(
-                                              width: 300.0,
-                                              height: 40.0,
-                                              decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(8.0),
-                                                color: Colors.white,
+                                          TextFormField(
+                                              initialValue: lst[index]["Role"].toString(),
+                                              style: TextStyle(
+                                                  fontSize: 10.0
                                               ),
-                                              child: Text(
-                                                lst[index]["Role"],
-                                                style: TextStyle(
-                                                  color: Color(0xFFA43247),
-                                                  fontSize: 20.0,
-
-                                                ),
-                                              )),
+                                              readOnly: true,
+                                              decoration: InputDecoration(
+                                                  prefixIcon: const Icon(Icons.lock),
+                                                  filled: true,
+                                                  fillColor: const Color(0xFFFFF1F4),
+                                                  contentPadding: const EdgeInsets.only(left: 10.0, top: 10.0, bottom: 10.0),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(5),
+                                                    borderSide: BorderSide.none,
+                                                  ))),
                                           Padding(
                                               padding: const EdgeInsets.all(20.0)),
 

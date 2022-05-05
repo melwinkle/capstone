@@ -1,11 +1,11 @@
 import 'package:lamber/account.dart';
-import 'package:lamber/payment.dart';
-import 'package:lamber/upgrade.dart';
+import 'package:lamber/users/payment.dart';
+import 'package:lamber/users/upgrade.dart';
 import 'package:flutter/material.dart';
 import 'package:lamber/sign_route.dart';
 import 'package:lamber/home.dart';
 import 'package:lamber/request.dart';
-import 'package:lamber/first_aid.dart';
+import 'package:lamber/users/first_aid.dart';
 import 'package:lamber/main.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -50,7 +50,55 @@ class Profilepage extends State<MyProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFDCDC),
+      backgroundColor: const Color(0xFFFFFFFF),
+      bottomNavigationBar:  Container(
+          margin: const EdgeInsets.only(top:50,left:0,right:0,bottom:0),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius:BorderRadius.only(
+                topRight: Radius.circular(20), topLeft: Radius.circular(20)),
+          ),
+          child:ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20.0),
+              topRight: Radius.circular(20.0),
+
+            ),
+
+            child:BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              currentIndex: _currentIndex,
+              backgroundColor: Color(0xFFDB5461),
+              selectedItemColor: Color(0xFFFFFFFF),
+              unselectedItemColor: const Color(0xFFFFFFFF).withOpacity(.60),
+              selectedFontSize: 14,
+              unselectedFontSize: 12,
+
+
+              onTap: (value) {
+                // Respond to item press.
+                setState(() => _currentIndex = value);
+                _onTap();
+              },
+              items: const [
+                BottomNavigationBarItem(
+                  label: 'Home',
+                  icon: Icon(Icons.home_filled),
+                ),
+                BottomNavigationBarItem(
+                  label: 'Requests',
+                  icon: Icon(Icons.receipt_outlined),
+                ),
+
+                BottomNavigationBarItem(
+                  label: 'Account',
+                  icon: Icon(Icons.person_outlined),
+                ),
+              ],
+            ),
+
+          )
+      ),
       body: Align(
         alignment: Alignment(0.01, 0.09),
         child: SizedBox(
@@ -68,12 +116,12 @@ class Profilepage extends State<MyProfilePage> {
                   style: TextStyle(
                     fontFamily: 'Helvetica',
                     fontSize: 25.0,
-                    color: Color(0xFFA34747),
+                    color: Color(0xFFDB5461),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-              const Spacer(flex: 15),
+              Padding(padding: const EdgeInsets.all(10.0)),
               Container(
                   alignment: Alignment(-0.78, -0.04),
                   width: 300.0,
@@ -91,15 +139,15 @@ class Profilepage extends State<MyProfilePage> {
                             const Align(
                                 alignment: Alignment.centerLeft,
                                 child: Icon(Icons.account_circle,
-                                    size: 32, color: Color(0xFFA34747))),
+                                    size: 32, color: Color(0xFFDB5461))),
                             Container(
                               margin: const EdgeInsets.only(left: 10.0),
                               child: Text(
                                 "Profile",
                                 style: const TextStyle(
-                                  color: Color(0xFFA34747),
+                                  color: Color(0xFFDB5461),
                                   fontWeight: FontWeight.w300,
-                                  fontSize: 20.0,
+                                  fontSize: 15.0,
                                 ),
                               ),
                             ),
@@ -107,14 +155,14 @@ class Profilepage extends State<MyProfilePage> {
                         ),
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          fixedSize: const Size(350, 80),
+                          fixedSize: const Size(350, 50),
                         )),
                   )),
 
 
-
               Container(
                   alignment: Alignment(-0.78, -0.04),
+                  margin: EdgeInsets.only(top:2.0),
                   width: 300.0,
                   height: 90.0,
                   decoration: BoxDecoration(
@@ -130,15 +178,15 @@ class Profilepage extends State<MyProfilePage> {
                             Align(
                                 alignment: Alignment.centerLeft,
                                 child: Icon(Icons.help_center_rounded,
-                                    size: 32, color: Color(0xFFA34747))),
+                                    size: 32, color: Color(0xFFDB5461))),
                             Container(
                               margin: const EdgeInsets.only(left: 10.0),
                               child: const Text(
                                 'Help Center',
                                 style: TextStyle(
-                                  color: Color(0xFFA34747),
+                                  color: Color(0xFFDB5461),
                                   fontWeight: FontWeight.w300,
-                                  fontSize: 20.0,
+                                  fontSize: 15.0,
                                 ),
                               ),
                             ),
@@ -146,12 +194,13 @@ class Profilepage extends State<MyProfilePage> {
                         ),
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          fixedSize: const Size(350, 80),
+                          fixedSize: const Size(350, 50),
                         )),
                   )),
-              Spacer(flex: 20),
+
               Container(
                   alignment: Alignment(-0.78, -0.04),
+                  margin: EdgeInsets.only(top:46.0,bottom:50),
                   width: 300.0,
                   height: 90.0,
                   decoration: BoxDecoration(
@@ -176,46 +225,19 @@ class Profilepage extends State<MyProfilePage> {
                                 style: TextStyle(
                                   color: Color(0xFFFFFFFF),
                                   fontWeight: FontWeight.w300,
-                                  fontSize: 20.0,
+                                  fontSize: 15.0,
                                 ),
                               ),
                             ),
                           ],
                         ),
                         style: OutlinedButton.styleFrom(
-                          backgroundColor: Color(0xFFA34747),
-                          fixedSize: const Size(350, 80),
+                          backgroundColor: Color(0xFFDB5461),
+                          fixedSize: const Size(350, 50),
                         )),
                   )),
-              Spacer(flex: 20),
-              BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                currentIndex: _currentIndex,
-                backgroundColor: Color(0xFFFFFFFF),
-                selectedItemColor: Color(0xFFA34747),
-                unselectedItemColor: const Color(0xFFA34747).withOpacity(.60),
-                selectedFontSize: 14,
-                unselectedFontSize: 14,
-                onTap: (value) {
-                  // Respond to item press.
-                  setState(() => _currentIndex = value);
-                  _onTap();
-                },
-                items: const [
-                  BottomNavigationBarItem(
-                    label: 'Home',
-                    icon: Icon(Icons.home_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Requests',
-                    icon: Icon(Icons.receipt_outlined),
-                  ),
-                  BottomNavigationBarItem(
-                    label: 'Account',
-                    icon: Icon(Icons.person),
-                  ),
-                ],
-              ),
+
+
             ],
           ),
         ),
@@ -247,23 +269,9 @@ Route _createRout() {
     },
   );
 }
-Route _createRoutes() {
-  return PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) => const Page3(),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return child;
-    },
-  );
-}
 
-Route _createRouter() {
-  return PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) => const Page4(),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return child;
-    },
-  );
-}
+
+
 
 class Page2 extends StatelessWidget {
   const Page2({Key? key}) : super(key: key);
@@ -277,27 +285,8 @@ class Page2 extends StatelessWidget {
   }
 }
 
-class Page3 extends StatelessWidget {
-  const Page3({Key? key}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: MyUpgradePage(),
-    );
-  }
-}
 
-class Page4 extends StatelessWidget {
-  const Page4({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: MyPaymentPage(),
-    );
-  }
-}
 
 
 class Page5 extends StatelessWidget {

@@ -50,6 +50,7 @@ dependencies:
   firebase_storage: ^10.2.9
   flutter_rating_bar: ^4.0.0
   pull_to_refresh: ^2.0.0
+  flutter_phone_direct_caller: ^2.1.1
 
 
 
@@ -81,6 +82,9 @@ flutter:
       - assets/images/car.png
       - assets/images/home.png
       - assets/images/hospital.png
+      - assets/images/midlogo.png
+      - assets/images/midlogos.png
+      - assets/images/lamberlogo.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
