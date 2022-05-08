@@ -143,7 +143,7 @@ class MyCustomFormState extends State<MyCustomForm> {
   final phone = TextEditingController();
   final name = "users/clients/";
   final fb = FirebaseDatabase.instance;
-
+  String emailText='';
   @override
   Widget build(BuildContext context) {
 
@@ -153,6 +153,9 @@ class MyCustomFormState extends State<MyCustomForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(emailText,style: const TextStyle(
+              color: Colors.red,fontSize: 12.0,fontWeight:FontWeight.bold
+          ),),
           TextFormField(
               controller: fullname,
               // The validator receives the text that the user has entered.
@@ -173,29 +176,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide.none,
                   ))),
-          // Padding(
-          //   padding: const EdgeInsets.symmetric(vertical: 5.0),
-          // ),
-          // TextFormField(
-          //     controller: username,
-          //     // The validator receives the text that the user has entered.
-          //     validator: (value) {
-          //       if (value == null || value.isEmpty) {
-          //         return 'Please enter username';
-          //       }
-          //       return null;
-          //     },
-          //     decoration: InputDecoration(
-          //         prefixIcon: Icon(Icons.person),
-          //         hintText: 'Username',
-          //         hintStyle: TextStyle(color: Colors.black87,fontSize: 12.0),
-          //         filled: true,
-          //         fillColor: Color(0xFFEFDCDC),
-          //         contentPadding: EdgeInsets.only(left: 10.0, top: 15.0, bottom: 15.0),
-          //         border: OutlineInputBorder(
-          //           borderRadius: BorderRadius.circular(5),
-          //           borderSide: BorderSide.none,
-          //         ))),
+
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
           ),
@@ -330,18 +311,49 @@ class MyCustomFormState extends State<MyCustomForm> {
       User? users = FirebaseAuth.instance.currentUser;
 
       if (users!= null && !users.emailVerified) {
-        print(mail);
         await users.sendEmailVerification();
+        showAlertDialog(context);
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
-        print('The password provided is too weak.');
+        setState(() {
+          emailText="Password too weak";
+        });
       } else if (e.code == 'email-already-in-use') {
-        print('The account already exists for that email.');
+        setState(() {
+          emailText="The account already exists for that email.";
+        });
       }
     } catch (e) {
       print(e);
     }
+  }
+  void showAlertDialog(BuildContext context) {
+
+    // set up the button
+    Widget okButton = TextButton(
+      child: Text("OK"),
+      onPressed: () {
+        Navigator.of(context).push(_createRoutes());
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Verification Email"),
+      content: Text("Check your email to verfiy your account!"),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
   }
 }
 
