@@ -151,6 +151,9 @@ String emailText="";
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(emailText,style: const TextStyle(
+              color: Colors.red,fontSize: 12.0,fontWeight:FontWeight.bold
+          ),),
           TextFormField(
               controller: fullname,
               // The validator receives the text that the user has entered.
@@ -280,13 +283,15 @@ String emailText="";
 
         if (users!= null && !users.emailVerified) {
           await users.sendEmailVerification();
+          showAlertDialog(context);
         }
         fb.ref('users/ems_temp/$fl').remove();
         setState(() {
           emailText="Email exists";
         });
 
-        Navigator.of(context).push(_createRoutes());
+
+
 
       }else{
         setState(() {
@@ -312,6 +317,35 @@ String emailText="";
     } catch (e) {
       print(e);
     }
+  }
+
+
+  void showAlertDialog(BuildContext context) {
+
+    // set up the button
+    Widget okButton = TextButton(
+      child: Text("OK"),
+      onPressed: () {
+        Navigator.of(context).push(_createRoutes());
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Verification Email"),
+      content: Text("Check your email to verfiy your account!"),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
   }
 }
 
